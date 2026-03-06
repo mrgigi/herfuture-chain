@@ -120,18 +120,20 @@ export default function LandingPage() {
 
             {/* Hero Section */}
             <section className="relative pt-44 pb-32 px-6 overflow-hidden">
-                {/* Subtle Dimmed Background Image */}
-                <div className="absolute inset-0 pointer-events-none">
-                    <img
-                        src="/images/hero.png"
-                        className="w-full h-full object-cover opacity-[0.07] blur-[2px]"
-                        alt="Background"
+                {/* Cinematic Video Background */}
+                <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden">
+                    <div className="absolute inset-0 bg-gradient-to-b from-[#060914] via-[#060914]/40 to-[#060914] z-10" />
+                    <iframe
+                        className="w-[300%] h-[300%] absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 scale-110 opacity-30 blur-[2px]"
+                        src="https://www.youtube.com/embed/iqlyXt3JYeM?autoplay=1&mute=1&loop=1&playlist=iqlyXt3JYeM&controls=0&showinfo=0&rel=0&iv_load_policy=3&modestbranding=1"
+                        title="Background Video"
+                        frameBorder="0"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-b from-[#060914] via-transparent to-[#060914]" />
                 </div>
-                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[1000px] bg-brand-600/10 rounded-full blur-[120px] pointer-events-none" />
+                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[1000px] bg-brand-600/10 rounded-full blur-[120px] pointer-events-none z-20" />
 
-                <div className="max-w-4xl mx-auto relative z-10 text-center">
+                <div className="max-w-4xl mx-auto relative z-30 text-center">
                     <div className="inline-flex items-center gap-3 px-4 py-1.5 rounded-full bg-brand-500/10 border border-brand-500/20 mb-10 animate-in fade-in slide-in-from-bottom-2 duration-700">
                         <Zap className="w-3.5 h-3.5 text-brand-400 animate-pulse" />
                         <span className="text-[10px] font-black uppercase tracking-[0.3em] text-brand-400 border-r border-brand-500/20 pr-4">Blockchain Protocol</span>

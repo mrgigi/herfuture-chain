@@ -85,9 +85,11 @@ export default function Gateway() {
                             className="w-full h-[380px] object-cover rounded-[44px] transition-transform duration-[2000ms] group-hover:scale-105"
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-[#0A0F1C] via-[#0A0F1C]/10 to-transparent" />
-                        <div className="absolute bottom-10 left-10 md:left-16 max-w-lg">
-                            <h2 className="text-4xl md:text-5xl font-black text-white mb-3 tracking-tighter">The Future is Verified.</h2>
-                            <p className="text-slate-300 text-sm md:text-base font-medium opacity-90 leading-relaxed">Bridging the gap for teen mothers, out-of-school girls and unemployed girls.</p>
+                        <div className="absolute bottom-10 left-10 md:left-16 max-w-xl">
+                            <h2 className="text-4xl md:text-6xl font-black text-white mb-4 tracking-tighter leading-tight">Your Future <br /> Starts Here.</h2>
+                            <p className="text-slate-200 text-sm md:text-lg font-medium opacity-100 leading-relaxed max-w-md">
+                                A dedicated space for teen moms and girls to learn digital skills, earn grants while they study, and build a life they love.
+                            </p>
                         </div>
                     </div>
 
