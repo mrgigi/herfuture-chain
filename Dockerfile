@@ -3,9 +3,9 @@ FROM php:8.1-apache
 
 # Install needed PHP extensions for Moodle
 RUN apt-get update && apt-get install -y \
-    libpng-dev libjpeg-dev libfreetype6-dev libzip-dev unzip git libicu-dev \
+    libpng-dev libjpeg-dev libfreetype6-dev libzip-dev unzip git libicu-dev libpq-dev \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install gd zip mysqli pdo pdo_mysql intl opcache
+    && docker-php-ext-install gd zip mysqli pdo pdo_mysql intl opcache pgsql pdo_pgsql
 
 # Enable Apache rewrite module (Moodle needs it)
 RUN a2enmod rewrite
