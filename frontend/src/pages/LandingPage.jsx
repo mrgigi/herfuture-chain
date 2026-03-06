@@ -426,8 +426,8 @@ export default function LandingPage() {
                             <h2 className="text-[060914] text-5xl md:text-7xl font-black tracking-tighter leading-none mb-6">Pilot Outcomes.</h2>
                             <p className="text-[#060914]/60 text-lg font-bold uppercase tracking-widest">Transforming the girl child from aid recipients into participants</p>
                         </div>
-                        <div className="bg-[#060914] text-celo p-4 px-8 rounded-full text-xs font-black uppercase tracking-[0.2em] shadow-2xl">
-                            Verified on Celo
+                        <div className="bg-[#060914] text-white/50 p-4 px-8 rounded-full text-xs font-black uppercase tracking-[0.2em] shadow-2xl">
+                            Verified on <span className="text-celo">Celo</span>
                         </div>
                     </div>
 

@@ -1,4 +1,4 @@
-import { Handshake, Github } from 'lucide-react';
+import { Github, Facebook, Instagram, Linkedin } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 export default function Footer() {
@@ -16,17 +16,29 @@ export default function Footer() {
                         Pioneering distributed socio-economic mobility for the girl child. Open-source, transparent, and built for impact.
                     </p>
                     <div className="flex gap-4 mt-8">
-                        <div className="w-10 h-10 rounded-xl bg-white/5 border border-white/5 flex items-center justify-center text-slate-400 hover:text-white transition-colors cursor-pointer">
-                            <Handshake className="w-4 h-4" />
-                        </div>
                         <a
                             href="https://github.com/mrgigi/herfuture-chain"
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="w-10 h-10 rounded-xl bg-white/5 border border-white/5 flex items-center justify-center text-slate-400 hover:text-white transition-colors"
+                            className="w-10 h-10 rounded-xl bg-white/5 border border-white/5 flex items-center justify-center text-slate-400 hover:text-white transition-all hover:bg-white/10"
                         >
                             <Github className="w-4 h-4" />
                         </a>
+                        <div className="w-10 h-10 rounded-xl bg-white/5 border border-white/5 flex items-center justify-center text-slate-400 hover:text-white transition-all hover:bg-white/10 cursor-pointer">
+                            <Facebook className="w-4 h-4" />
+                        </div>
+                        <div className="w-10 h-10 rounded-xl bg-white/5 border border-white/5 flex items-center justify-center text-slate-400 hover:text-white transition-all hover:bg-white/10 cursor-pointer">
+                            <Instagram className="w-4 h-4" />
+                        </div>
+                        <div className="w-10 h-10 rounded-xl bg-white/5 border border-white/5 flex items-center justify-center text-slate-400 hover:text-white transition-all hover:bg-white/10 cursor-pointer">
+                            <Linkedin className="w-4 h-4" />
+                        </div>
+                        {/* TikTok Custom Icon */}
+                        <div className="w-10 h-10 rounded-xl bg-white/5 border border-white/5 flex items-center justify-center text-slate-400 hover:text-white transition-all hover:bg-white/10 cursor-pointer">
+                            <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
+                                <path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-.99.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.9-.32-1.89-.23-2.74.24-.73.41-1.31 1.07-1.58 1.87-.2.55-.25 1.15-.15 1.74.25.95 1.05 1.76 1.97 2.13.78.33 1.66.39 2.48.14.74-.21 1.41-.67 1.84-1.3.43-.61.64-1.35.66-2.09.02-2.39.01-4.78.01-7.18s0-4.78 0-7.18z" />
+                            </svg>
+                        </div>
                     </div>
                 </div>
 
@@ -57,19 +69,10 @@ export default function Footer() {
                 </div>
             </div>
 
-            <div className="max-w-6xl mx-auto mt-20 pt-8 border-t border-white/5 flex justify-between items-center text-[10px] font-black uppercase tracking-widest text-slate-600">
+            <div className="max-w-6xl mx-auto mt-20 pt-8 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-4 text-[10px] font-black uppercase tracking-widest text-slate-600">
                 <span>© 2026 HerFuture Protocol. An open source project.</span>
-                <div className="flex gap-6">
-                    <span className="hover:text-celo cursor-pointer transition-colors"><span className="text-celo">Celo</span></span>
-                    <span className="hover:text-white cursor-pointer transition-colors">UNICEF Hub</span>
-                    <a
-                        href="https://github.com/mrgigi/herfuture-chain"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="hover:text-white cursor-pointer transition-colors"
-                    >
-                        GitHub
-                    </a>
+                <div className="flex items-center gap-1.5">
+                    Built with <span className="text-yellow-400 animate-pulse text-xs">💛</span> on the <span className="text-celo">Celo</span> Blockchain
                 </div>
             </div>
         </footer>

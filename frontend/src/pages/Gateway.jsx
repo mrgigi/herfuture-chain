@@ -48,25 +48,44 @@ export default function Gateway() {
 
     return (
         <div className="flex flex-col min-h-screen bg-[#0A0F1C] text-slate-100 font-sans overflow-x-hidden">
+            {/* Header Nav */}
+            <nav className="relative z-30 px-6 py-6 flex justify-between items-center bg-transparent w-full max-w-7xl mx-auto">
+                <div className="flex items-center gap-2 cursor-pointer transition-transform active:scale-95" onClick={() => navigate('/')}>
+                    <div className="w-8 h-8 rounded-lg bg-brand-500 flex items-center justify-center font-black text-white italic">H</div>
+                    <span className="font-bold tracking-tight text-white uppercase tracking-widest text-sm hidden sm:block">HerFuture</span>
+                </div>
+            </nav>
+
             <div className="flex-grow flex flex-col relative">
                 {/* Hero Background */}
                 <div className="absolute top-0 left-0 w-full h-[600px] bg-gradient-to-b from-brand-600/10 to-transparent pointer-events-none" />
                 <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-brand-600/10 blur-[120px] pointer-events-none" />
                 <div className="absolute top-[20%] right-[-10%] w-[30%] h-[30%] rounded-full bg-indigo-600/10 blur-[100px] pointer-events-none" />
 
-                <div className="max-w-6xl mx-auto px-6 pt-20 pb-32 relative z-10">
+                <div className="max-w-6xl mx-auto px-6 pt-10 pb-32 relative z-10">
                     {/* Header */}
-                    <div className="text-center mb-20 animate-in fade-in slide-in-from-top-4 duration-1000">
+                    <div className="text-center mb-16 animate-in fade-in slide-in-from-top-4 duration-1000">
                         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-800/50 border border-slate-700/50 mb-6 backdrop-blur-sm">
                             <div className="w-2 h-2 rounded-full bg-brand-500 animate-pulse" />
                             <span className="text-[10px] uppercase tracking-[0.2em] font-bold text-slate-400">Mainnet Beta Gateway</span>
                         </div>
-                        <h1 className="text-5xl md:text-6xl font-black mb-4 tracking-tight">
-                            HerFuture <span className="bg-gradient-to-r from-brand-400 to-indigo-400 bg-clip-text text-transparent underline decoration-brand-500/30">Chain</span>
+                        <h1 className="text-5xl md:text-7xl font-black mb-4 tracking-tighter">
+                            Select Your <span className="bg-gradient-to-r from-brand-400 to-indigo-400 bg-clip-text text-transparent">Pathway.</span>
                         </h1>
-                        <p className="text-slate-400 max-w-xl mx-auto text-lg leading-relaxed">
-                            The world's first decentralized socio-economic engine for high-potential teen mothers.
-                        </p>
+                    </div>
+
+                    {/* High Fidelity Visual Banner */}
+                    <div className="mb-20 relative p-1 pb-0 glass-panel rounded-[48px] border border-white/10 overflow-hidden shadow-2xl group">
+                        <img
+                            src="/images/hero.png"
+                            alt="Empowerment"
+                            className="w-full h-[320px] object-cover rounded-[44px] transition-transform duration-1000 group-hover:scale-105"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-[#0A0F1C] via-[#0A0F1C]/20 to-transparent" />
+                        <div className="absolute bottom-10 left-10 max-w-md">
+                            <h2 className="text-4xl font-black text-white mb-2 tracking-tight">The Future is Verified.</h2>
+                            <p className="text-slate-300 text-sm font-medium opacity-80 uppercase tracking-widest">Bridging the gap between potential and participation.</p>
+                        </div>
                     </div>
 
                     {/* Grid */}

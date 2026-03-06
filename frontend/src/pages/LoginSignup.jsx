@@ -77,27 +77,36 @@ export default function LoginSignup() {
 
     return (
         <div className="flex flex-col min-h-screen bg-[#0A0F1C] overflow-x-hidden">
-            <div className="flex-grow flex items-center justify-center p-4 relative">
-                {/* Background Orbs */}
-                <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-brand-600/20 blur-[120px]" />
-                <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full bg-indigo-600/20 blur-[120px]" />
-
-                {/* Back Button */}
+            {/* Top Navigation Bar */}
+            <nav className="relative z-30 px-6 py-6 flex justify-between items-center bg-transparent w-full max-w-7xl mx-auto">
+                <div className="flex items-center gap-2 cursor-pointer transition-transform active:scale-95" onClick={() => navigate('/')}>
+                    <div className="w-8 h-8 rounded-lg bg-brand-500 flex items-center justify-center font-black text-white italic">H</div>
+                    <span className="font-bold tracking-tight text-white uppercase tracking-widest text-sm hidden sm:block">HerFuture</span>
+                </div>
                 <button
                     onClick={() => navigate('/gate')}
-                    className="absolute top-8 left-8 flex items-center gap-2 text-slate-500 hover:text-white transition-colors text-sm font-bold tracking-widest uppercase group"
+                    className="flex items-center gap-2 text-slate-500 hover:text-white transition-all text-[10px] font-black tracking-widest uppercase group bg-white/5 px-4 py-2 rounded-xl border border-white/5 active:scale-95"
                 >
-                    <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
-                    Back to Gateway
+                    <ArrowLeft className="w-3.5 h-3.5 group-hover:-translate-x-1 transition-transform" />
+                    Gateway
                 </button>
+            </nav>
 
+            {/* Background Illustration / Orb Mix */}
+            <div className="fixed inset-0 pointer-events-none opacity-40">
+                <img
+                    src="/images/hero.png"
+                    className="w-full h-full object-cover blur-[100px] scale-110"
+                    alt=""
+                />
+                <div className="absolute inset-0 bg-[#0A0F1C]/80" />
+            </div>
+
+            <div className="flex-grow flex items-center justify-center p-4 relative pt-0">
                 <div className="w-full max-w-md z-10">
                     <div className="text-center mb-10">
-                        <div className="inline-flex items-center justify-center p-3 bg-brand-500/10 rounded-2xl mb-4 border border-brand-500/20">
-                            <ShieldCheck className="w-8 h-8 text-brand-400" />
-                        </div>
-                        <h1 className="text-4xl font-bold tracking-tight text-white mb-2">HerFuture</h1>
-                        <p className="text-slate-400 text-sm max-w-xs mx-auto">
+                        <h1 className="text-5xl font-black tracking-tighter text-white mb-2">HerFuture</h1>
+                        <p className="text-slate-400 text-sm max-w-xs mx-auto font-medium">
                             Empowering women through blockchain-verified education and grants.
                         </p>
                     </div>
@@ -244,6 +253,6 @@ export default function LoginSignup() {
             </div>
 
             <Footer />
-        </div>
+        </div >
     );
 }

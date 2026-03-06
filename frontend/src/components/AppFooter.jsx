@@ -26,7 +26,7 @@ export default function AppFooter() {
                     <div>
                         <div className="text-[8px] font-black text-white/30 uppercase tracking-[0.2em] leading-none mb-1">Network Status</div>
                         <div className="text-[10px] font-bold text-white flex items-center gap-1.5 whitespace-nowrap">
-                            Celo Sepolia <Shield className={`w-3 h-3 ${accentColor}`} />
+                            <span className="text-celo">Celo</span> Sepolia <Shield className={`w-3 h-3 ${accentColor}`} />
                         </div>
                     </div>
                 </div>

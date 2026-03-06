@@ -120,7 +120,7 @@ export default function ImpactDashboard() {
                                         className="flex items-center gap-2 text-[10px] text-slate-500 uppercase font-black hover:text-white transition-colors cursor-pointer"
                                     >
                                         <div className="w-1.5 h-1.5 bg-slate-700 rounded-full" />
-                                        CELO TX: {grant.tx ? `${grant.tx.substring(0, 6)}...${grant.tx.substring(grant.tx.length - 4)}` : 'UNKNOWN'} <ExternalLink className="w-2.5 h-2.5" />
+                                        <span className="text-celo">CELO</span> TX: {grant.tx ? `${grant.tx.substring(0, 6)}...${grant.tx.substring(grant.tx.length - 4)}` : 'UNKNOWN'} <ExternalLink className="w-2.5 h-2.5" />
                                     </div>
                                 </div>
                             </div>
@@ -133,8 +133,15 @@ export default function ImpactDashboard() {
                     </div>
 
                     {/* Impact Analytics */}
-                    <div className="glass-panel rounded-[50px] border border-white/5 p-10 flex flex-col justify-between h-full bg-gradient-to-br from-white/[0.02] to-transparent">
-                        <div>
+                    <div className="glass-panel rounded-[50px] border border-white/5 p-10 flex flex-col justify-between h-full bg-gradient-to-br from-white/[0.02] to-transparent relative overflow-hidden group">
+                        <img
+                            src="/images/community.png"
+                            className="absolute inset-0 w-full h-full object-cover opacity-10 group-hover:opacity-20 transition-opacity duration-1000 blur-[2px]"
+                            alt="Impact"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-br from-[#0A0F1C] via-[#0A0F1C]/80 to-transparent" />
+
+                        <div className="relative z-10">
                             <div className="p-4 bg-brand-500/10 border border-brand-500/20 rounded-3xl w-fit mb-8">
                                 <BarChart3 className="w-8 h-8 text-brand-400" />
                             </div>
@@ -144,7 +151,7 @@ export default function ImpactDashboard() {
                             </p>
                         </div>
 
-                        <div className="space-y-6">
+                        <div className="space-y-6 relative z-10">
                             {[
                                 { label: 'Track 1: Foundations', val: 94 },
                                 { label: 'Track 2: Income Skills', val: 78 },
@@ -155,8 +162,8 @@ export default function ImpactDashboard() {
                                         <span>{track.label}</span>
                                         <span>{track.val}% Success</span>
                                     </div>
-                                    <div className="h-1.5 w-full bg-slate-800 rounded-full overflow-hidden">
-                                        <div className="h-full bg-brand-500" style={{ width: `${track.val}%` }} />
+                                    <div className="h-1.5 w-full bg-slate-800 rounded-full overflow-hidden shadow-inner">
+                                        <div className="h-full bg-gradient-to-r from-brand-600 to-indigo-500" style={{ width: `${track.val}%` }} />
                                     </div>
                                 </div>
                             ))}
