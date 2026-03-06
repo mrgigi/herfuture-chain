@@ -120,6 +120,15 @@ export default function LandingPage() {
 
             {/* Hero Section */}
             <section className="relative pt-44 pb-32 px-6 overflow-hidden">
+                {/* Subtle Dimmed Background Image */}
+                <div className="absolute inset-0 pointer-events-none">
+                    <img
+                        src="/images/hero.png"
+                        className="w-full h-full object-cover opacity-[0.07] blur-[2px]"
+                        alt="Background"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-b from-[#060914] via-transparent to-[#060914]" />
+                </div>
                 <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[1000px] bg-brand-600/10 rounded-full blur-[120px] pointer-events-none" />
 
                 <div className="max-w-4xl mx-auto relative z-10 text-center">
@@ -138,8 +147,8 @@ export default function LandingPage() {
                         Open-source blockchain infrastructure for <span className="text-white">verifiable skills</span> and <span className="text-white">financial inclusion</span>.
                     </p>
 
-                    <p className="text-slate-500 max-w-2xl mx-auto text-sm md:text-base mb-12 animate-in fade-in slide-in-from-bottom-7 duration-1000 italic">
-                        The world's first decentralized socio-economic engine for high-potential teen mothers.
+                    <p className="text-slate-400 max-w-2xl mx-auto text-sm md:text-base mb-12 animate-in fade-in slide-in-from-bottom-7 duration-1000 font-medium leading-relaxed">
+                        The world's first decentralized socio-economic engine for teen mothers, out-of-school girls and unemployed girls.
                     </p>
 
                     <div className="flex flex-col sm:flex-row gap-4 justify-center items-center animate-in fade-in slide-in-from-bottom-8 duration-1000">
@@ -230,7 +239,7 @@ export default function LandingPage() {
                         Integrated Identity, <br /> Education & Inclusion.
                     </h2>
                     <p className="text-slate-400 text-lg leading-relaxed mb-12">
-                        HerFuture Chain provides open-source blockchain infrastructure built on <span className="text-celo font-bold">Celo</span>. We enable the girl child to build verified digital identities, earn credentials, and access transparent financial support.
+                        HerFuture Chain provides open-source blockchain infrastructure built on <span className="text-celo font-bold">Celo</span>. We enable teen mothers, out-of-school girls and unemployed girls to build verified digital identities, earn credentials, and access transparent financial support.
                     </p>
 
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-20">
@@ -280,7 +289,7 @@ export default function LandingPage() {
                                 subtitle: "3 Targeted Learning Tracks",
                                 desc: (
                                     <div className="space-y-4">
-                                        <p>Structured training powered by Moodle, creating professional pathways for the girl child:</p>
+                                        <p>Structured training powered by Moodle, creating professional pathways for teen mothers, out-of-school girls and unemployed girls:</p>
                                         <div className="grid grid-cols-1 gap-3 mt-4">
                                             {[
                                                 { id: 'T1', label: 'Track 1', title: 'Foundations & Wellbeing', color: 'brand' },
@@ -365,7 +374,7 @@ export default function LandingPage() {
                     <div className="lg:w-1/3">
                         <h2 className="text-4xl font-black mb-8 leading-tight">Who We <br /> Serve.</h2>
                         <p className="text-slate-500 text-sm leading-relaxed mb-8">
-                            HerFuture Chain is designed for the girl child who faces significant barriers to education and employment.
+                            HerFuture Chain is designed for teen mothers, out-of-school girls and unemployed girls who face significant barriers to education and employment.
                         </p>
                         <Heart className="w-12 h-12 text-pink-500/20" />
                     </div>
@@ -424,7 +433,7 @@ export default function LandingPage() {
                     <div className="flex flex-col md:flex-row justify-between items-end mb-20 gap-8">
                         <div>
                             <h2 className="text-[060914] text-5xl md:text-7xl font-black tracking-tighter leading-none mb-6">Pilot Outcomes.</h2>
-                            <p className="text-[#060914]/60 text-lg font-bold uppercase tracking-widest">Transforming the girl child from aid recipients into participants</p>
+                            <p className="text-[#060914]/60 text-lg font-bold uppercase tracking-widest">Transforming teen mothers and unemployed girls from aid recipients into participants</p>
                         </div>
                         <div className="bg-[#060914] text-white/50 p-4 px-8 rounded-full text-xs font-black uppercase tracking-[0.2em] shadow-2xl">
                             Verified on <span className="text-celo">Celo</span>

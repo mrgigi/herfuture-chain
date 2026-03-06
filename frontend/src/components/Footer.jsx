@@ -13,7 +13,7 @@ export default function Footer() {
                         <span className="font-bold tracking-tight text-white uppercase tracking-widest text-sm">HerFuture Chain</span>
                     </div>
                     <p className="text-slate-500 text-sm max-w-xs leading-relaxed">
-                        Pioneering distributed socio-economic mobility for the girl child. Open-source, transparent, and built for impact.
+                        Pioneering distributed socio-economic mobility for teen mothers, out-of-school girls and unemployed girls. Open-source, transparent, and built for impact.
                     </p>
                     <div className="flex gap-4 mt-8">
                         <a

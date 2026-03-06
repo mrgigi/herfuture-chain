@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { ArrowRight, Wallet, ShieldCheck, Phone, User, MessageSquare, ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import Footer from '../components/Footer';
 import api, { createWallet } from '../lib/api';
 
 export default function LoginSignup() {
@@ -107,7 +106,7 @@ export default function LoginSignup() {
                     <div className="text-center mb-10">
                         <h1 className="text-5xl font-black tracking-tighter text-white mb-2">HerFuture</h1>
                         <p className="text-slate-400 text-sm max-w-xs mx-auto font-medium">
-                            Empowering women through blockchain-verified education and grants.
+                            Empowering teen mothers, out-of-school girls and unemployed girls through blockchain-verified education and grants.
                         </p>
                     </div>
 
@@ -251,8 +250,6 @@ export default function LoginSignup() {
 
                 </div>
             </div>
-
-            <Footer />
         </div >
     );
 }

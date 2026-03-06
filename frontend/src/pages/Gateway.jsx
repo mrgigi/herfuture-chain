@@ -72,19 +72,22 @@ export default function Gateway() {
                         <h1 className="text-5xl md:text-7xl font-black mb-4 tracking-tighter">
                             Select Your <span className="bg-gradient-to-r from-brand-400 to-indigo-400 bg-clip-text text-transparent">Pathway.</span>
                         </h1>
+                        <p className="text-slate-400 max-w-xl mx-auto text-lg leading-relaxed font-medium">
+                            Empowering teen mothers, out-of-school girls and unemployed girls through blockchain-verified education and grants.
+                        </p>
                     </div>
 
                     {/* High Fidelity Visual Banner */}
                     <div className="mb-20 relative p-1 pb-0 glass-panel rounded-[48px] border border-white/10 overflow-hidden shadow-2xl group">
                         <img
-                            src="/images/hero.png"
-                            alt="Empowerment"
-                            className="w-full h-[320px] object-cover rounded-[44px] transition-transform duration-1000 group-hover:scale-105"
+                            src="/images/banner.png"
+                            alt="Empowerment Hub"
+                            className="w-full h-[380px] object-cover rounded-[44px] transition-transform duration-[2000ms] group-hover:scale-105"
                         />
-                        <div className="absolute inset-0 bg-gradient-to-t from-[#0A0F1C] via-[#0A0F1C]/20 to-transparent" />
-                        <div className="absolute bottom-10 left-10 max-w-md">
-                            <h2 className="text-4xl font-black text-white mb-2 tracking-tight">The Future is Verified.</h2>
-                            <p className="text-slate-300 text-sm font-medium opacity-80 uppercase tracking-widest">Bridging the gap between potential and participation.</p>
+                        <div className="absolute inset-0 bg-gradient-to-t from-[#0A0F1C] via-[#0A0F1C]/10 to-transparent" />
+                        <div className="absolute bottom-10 left-10 md:left-16 max-w-lg">
+                            <h2 className="text-4xl md:text-5xl font-black text-white mb-3 tracking-tighter">The Future is Verified.</h2>
+                            <p className="text-slate-300 text-sm md:text-base font-medium opacity-90 leading-relaxed">Bridging the gap for teen mothers, out-of-school girls and unemployed girls.</p>
                         </div>
                     </div>
 
