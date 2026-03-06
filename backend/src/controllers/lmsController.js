@@ -192,6 +192,13 @@ async function getProgressOverview(req, res) {
 
 async function getAllParticipantsWithProgress(req, res) {
     try {
+        // Pagination parameters (default page=1, limit=20)
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 20;
+        const start = (page - 1) * limit;
+        const end = start + limit - 1;
+
+        // Fetch participants with progress data (paginated)
         const { data: participants, error } = await supabase
             .from('participants')
             .select(`
@@ -201,14 +208,17 @@ async function getAllParticipantsWithProgress(req, res) {
                 phone,
                 wallet_address,
                 student_progress(lesson_id, status)
-            `);
+            `)
+            .range(start, end);
 
         if (error) throw error;
 
+        // Total modules count for percentage calculation
         const { count: totalModules } = await supabase
             .from('lessons')
             .select('*', { count: 'exact', head: true });
 
+        // Format participants with progress stats
         const formatted = participants.map(p => {
             const completedCount = p.student_progress?.filter(sp => sp.status === 'completed').length || 0;
             return {
@@ -219,7 +229,20 @@ async function getAllParticipantsWithProgress(req, res) {
             };
         });
 
-        res.json(formatted);
+        // Also return pagination metadata
+        const { count: totalCount } = await supabase
+            .from('participants')
+            .select('*', { count: 'exact', head: true });
+
+        res.json({
+            participants: formatted,
+            pagination: {
+                page,
+                limit,
+                totalPages: Math.ceil(totalCount / limit),
+                totalCount
+            }
+        });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }

@@ -86,8 +86,8 @@ export const getProgressOverview = async (participantId) => {
 
 // --- Admin & System Functions ---
 
-export const getAdminParticipants = async () => {
-    const response = await api.get('/admin/participants');
+export const getAdminParticipants = async (page = 1, limit = 20) => {
+    const response = await api.get('/admin/participants', { params: { page, limit } });
     return response.data;
 };
 
