@@ -21,7 +21,7 @@ RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local
     && composer install --no-dev --optimize-autoloader
 
 # Create a writable data directory for Moodle files
-RUN mkdir /var/www/moodledata && chown -R www-data:www-data /var/www/moodledata
+RUN mkdir /var/www/moodledata && chown -R www-data:www-data /var/www/moodledata /var/www/html
 
 # Setting up basic PHP config for Moodle
 RUN echo 'memory_limit = 512M' >> /usr/local/etc/php/conf.d/docker-php-moodle.ini \
