@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 
 const { createWallet, getParticipant } = require('../controllers/walletController');
-const { getCourses, getCourseModules, getLessonQuiz, completeLesson, getProgressOverview, getAllParticipantsWithProgress, updateCourseStatus, getSystemSettings, updateSystemSetting } = require('../controllers/lmsController');
+const { getCourses, getCourseModules, getLessonQuiz, completeLesson, getProgressOverview, getAllParticipantsWithProgress, updateCourseStatus, getSystemSettings, updateSystemSetting, getLesson } = require('../controllers/lmsController');
 const { issueCredential, verifyCredential, getCredentialsByAddress } = require('../controllers/credentialController');
 const { releaseGrant, getGrants, getGlobalImpactStats, getRecentGrants } = require('../controllers/grantController');
 
