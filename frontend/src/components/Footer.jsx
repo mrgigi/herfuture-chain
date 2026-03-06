@@ -36,7 +36,7 @@ export default function Footer() {
                         <ul className="space-y-4 text-slate-500 text-sm font-medium">
                             <li onClick={() => navigate('/signup')} className="hover:text-brand-400 cursor-pointer transition-colors">Academy</li>
                             <li onClick={() => navigate('/impact')} className="hover:text-amber-400 cursor-pointer transition-colors">Impact Data</li>
-                            <li onClick={() => navigate('/verify')} className="hover:text-emerald-400 cursor-pointer transition-colors">On-Chain Audit</li>
+                            <li className="hover:text-emerald-400 cursor-pointer transition-colors opacity-50">On-Chain Audit</li>
                         </ul>
                     </div>
                     <div>
