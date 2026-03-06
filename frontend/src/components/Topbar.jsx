@@ -1,13 +1,29 @@
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import api from '../lib/api';
 import { Bell } from 'lucide-react';
-import { useState } from 'react';
 
 export default function Topbar({ title }) {
     const navigate = useNavigate();
     const [showNotifications, setShowNotifications] = useState(false);
+    const [user, setUser] = useState(null);
 
     const phone = localStorage.getItem('userPhone');
     const isDemoAccount = phone === '0739039856';
+
+    useEffect(() => {
+        const fetchUser = async () => {
+            if (phone) {
+                try {
+                    const { data } = await api.get(`/participant/${phone}`);
+                    setUser(data);
+                } catch (err) {
+                    console.error("Topbar user fetch error:", err);
+                }
+            }
+        };
+        fetchUser();
+    }, [phone]);
 
     const notifications = isDemoAccount ? [
         { id: 1, title: 'Grant Released!', body: 'Your grant for Module 2.1 has been released on-chain.', time: '2h ago' },
@@ -19,6 +35,8 @@ export default function Topbar({ title }) {
         localStorage.removeItem('userPhone');
         navigate('/signup');
     };
+
+    const initials = user ? `${user.first_name?.[0] || ''}${user.last_name?.[0] || ''}`.toUpperCase() : '??';
 
     return (
         <div className="md:ml-64 bg-slate-900/80 backdrop-blur-md border-b border-slate-800 sticky top-0 z-30 px-8 py-5 flex items-center justify-between">
@@ -60,8 +78,12 @@ export default function Topbar({ title }) {
                     className="text-sm font-medium text-slate-400 hover:text-white transition-colors">
                     Logout
                 </button>
-                <div className="h-10 w-10 rounded-full bg-gradient-to-tr from-brand-500 to-indigo-600 flex items-center justify-center shadow-lg cursor-pointer hover:scale-105 transition-transform">
-                    <span className="font-semibold text-white">AJ</span>
+                <div className="h-10 w-10 rounded-full bg-gradient-to-tr from-brand-500 to-indigo-600 flex items-center justify-center shadow-lg border-2 border-slate-800 cursor-pointer hover:scale-105 transition-transform overflow-hidden">
+                    {user?.avatar_url ? (
+                        <img src={user.avatar_url} alt="Profile" className="w-full h-full object-cover" />
+                    ) : (
+                        <span className="font-semibold text-white">{initials}</span>
+                    )}
                 </div>
             </div>
         </div>

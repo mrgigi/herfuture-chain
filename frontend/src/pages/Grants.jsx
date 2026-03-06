@@ -51,7 +51,7 @@ export default function Grants() {
             <main className="md:ml-64 p-8">
                 <div className="mb-8">
                     <h2 className="text-2xl font-bold text-white mb-2">cUSD Grant Disbursements</h2>
-                    <p className="text-slate-400">Track your educational milestones and the corresponding grant payouts distributed on Celo.</p>
+                    <p className="text-slate-400">Track your educational milestones and the corresponding grant payouts distributed on <span className="text-celo">Celo</span>.</p>
                 </div>
 
                 {error && (

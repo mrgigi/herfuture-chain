@@ -84,7 +84,7 @@ export default function LoginSignup() {
 
                 {/* Back Button */}
                 <button
-                    onClick={() => navigate('/')}
+                    onClick={() => navigate('/gate')}
                     className="absolute top-8 left-8 flex items-center gap-2 text-slate-500 hover:text-white transition-colors text-sm font-bold tracking-widest uppercase group"
                 >
                     <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
@@ -233,7 +233,7 @@ export default function LoginSignup() {
 
                         {!isLogin && step === 'phone' && (
                             <p className="mt-6 text-[10px] text-center text-slate-500 uppercase tracking-widest leading-relaxed">
-                                Secured by <span className="text-brand-400">Layer 2 Celo Blockchain</span>.
+                                Secured by <span className="text-celo">Layer 2 Celo Blockchain</span>.
                                 <br />
                                 Your Identity is Decentralized.
                             </p>

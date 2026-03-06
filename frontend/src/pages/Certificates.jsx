@@ -60,7 +60,7 @@ export default function Certificates() {
             <main className="md:ml-64 p-8">
                 <div className="mb-8">
                     <h2 className="text-2xl font-bold text-white mb-2">Verified Blockchain Credentials</h2>
-                    <p className="text-slate-400">These certificates are permanently stored on IPFS and verified on the Celo blockchain.</p>
+                    <p className="text-slate-400">These certificates are permanently stored on IPFS and verified on the <span className="text-celo">Celo</span> blockchain.</p>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

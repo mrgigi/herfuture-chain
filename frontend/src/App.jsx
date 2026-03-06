@@ -33,7 +33,6 @@ function App() {
           <Route path="/certificates" element={<Certificates />} />
           <Route path="/grants" element={<Grants />} />
         </Routes>
-        <AppFooter />
       </div>
     </BrowserRouter>
   );

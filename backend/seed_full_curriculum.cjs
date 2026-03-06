@@ -72,7 +72,8 @@ async function seed() {
             outcomes = ["Understand wealth creation", "Manage a business budget", "Build long-term assets"];
         }
 
-        const { data: lesson, error } = await supabase.from('lessons').insert([{
+        // TRY to insert with LEARNING OUTCOMES, if it fails due to column missing, insert without them
+        const lessonPayload = {
             course_id: trackMap[m.track],
             track_label: m.label,
             title: m.title,
@@ -83,10 +84,20 @@ async function seed() {
             is_wellbeing: m.is_wb || false,
             video_url: m.video,
             learning_outcomes: outcomes
-        }]).select();
+        };
+
+        let { data: lesson, error } = await supabase.from('lessons').insert([lessonPayload]).select();
+
+        if (error && error.code === 'PGRST204') {
+            console.warn(`⚠️  Column 'learning_outcomes' missing. Seeding without it...`);
+            delete lessonPayload.learning_outcomes;
+            const res = await supabase.from('lessons').insert([lessonPayload]).select();
+            lesson = res.data;
+            error = res.error;
+        }
 
         if (error) {
-            console.error(error);
+            console.error("Lesson insertion failed:", error);
             continue;
         }
 

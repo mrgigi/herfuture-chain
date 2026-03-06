@@ -60,7 +60,7 @@ export default function Footer() {
             <div className="max-w-6xl mx-auto mt-20 pt-8 border-t border-white/5 flex justify-between items-center text-[10px] font-black uppercase tracking-widest text-slate-600">
                 <span>© 2026 HerFuture Protocol. An open source project.</span>
                 <div className="flex gap-6">
-                    <span className="hover:text-white cursor-pointer transition-colors">Celo</span>
+                    <span className="hover:text-celo cursor-pointer transition-colors"><span className="text-celo">Celo</span></span>
                     <span className="hover:text-white cursor-pointer transition-colors">UNICEF Hub</span>
                     <a
                         href="https://github.com/mrgigi/herfuture-chain"

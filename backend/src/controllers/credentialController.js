@@ -119,13 +119,36 @@ async function getCredentialsByAddress(req, res) {
 
         const rawCredentials = await credentialRegistryContract.getCredentials(address);
 
-        // Format the blockchain results
-        const credentials = rawCredentials.map(cred => ({
+        // 1. Format the blockchain results
+        let credentials = rawCredentials.map(cred => ({
             id: cred.credentialId.toString(),
             credentialType: cred.credentialType,
             ipfsHash: cred.ipfsHash,
             timestamp: new Date(Number(cred.timestamp) * 1000).toISOString()
         }));
+
+        // 2. Fallback to Supabase for demo/mock credentials
+        const { data: dbCerts } = await supabase
+            .from('credentials')
+            .select('*')
+            .eq('recipient_address', address);
+
+        if (dbCerts && dbCerts.length > 0) {
+            const mappedDbCerts = dbCerts.map(c => ({
+                id: c.id.toString(),
+                credentialType: c.credential_type,
+                ipfsHash: c.ipfs_hash,
+                timestamp: c.timestamp,
+                isDemo: true
+            }));
+            // Combine and avoid duplicates by IPFS hash
+            const existingHashes = new Set(credentials.map(cr => cr.ipfsHash));
+            mappedDbCerts.forEach(mc => {
+                if (!existingHashes.has(mc.ipfsHash)) {
+                    credentials.push(mc);
+                }
+            });
+        }
 
         return res.status(200).json(credentials);
     } catch (err) {

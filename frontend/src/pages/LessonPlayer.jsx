@@ -62,7 +62,7 @@ export default function LessonPlayer() {
                     </div>
                     <h2 className="text-3xl font-bold text-white mb-4">You've Earned It! 🎊</h2>
                     <p className="text-slate-400 mb-8">
-                        You successfully passed the lesson. A micro-grant is being released to your wallet on the Celo blockchain.
+                        You successfully passed the lesson. A micro-grant is being released to your wallet on the <span className="text-celo">Celo</span> blockchain.
                     </p>
                     <button
                         onClick={() => navigate('/dashboard')}
@@ -226,7 +226,7 @@ export default function LessonPlayer() {
                         <div className="flex items-center justify-between text-[9px] font-black uppercase tracking-widest text-slate-600">
                             <div className="flex items-center gap-2">
                                 <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></div>
-                                Celo Sepolia Connected
+                                <span className="text-celo">Celo</span> Sepolia Connected
                             </div>
                             <div className="flex items-center gap-2">
                                 <Award className="w-3 h-3" />

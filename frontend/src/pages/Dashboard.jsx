@@ -65,12 +65,29 @@ export default function Dashboard() {
                 {/* VIP Stats Strip */}
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
                     {/* Welcome Card */}
-                    <div className="md:col-span-2 glass-panel rounded-[32px] p-8 relative overflow-hidden flex flex-col justify-center min-h-[160px]">
+                    <div className="md:col-span-2 glass-panel rounded-[32px] p-8 relative overflow-hidden flex items-center gap-6 min-h-[160px]">
                         <div className="absolute top-0 right-0 p-8 opacity-10 pointer-events-none">
                             <ShieldCheck className="w-32 h-32 rotate-12 text-brand-400" />
                         </div>
-                        <h2 className="text-3xl font-black text-white mb-2 leading-tight">Welcome, {name}!</h2>
-                        <p className="text-slate-400 text-sm max-w-[240px]">You've completed <span className="text-brand-400 font-bold">{progress.completedCount} modules</span> this month. Keep going!</p>
+
+                        {/* Profile Image */}
+                        <div className="w-24 h-24 rounded-3xl overflow-hidden border-2 border-brand-500/30 shadow-2xl flex-shrink-0 z-10 transition-transform hover:scale-105 duration-500">
+                            {participant?.avatar_url ? (
+                                <img src={participant.avatar_url} alt="Profile" className="w-full h-full object-cover" />
+                            ) : (
+                                <div className="w-full h-full bg-gradient-to-tr from-brand-600 to-indigo-600 flex items-center justify-center text-2xl font-black text-white italic">
+                                    {name.substring(0, 1)}
+                                </div>
+                            )}
+                        </div>
+
+                        <div className="z-10">
+                            <h2 className="text-3xl font-black text-white mb-1 leading-tight tracking-tight">Welcome, {name}!</h2>
+                            <p className="text-slate-400 text-sm max-w-[240px] leading-relaxed">
+                                You've unlocked <span className="text-brand-400 font-bold">{progress.completedCount} modules</span>.
+                                Your next grant is waiting in Track 2.
+                            </p>
+                        </div>
                     </div>
 
                     {/* Earnings Card */}
@@ -181,7 +198,7 @@ export default function Dashboard() {
                                 <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
                                     <Award className="w-24 h-24" />
                                 </div>
-                                <span className="text-xs font-mono text-indigo-400 bg-indigo-950/50 px-2 py-1 rounded">Verified on Celo</span>
+                                <span className="text-xs font-mono text-indigo-400 bg-indigo-950/50 px-2 py-1 rounded">Verified on <span className="text-celo">Celo</span></span>
                                 <h4 className="text-lg font-bold text-white mt-4 mb-1">React Developer</h4>
                                 <p className="text-xs text-slate-400 mb-6">Issued: March 6th, 2026</p>
 

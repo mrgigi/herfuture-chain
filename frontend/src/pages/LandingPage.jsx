@@ -31,6 +31,32 @@ import {
 export default function LandingPage() {
     const navigate = useNavigate();
     const [isPartnerModalOpen, setIsPartnerModalOpen] = useState(false);
+    const [activeAccordionTrack, setActiveAccordionTrack] = useState(null);
+
+    const trackModules = {
+        T1: [
+            "Self-Leadership & Confidence",
+            "Mental Health & Resilience",
+            "Hygiene & Child Wellbeing",
+            "Job Readiness"
+        ],
+        T2: [
+            "Digital Literacy & AI Tools",
+            "Virtual Assistant Skills",
+            "Exploration: Mars & Beyond",
+            "Graphic Design Basics",
+            "Data Entry & AI Work",
+            "Freelancing & First Client"
+        ],
+        T3: [
+            "Financial Literacy",
+            "Saving & Budgeting",
+            "Blockchain & The Future",
+            "Branding & Pricing",
+            "Starting a Small Business",
+            "Long-Term Thinking"
+        ]
+    };
 
     const portals = [
         {
@@ -204,7 +230,7 @@ export default function LandingPage() {
                         Integrated Identity, <br /> Education & Inclusion.
                     </h2>
                     <p className="text-slate-400 text-lg leading-relaxed mb-12">
-                        HerFuture Chain provides open-source blockchain infrastructure built on <span className="text-white font-bold">Celo</span>. We enable the girl child to build verified digital identities, earn credentials, and access transparent financial support.
+                        HerFuture Chain provides open-source blockchain infrastructure built on <span className="text-celo font-bold">Celo</span>. We enable the girl child to build verified digital identities, earn credentials, and access transparent financial support.
                     </p>
 
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-20">
@@ -255,19 +281,37 @@ export default function LandingPage() {
                                 desc: (
                                     <div className="space-y-4">
                                         <p>Structured training powered by Moodle, creating professional pathways for the girl child:</p>
-                                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-4">
-                                            <div className="p-4 rounded-2xl bg-brand-500/5 border border-brand-500/10">
-                                                <div className="text-[10px] font-black uppercase text-brand-400 mb-2">Track 1</div>
-                                                <div className="font-bold text-white text-sm">Foundations & Wellbeing</div>
-                                            </div>
-                                            <div className="p-4 rounded-2xl bg-emerald-500/5 border border-emerald-500/10">
-                                                <div className="text-[10px] font-black uppercase text-emerald-400 mb-2">Track 2</div>
-                                                <div className="font-bold text-white text-sm">Digital Income Skills</div>
-                                            </div>
-                                            <div className="p-4 rounded-2xl bg-indigo-500/5 border border-indigo-500/10">
-                                                <div className="text-[10px] font-black uppercase text-indigo-400 mb-2">Track 3</div>
-                                                <div className="font-bold text-white text-sm">Money & Business</div>
-                                            </div>
+                                        <div className="grid grid-cols-1 gap-3 mt-4">
+                                            {[
+                                                { id: 'T1', label: 'Track 1', title: 'Foundations & Wellbeing', color: 'brand' },
+                                                { id: 'T2', label: 'Track 2', title: 'Digital Income Skills', color: 'emerald' },
+                                                { id: 'T3', label: 'Track 3', title: 'Money & Business', color: 'orange' }
+                                            ].map((track) => (
+                                                <div key={track.id} className="overflow-hidden bg-white/[0.03] rounded-2xl border border-white/5">
+                                                    <button
+                                                        onClick={() => setActiveAccordionTrack(activeAccordionTrack === track.id ? null : track.id)}
+                                                        className="w-full p-5 flex items-center justify-between hover:bg-white/[0.05] transition-colors group"
+                                                    >
+                                                        <div className="flex items-center gap-4">
+                                                            <div className={`text-[10px] font-black uppercase text-${track.id === 'T1' ? 'brand-400' : track.id === 'T2' ? 'emerald-400' : 'orange-400'}`}>
+                                                                {track.label}
+                                                            </div>
+                                                            <div className="font-bold text-white text-sm">{track.title}</div>
+                                                        </div>
+                                                        <ChevronDown className={`w-4 h-4 text-slate-500 group-hover:text-white transition-transform duration-300 ${activeAccordionTrack === track.id ? 'rotate-180' : ''}`} />
+                                                    </button>
+                                                    <div className={`transition-all duration-300 ease-in-out ${activeAccordionTrack === track.id ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'} overflow-hidden`}>
+                                                        <div className="px-5 pb-5 pt-0 grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                                            {trackModules[track.id].map((module, mIdx) => (
+                                                                <div key={mIdx} className="flex items-center gap-2 p-2 rounded-lg bg-white/5 border border-white/5">
+                                                                    <div className={`w-1 h-1 rounded-full ${track.id === 'T1' ? 'bg-brand-400' : track.id === 'T2' ? 'bg-emerald-400' : 'bg-orange-400'}`} />
+                                                                    <span className="text-xs text-slate-300">{module}</span>
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            ))}
                                         </div>
                                     </div>
                                 ),
@@ -382,7 +426,7 @@ export default function LandingPage() {
                             <h2 className="text-[060914] text-5xl md:text-7xl font-black tracking-tighter leading-none mb-6">Pilot Outcomes.</h2>
                             <p className="text-[#060914]/60 text-lg font-bold uppercase tracking-widest">Transforming the girl child from aid recipients into participants</p>
                         </div>
-                        <div className="bg-[#060914] text-brand-400 p-4 px-8 rounded-full text-xs font-black uppercase tracking-[0.2em] shadow-2xl">
+                        <div className="bg-[#060914] text-celo p-4 px-8 rounded-full text-xs font-black uppercase tracking-[0.2em] shadow-2xl">
                             Verified on Celo
                         </div>
                     </div>

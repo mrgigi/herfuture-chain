@@ -74,7 +74,7 @@ export default function Verifier() {
                             disabled={status === 'loading' || !credentialId}
                             className="w-full flex justify-center items-center gap-2 py-4 px-4 rounded-2xl shadow-lg text-sm font-bold text-white bg-slate-800 hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all border border-slate-700/50"
                         >
-                            {status === 'loading' ? 'Querying Blockchain...' : 'Verify on Celo Network'}
+                            {status === 'loading' ? 'Querying Blockchain...' : <>Verify on <span className="text-celo">Celo</span> Network</>}
                         </button>
                     </form>
 
@@ -119,7 +119,7 @@ export default function Verifier() {
                                 <XCircle className="w-8 h-8 text-red-400" />
                             </div>
                             <h3 className="text-red-400 font-bold text-lg mb-1">Verification Failed</h3>
-                            <p className="text-red-200/70 text-sm">This credential ID was not found on the Celo blockchain. It may be invalid or incorrectly typed.</p>
+                            <p className="text-red-200/70 text-sm">This credential ID was not found on the <span className="text-celo">Celo</span> blockchain. It may be invalid or incorrectly typed.</p>
                         </div>
                     )}
                 </div>

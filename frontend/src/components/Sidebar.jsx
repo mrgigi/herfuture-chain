@@ -27,8 +27,8 @@ export default function Sidebar({ active }) {
                             key={item.name}
                             onClick={() => navigate(item.path)}
                             className={`w-full flex items-center gap-3 px-6 py-4 transition-all duration-300 ${isActive
-                                    ? 'bg-slate-800 text-brand-400 border-r-4 border-brand-500'
-                                    : 'text-slate-400 hover:bg-slate-800/50 hover:text-slate-200'
+                                ? 'bg-slate-800 text-brand-400 border-r-4 border-brand-500'
+                                : 'text-slate-400 hover:bg-slate-800/50 hover:text-slate-200'
                                 }`}
                         >
                             <item.icon className={`w-5 h-5 ${isActive ? 'text-brand-400' : 'text-slate-500'}`} />
@@ -46,7 +46,7 @@ export default function Sidebar({ active }) {
                             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
                             <span className="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
                         </span>
-                        <span className="text-sm font-medium text-slate-300">Celo Sepolia</span>
+                        <span className="text-sm font-medium text-slate-300"><span className="text-celo">Celo</span> Sepolia</span>
                     </div>
                 </div>
             </div>
