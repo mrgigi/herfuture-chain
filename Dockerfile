@@ -16,6 +16,9 @@ WORKDIR /var/www/html
 # Clone Moodle (stable version) into the container
 RUN git clone -b MOODLE_403_STABLE https://github.com/moodle/moodle.git .
 
+# Copy our custom config.php to the container
+COPY config.php /var/www/html/config.php
+
 # Install Composer dependencies
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer \
     && composer install --no-dev --optimize-autoloader
