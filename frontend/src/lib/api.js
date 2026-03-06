@@ -7,9 +7,9 @@ const api = axios.create({
     },
 });
 
-export const createWallet = async (name, email) => {
+export const createWallet = async (firstName, lastName, phone) => {
     try {
-        const response = await api.post('/create-wallet', { name, email });
+        const response = await api.post('/create-wallet', { first_name: firstName, last_name: lastName, phone });
         return response.data;
     } catch (error) {
         console.error('Error creating wallet:', error);
@@ -27,10 +27,9 @@ export const verifyCredential = async (credentialId) => {
     }
 };
 
-export const getParticipant = async (email) => {
-    // This is a placeholder for a real auth / profile fetch
+export const getParticipant = async (phone) => {
     try {
-        const response = await api.get(`/participant/${email}`);
+        const response = await api.get(`/participant/${phone}`);
         return response.data;
     } catch (error) {
         console.error('Error fetching participant:', error);
@@ -49,14 +48,63 @@ export const getCredentialsByAddress = async (address) => {
 }
 
 export const getGrants = async (participantId) => {
-    try {
-        const response = await api.get(`/grants/${participantId}`);
-        return response.data;
-    } catch (error) {
-        console.error('Error fetching grants:', error);
-        throw error;
-    }
-}
+    const response = await api.get(`/grants/${participantId}`);
+    return response.data;
+};
+
+// --- LMS Functions ---
+
+export const getCourses = async () => {
+    const response = await api.get('/courses');
+    return response.data;
+};
+
+export const getModules = async (courseId, participantId) => {
+    const response = await api.get(`/courses/${courseId}/modules`, { params: { participantId } });
+    return response.data;
+};
+
+export const getLesson = async (lessonId) => {
+    const response = await api.get(`/lessons/${lessonId}`);
+    return response.data;
+};
+
+export const getQuiz = async (lessonId) => {
+    const response = await api.get(`/lessons/${lessonId}/quiz`);
+    return response.data;
+};
+
+export const submitLessonProgress = async (participantId, lessonId, score) => {
+    const response = await api.post('/complete-lesson', { participantId, lessonId, score });
+    return response.data;
+};
+
+export const getProgressOverview = async (participantId) => {
+    const response = await api.get(`/progress-overview/${participantId}`);
+    return response.data;
+};
+
+// --- Admin & System Functions ---
+
+export const getAdminParticipants = async () => {
+    const response = await api.get('/admin/participants');
+    return response.data;
+};
+
+export const updateCourseStatus = async (courseId, isPublished) => {
+    const response = await api.post('/admin/course-status', { courseId, isPublished });
+    return response.data;
+};
+
+export const getSystemSettings = async () => {
+    const response = await api.get('/admin/settings');
+    return response.data;
+};
+
+export const updateSystemSetting = async (key, value) => {
+    const response = await api.post('/admin/settings', { key, value });
+    return response.data;
+};
 
 // Add more API helpers as needed for dashboard data
 export default api;

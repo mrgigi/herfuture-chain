@@ -16,6 +16,7 @@ const credentialRegistryAbi = [
 
 const grantDisbursementAbi = [
     "function registerParticipant(address participant) external",
+    "function setMilestoneGrant(string memory milestoneName, uint256 grantAmount) external",
     "function completeMilestone(address participant, string milestoneName) external",
     "function releaseGrant(address participant) external"
 ];

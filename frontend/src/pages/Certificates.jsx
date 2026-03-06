@@ -11,15 +11,15 @@ export default function Certificates() {
 
     useEffect(() => {
         const fetchCertificates = async () => {
-            const email = localStorage.getItem('userEmail');
-            if (!email) {
+            const phone = localStorage.getItem('userPhone');
+            if (!phone) {
                 setLoading(false);
                 setError('Please log in to view credentials');
                 return;
             }
 
             try {
-                const participant = await getParticipant(email);
+                const participant = await getParticipant(phone);
                 if (participant && participant.wallet_address) {
                     const certs = await getCredentialsByAddress(participant.wallet_address);
                     setCredentials(certs);

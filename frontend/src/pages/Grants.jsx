@@ -11,15 +11,15 @@ export default function Grants() {
 
     useEffect(() => {
         const fetchGrants = async () => {
-            const email = localStorage.getItem('userEmail');
-            if (!email) {
+            const phone = localStorage.getItem('userPhone');
+            if (!phone) {
                 setLoading(false);
                 setError('Please log in to view grant history');
                 return;
             }
 
             try {
-                const participant = await getParticipant(email);
+                const participant = await getParticipant(phone);
                 if (participant && participant.id) {
                     const data = await getGrants(participant.id);
                     setGrants(data);

@@ -91,7 +91,95 @@ async function getGrants(req, res) {
     }
 }
 
+async function getGlobalImpactStats(req, res) {
+    try {
+        // 1. Get total grants count
+        const { count: grantsCount } = await supabase
+            .from('grants')
+            .select('*', { count: 'exact', head: true });
+
+        // 2. Get total participants
+        const { count: participantsCount } = await supabase
+            .from('participants')
+            .select('*', { count: 'exact', head: true });
+
+        // 3. Get graduates (finished Track 3.6)
+        const { count: graduatesCount } = await supabase
+            .from('grants')
+            .select('*', { count: 'exact', head: true })
+            .eq('milestone', '3.6');
+
+        // 4. Calculate total amount (Sum from lessons joined with grants)
+        const { data: grantsData } = await supabase
+            .from('grants')
+            .select('milestone');
+
+        const { data: lessons } = await supabase
+            .from('lessons')
+            .select('track_label, grant_amount');
+
+        let totalAmount = 0;
+        grantsData.forEach(g => {
+            const lesson = lessons.find(l => l.track_label === g.milestone);
+            if (lesson) totalAmount += lesson.grant_amount;
+        });
+
+        res.json({
+            totalImpact: totalAmount,
+            grantsDistributed: grantsCount || 0,
+            graduates: graduatesCount || 0,
+            countries: 1, // Nigeria
+            participants: participantsCount || 0
+        });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+}
+
+async function getRecentGrants(req, res) {
+    try {
+        const { data, error } = await supabase
+            .from('grants')
+            .select(`
+                id,
+                milestone,
+                tx_hash,
+                created_at,
+                participants (
+                    first_name,
+                    last_name
+                )
+            `)
+            .order('created_at', { ascending: false })
+            .limit(10);
+
+        if (error) throw error;
+
+        // Fetch lesson titles for the milestones
+        const { data: lessons } = await supabase
+            .from('lessons')
+            .select('track_label, title, grant_amount');
+
+        const formatted = data.map(g => {
+            const lesson = lessons.find(l => l.track_label === g.milestone);
+            return {
+                student: g.participants ? `${g.participants.first_name || 'Student'} ${g.participants.last_name || ''}`.trim() : 'Anonymous',
+                amount: lesson ? lesson.grant_amount : 0,
+                track: lesson ? lesson.title : g.milestone,
+                tx: g.tx_hash,
+                time: g.created_at
+            };
+        });
+
+        res.json(formatted);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+}
+
 module.exports = {
     releaseGrant,
-    getGrants
+    getGrants,
+    getGlobalImpactStats,
+    getRecentGrants
 };

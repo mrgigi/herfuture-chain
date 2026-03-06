@@ -1,0 +1,516 @@
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import Footer from '../components/Footer';
+import {
+    ArrowRight,
+    ShieldCheck,
+    Zap,
+    Globe,
+    Users,
+    LineChart,
+    ArrowUpRight,
+    CheckCircle2,
+    Smartphone,
+    Database,
+    ChevronDown,
+    Activity,
+    User,
+    LayoutGrid,
+    Briefcase,
+    Heart,
+    Lock,
+    Cpu,
+    Github,
+    Handshake,
+    AlertCircle,
+    X,
+    Mail,
+    Copy
+} from 'lucide-react';
+
+export default function LandingPage() {
+    const navigate = useNavigate();
+    const [isPartnerModalOpen, setIsPartnerModalOpen] = useState(false);
+
+    const portals = [
+        {
+            title: "Student Portal",
+            desc: "Learn high-demand digital skills and earn your future through milestone-based grants.",
+            icon: <User className="w-6 h-6 text-emerald-400" />,
+            link: "/signup",
+            color: "emerald",
+            tag: "OPEN ACCESS"
+        },
+        {
+            title: "Impact & Audit",
+            desc: (
+                <>
+                    Real-time transparency. Every grant is cryptographically verified.
+                    <br />
+                    <span
+                        onClick={(e) => { e.stopPropagation(); navigate('/verify'); }}
+                        className="mt-2 block font-bold text-white hover:text-brand-400 transition-colors cursor-pointer pointer-events-auto"
+                    >
+                        Are you an employer? Verify a student credential
+                    </span>
+                </>
+            ),
+            icon: <Activity className="w-6 h-6 text-amber-400" />,
+            link: "/impact",
+            color: "amber",
+            tag: "FOR DONORS"
+        },
+        {
+            title: "Management Hub",
+            desc: "Control center for administrators to scale the curriculum and manage global impact.",
+            icon: <LayoutGrid className="w-6 h-6 text-purple-400" />,
+            link: "/admin",
+            color: "purple",
+            tag: "ADMIN ONLY"
+        }
+    ];
+
+    return (
+        <div className="min-h-screen bg-[#060914] text-slate-100 font-sans selection:bg-brand-500/30 overflow-x-hidden">
+            {/* Top Navigation */}
+            <nav className="fixed top-0 left-0 w-full z-50 px-6 py-4 flex justify-between items-center bg-[#060914]/80 backdrop-blur-xl border-b border-white/5">
+                <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate('/')}>
+                    <div className="w-8 h-8 rounded-lg bg-brand-500 flex items-center justify-center font-black text-white italic">H</div>
+                    <span className="font-bold tracking-tight text-xl bg-gradient-to-r from-white to-white/70 bg-clip-text text-transparent">HerFuture</span>
+                </div>
+                <div className="hidden md:flex gap-8 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
+                    <a href="#problem" className="hover:text-brand-400 transition-colors">The Problem</a>
+                    <a href="#solution" className="hover:text-brand-400 transition-colors">Our Solution</a>
+                    <a href="#how-it-works" className="hover:text-brand-400 transition-colors">How it Works</a>
+                    <a href="#impact" className="hover:text-amber-400 transition-colors">Impact</a>
+                </div>
+                <button
+                    onClick={() => navigate('/gate')}
+                    className="px-6 py-2 rounded-xl bg-brand-500 hover:bg-brand-400 text-white text-[10px] font-black uppercase tracking-widest transition-all shadow-[0_0_20px_rgba(59,130,246,0.3)]"
+                >
+                    GET STARTED
+                </button>
+            </nav>
+
+            {/* Hero Section */}
+            <section className="relative pt-44 pb-32 px-6 overflow-hidden">
+                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[1000px] bg-brand-600/10 rounded-full blur-[120px] pointer-events-none" />
+
+                <div className="max-w-4xl mx-auto relative z-10 text-center">
+                    <div className="inline-flex items-center gap-3 px-4 py-1.5 rounded-full bg-brand-500/10 border border-brand-500/20 mb-10 animate-in fade-in slide-in-from-bottom-2 duration-700">
+                        <Zap className="w-3.5 h-3.5 text-brand-400 animate-pulse" />
+                        <span className="text-[10px] font-black uppercase tracking-[0.3em] text-brand-400 border-r border-brand-500/20 pr-4">Blockchain Protocol</span>
+                        <span className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400">v1.2 Beta</span>
+                    </div>
+
+                    <h1 className="text-7xl md:text-9xl font-black mb-8 tracking-tighter leading-[0.85] text-white animate-in fade-in slide-in-from-bottom-4 duration-1000">
+                        HerFuture <br />
+                        <span className="bg-gradient-to-r from-emerald-400 via-brand-400 to-indigo-400 bg-clip-text text-transparent">Chain.</span>
+                    </h1>
+
+                    <p className="text-slate-400 text-xl md:text-2xl font-medium leading-relaxed mb-6 animate-in fade-in slide-in-from-bottom-6 duration-1000">
+                        Open-source blockchain infrastructure for <span className="text-white">verifiable skills</span> and <span className="text-white">financial inclusion</span>.
+                    </p>
+
+                    <p className="text-slate-500 max-w-2xl mx-auto text-sm md:text-base mb-12 animate-in fade-in slide-in-from-bottom-7 duration-1000 italic">
+                        The world's first decentralized socio-economic engine for high-potential teen mothers.
+                    </p>
+
+                    <div className="flex flex-col sm:flex-row gap-4 justify-center items-center animate-in fade-in slide-in-from-bottom-8 duration-1000">
+                        <button
+                            onClick={() => navigate('/gate')}
+                            className="group px-8 py-5 rounded-2xl bg-white text-[#060914] font-black text-xs uppercase tracking-widest flex items-center gap-3 hover:bg-brand-500 hover:text-white transition-all shadow-2xl shadow-brand-500/20"
+                        >
+                            Start Learning <ArrowRight className="w-4 h-4 group-hover:translate-x-2 transition-transform" />
+                        </button>
+                        <button
+                            onClick={() => setIsPartnerModalOpen(true)}
+                            className="px-8 py-5 rounded-2xl bg-white/5 border border-white/10 text-white font-black text-xs uppercase tracking-widest hover:bg-white/10 transition-all backdrop-blur-md"
+                        >
+                            Partner With Us
+                        </button>
+                    </div>
+
+                    {/* Hero Image Showcase */}
+                    <div className="mt-24 relative p-2 glass-panel rounded-[60px] border border-white/10 max-w-5xl mx-auto shadow-2xl animate-in fade-in zoom-in-95 duration-1000">
+                        <img
+                            src="/images/hero.png"
+                            alt="The Girl Child Learning"
+                            className="rounded-[58px] w-full object-cover aspect-[21/9]"
+                        />
+                        <div className="absolute inset-0 rounded-[58px] bg-gradient-to-t from-[#060914] via-transparent to-transparent opacity-60" />
+                    </div>
+                </div>
+            </section>
+
+            {/* The Problem */}
+            <section id="problem" className="py-32 px-6 border-y border-white/5 bg-slate-900/10">
+                <div className="max-w-6xl mx-auto flex flex-col lg:flex-row gap-20 items-center">
+                    <div className="flex-1">
+                        <div className="inline-flex items-center gap-2 px-3 py-1 rounded bg-red-500/10 border border-red-500/20 mb-8">
+                            <AlertCircle className="w-3 h-3 text-red-400" />
+                            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-red-400">Exclusion Crisis</span>
+                        </div>
+                        <h2 className="text-4xl md:text-5xl font-black mb-8 leading-tight">
+                            Invisible Skills. <br />
+                            Broken Futures.
+                        </h2>
+                        <p className="text-slate-400 text-lg leading-relaxed mb-10">
+                            Millions of girls across Nigeria are excluded from education and employment due to poverty, early pregnancy, displacement, and lack of access to formal financial systems.
+                        </p>
+
+                        <div className="space-y-4">
+                            {[
+                                "No recognized certificates",
+                                "Limited access to employment",
+                                "Exclusion from financial systems",
+                                "Lack of transparent support",
+                                "No pathways to the digital economy"
+                            ].map((item, i) => (
+                                <div key={i} className="flex items-center gap-4 text-slate-500">
+                                    <div className="w-1.5 h-1.5 rounded-full bg-red-500/50" />
+                                    <span className="text-sm font-semibold italic">{item}</span>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+
+                    <div className="flex-1">
+                        <div className="glass-panel p-2 rounded-[40px] border border-white/5 relative group overflow-hidden">
+                            <img
+                                src="/images/community.png"
+                                alt="Nigerian Digital Hub"
+                                className="rounded-[38px] w-full aspect-square object-cover grayscale group-hover:grayscale-0 transition-all duration-700"
+                            />
+                            <div className="absolute inset-x-8 bottom-8 glass-panel p-6 rounded-3xl border border-white/10 backdrop-blur-xl translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-500">
+                                <h3 className="text-xl font-bold mb-2 italic">Building Pathways</h3>
+                                <p className="text-slate-400 text-xs">Transforming geographical barriers into digital bridges.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            {/* Our Solution */}
+            <section id="solution" className="py-32 px-6 relative overflow-hidden">
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-brand-500/5 rounded-full blur-[120px] pointer-events-none" />
+
+                <div className="max-w-4xl mx-auto text-center relative z-10">
+                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded bg-brand-500/10 border border-brand-500/20 mb-8">
+                        <ShieldCheck className="w-3 h-3 text-brand-400" />
+                        <span className="text-[10px] font-black uppercase tracking-[0.2em] text-brand-400">The Solution</span>
+                    </div>
+                    <h2 className="text-4xl md:text-6xl font-black mb-10 tracking-tight text-white leading-tight">
+                        Integrated Identity, <br /> Education & Inclusion.
+                    </h2>
+                    <p className="text-slate-400 text-lg leading-relaxed mb-12">
+                        HerFuture Chain provides open-source blockchain infrastructure built on <span className="text-white font-bold">Celo</span>. We enable the girl child to build verified digital identities, earn credentials, and access transparent financial support.
+                    </p>
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-20">
+                        {[
+                            { icon: <Smartphone className="text-brand-400" />, title: "Secure Identity" },
+                            { icon: <CheckCircle2 className="text-emerald-400" />, title: "Tamper-Proof" },
+                            { icon: <LineChart className="text-indigo-400" />, title: "Scalable Support" }
+                        ].map((item, i) => (
+                            <div key={i} className="glass-panel p-6 rounded-3xl border border-white/5 flex flex-col items-center">
+                                <div className="mb-4">{item.icon}</div>
+                                <span className="text-xs font-black uppercase tracking-widest">{item.title}</span>
+                            </div>
+                        ))}
+                    </div>
+
+                    <div className="glass-panel p-2 rounded-[60px] border border-white/10 max-w-3xl mx-auto shadow-[0_0_80px_rgba(16,185,129,0.1)] relative overflow-hidden">
+                        <img
+                            src="/images/blockchain.png"
+                            alt="Blockchain Visual"
+                            className="rounded-[58px] w-full object-cover h-[400px]"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-r from-[#060914] via-transparent to-transparent opacity-40" />
+                    </div>
+                </div>
+            </section>
+
+            {/* How It Works (Timeline Style) */}
+            <section id="how-it-works" className="py-32 px-6 bg-slate-900/10">
+                <div className="max-w-6xl mx-auto">
+                    <div className="text-center mb-24">
+                        <h2 className="text-4xl md:text-5xl font-black mb-6">The Success Loop</h2>
+                        <p className="text-slate-500 uppercase tracking-widest text-[10px] font-black">Five Phases of Empowerment</p>
+                    </div>
+
+                    <div className="space-y-12">
+                        {[
+                            {
+                                id: "01",
+                                title: "Digital Identity",
+                                subtitle: "Decentralized wallets for every user",
+                                desc: "Each participant receives a decentralized digital identity. This allows them to build a permanent record of learning achievements, credentials, and economic activity.",
+                                icon: <Smartphone className="w-8 h-8" />
+                            },
+                            {
+                                id: "02",
+                                title: "Skills Development",
+                                subtitle: "3 Targeted Learning Tracks",
+                                desc: (
+                                    <div className="space-y-4">
+                                        <p>Structured training powered by Moodle, creating professional pathways for the girl child:</p>
+                                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-4">
+                                            <div className="p-4 rounded-2xl bg-brand-500/5 border border-brand-500/10">
+                                                <div className="text-[10px] font-black uppercase text-brand-400 mb-2">Track 1</div>
+                                                <div className="font-bold text-white text-sm">Foundations & Wellbeing</div>
+                                            </div>
+                                            <div className="p-4 rounded-2xl bg-emerald-500/5 border border-emerald-500/10">
+                                                <div className="text-[10px] font-black uppercase text-emerald-400 mb-2">Track 2</div>
+                                                <div className="font-bold text-white text-sm">Digital Income Skills</div>
+                                            </div>
+                                            <div className="p-4 rounded-2xl bg-indigo-500/5 border border-indigo-500/10">
+                                                <div className="text-[10px] font-black uppercase text-indigo-400 mb-2">Track 3</div>
+                                                <div className="font-bold text-white text-sm">Money & Business</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ),
+                                icon: <Cpu className="w-8 h-8" />
+                            },
+                            {
+                                id: "03",
+                                title: "Blockchain Credentials",
+                                subtitle: "Globally verifiable certificates",
+                                desc: "When participants complete courses, credentials are issued on-chain. These are tamper-proof, globally verifiable, and portable across employers.",
+                                icon: <ShieldCheck className="w-8 h-8" />
+                            },
+                            {
+                                id: "04",
+                                title: "Transparent Micro-Grants",
+                                subtitle: "Milestone-based financial releases",
+                                desc: "Participants receive support through smart contracts. Grants are automatically released when milestones are completed, ensuring transparency and reducing leakage.",
+                                icon: <Database className="w-8 h-8" />
+                            },
+                            {
+                                id: "05",
+                                title: "Pathways to Income",
+                                subtitle: "Upwork, Fiverr & Entrepreneurship",
+                                desc: "Graduates gain access to digital marketplaces to launch micro-businesses or remote careers, transforming from aid recipients into active economic participants.",
+                                icon: <Briefcase className="w-8 h-8" />
+                            }
+                        ].map((step, i) => (
+                            <div key={i} className="flex flex-col md:flex-row gap-12 items-center group">
+                                <div className="text-7xl font-black text-white/5 opacity-50 group-hover:text-brand-500/10 transition-colors md:w-32">{step.id}</div>
+                                <div className="flex-1 glass-panel p-10 rounded-[50px] border border-white/5 group-hover:border-brand-500/20 transition-all">
+                                    <div className="flex items-center gap-6 mb-6">
+                                        <div className="p-4 bg-brand-500/10 rounded-2xl text-brand-400">{step.icon}</div>
+                                        <div>
+                                            <h3 className="text-2xl font-bold text-white">{step.title}</h3>
+                                            <p className="text-brand-500/70 text-[10px] uppercase font-black tracking-widest">{step.subtitle}</p>
+                                        </div>
+                                    </div>
+                                    <p className="text-slate-400 leading-relaxed text-sm md:text-base">
+                                        {step.desc}
+                                    </p>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </section>
+
+            {/* Who We Serve */}
+            <section className="py-32 px-6">
+                <div className="max-w-6xl mx-auto flex flex-col lg:flex-row gap-20">
+                    <div className="lg:w-1/3">
+                        <h2 className="text-4xl font-black mb-8 leading-tight">Who We <br /> Serve.</h2>
+                        <p className="text-slate-500 text-sm leading-relaxed mb-8">
+                            HerFuture Chain is designed for the girl child who faces significant barriers to education and employment.
+                        </p>
+                        <Heart className="w-12 h-12 text-pink-500/20" />
+                    </div>
+                    <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {[
+                            "Teen Mothers",
+                            "Out-of-school Girls",
+                            "Internally Displaced (IDPs)",
+                            "Conflict-Affected Youth",
+                            "Unbanked Communities",
+                            "Marginalized Minorities"
+                        ].map((target, i) => (
+                            <div key={i} className="p-8 rounded-3xl bg-white/5 border border-white/5 flex items-center justify-between group hover:bg-white/[0.08] transition-all">
+                                <span className="text-lg font-bold text-slate-300 group-hover:text-white">{target}</span>
+                                <ArrowUpRight className="w-4 h-4 text-slate-600 group-hover:text-brand-400" />
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </section>
+
+            {/* Infrastructure Section */}
+            <section className="py-32 px-6 border-y border-white/5 bg-slate-900/10">
+                <div className="max-w-6xl mx-auto text-center mb-20">
+                    <h2 className="text-4xl font-black mb-6">Open Infrastructure.</h2>
+                    <p className="text-slate-500 max-w-xl mx-auto">Designed for replication. Governments and NGOs can use our APIs to scale aid programs with zero leakage.</p>
+                    <div className="flex justify-center gap-8 mt-12">
+                        {[
+                            { icon: <Lock className="text-slate-400" />, label: "Smart Contracts" },
+                            { icon: <Cpu className="text-slate-400" />, label: "Frameworks" },
+                            {
+                                icon: <Github className="text-slate-400" />,
+                                label: "Public Gits",
+                                link: "https://github.com/mrgigi/herfuture-chain"
+                            },
+                        ].map((item, i) => (
+                            <div key={i} className="flex flex-col items-center gap-3 group">
+                                {item.link ? (
+                                    <a href={item.link} target="_blank" rel="noopener noreferrer" className="p-4 rounded-2xl bg-white/5 text-slate-400 group-hover:bg-brand-500/10 group-hover:text-brand-400 transition-all">
+                                        {item.icon}
+                                    </a>
+                                ) : (
+                                    <div className="p-4 rounded-2xl bg-white/5 text-slate-400">{item.icon}</div>
+                                )}
+                                <span className="text-[10px] font-black uppercase tracking-widest text-slate-600 group-hover:text-slate-400 transition-colors">{item.label}</span>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </section>
+
+            {/* Impact - The Stats Section (High Contrast) */}
+            <section id="impact" className="py-32 px-6 bg-brand-500 relative overflow-hidden">
+                <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_50%,rgba(255,255,255,0.15),transparent)] pointer-events-none" />
+                <div className="max-w-6xl mx-auto relative z-10">
+                    <div className="flex flex-col md:flex-row justify-between items-end mb-20 gap-8">
+                        <div>
+                            <h2 className="text-[060914] text-5xl md:text-7xl font-black tracking-tighter leading-none mb-6">Pilot Outcomes.</h2>
+                            <p className="text-[#060914]/60 text-lg font-bold uppercase tracking-widest">Transforming the girl child from aid recipients into participants</p>
+                        </div>
+                        <div className="bg-[#060914] text-brand-400 p-4 px-8 rounded-full text-xs font-black uppercase tracking-[0.2em] shadow-2xl">
+                            Verified on Celo
+                        </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-12 text-[#060914]">
+                        {[
+                            { val: "200", label: "ID Onboarded" },
+                            { val: "75%", label: "Completion Rate" },
+                            { val: "60%", label: "Job Placement" },
+                            { val: "100%", label: "Verifiable" }
+                        ].map((stat, i) => (
+                            <div key={i}>
+                                <div className="text-7xl font-black tracking-tighter mb-2">{stat.val}</div>
+                                <div className="text-xs uppercase font-black tracking-widest opacity-60">{stat.label}</div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </section>
+
+            {/* Stakeholder Portals (The Gateway Component) */}
+            <section id="portals" className="py-32 px-6">
+                <div className="max-w-6xl mx-auto text-center mb-20">
+                    <h2 className="text-4xl font-black mb-6">Enter the Chain.</h2>
+                    <p className="text-slate-500 max-w-xl mx-auto">Choose your entry point into the ecosystem. Whether you are a student, a donor, or an administrator.</p>
+                </div>
+
+                <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8 mb-20">
+                    {portals.map((portal, idx) => (
+                        <div
+                            key={idx}
+                            onClick={() => navigate('/gate')}
+                            className="group relative glass-panel p-10 rounded-[50px] border border-white/5 hover:border-brand-500/30 transition-all duration-700 cursor-pointer overflow-hidden flex flex-col h-full"
+                        >
+                            <div className="mb-8 w-fit p-4 rounded-2xl bg-white/5 border border-white/5 group-hover:bg-brand-500/10 group-hover:border-brand-500/20 transition-colors">
+                                {portal.icon}
+                            </div>
+                            <div className="mb-4 inline-flex items-center gap-2">
+                                <div className={`w-2 h-2 rounded-full ${portal.color === 'emerald' ? 'bg-emerald-400' : portal.color === 'amber' ? 'bg-amber-400' : 'bg-purple-400'} animate-pulse`} />
+                                <span className="text-[10px] font-black tracking-widest uppercase text-slate-500">{portal.tag}</span>
+                            </div>
+                            <h3 className="text-2xl font-bold mb-4">{portal.title}</h3>
+                            <p className="text-slate-500 text-sm leading-relaxed mb-12 flex-grow">
+                                {portal.desc}
+                            </p>
+                            <div className="flex items-center gap-3 text-xs font-black uppercase tracking-widest text-slate-300 group-hover:text-white transition-colors">
+                                Enter Portal <ArrowUpRight className="w-4 h-4 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
+                            </div>
+                        </div>
+                    ))}
+                </div>
+
+            </section>
+
+            {/* Final CTA (Manifesto Style) */}
+            <section className="py-44 px-6 relative overflow-hidden text-center">
+                <h2 className="text-5xl md:text-7xl font-black mb-12 tracking-tight">Join the Future <br /> of Learning & Work.</h2>
+                <div className="flex flex-col sm:flex-row gap-6 justify-center">
+                    <button
+                        onClick={() => navigate('/gate')}
+                        className="px-12 py-6 rounded-3xl bg-brand-500 text-white font-black uppercase tracking-widest text-xs shadow-2xl shadow-brand-500/30"
+                    >
+                        Apply as a Learner
+                    </button>
+                    <button
+                        onClick={() => setIsPartnerModalOpen(true)}
+                        className="px-12 py-6 rounded-3xl bg-white/5 border border-white/10 text-white font-black uppercase tracking-widest text-xs hover:bg-white/10 transition-all"
+                    >
+                        Partner With Us
+                    </button>
+                </div>
+            </section>
+
+            <Footer />
+
+            {/* Partner Modal */}
+            {isPartnerModalOpen && (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-[#060914]/80 backdrop-blur-md animate-in fade-in duration-300">
+                    <div className="relative w-full max-w-lg glass-panel p-8 md:p-12 rounded-[50px] border border-white/10 shadow-2xl animate-in zoom-in-95 duration-300">
+                        <button
+                            onClick={() => setIsPartnerModalOpen(false)}
+                            className="absolute top-8 right-8 p-2 text-slate-500 hover:text-white hover:bg-white/5 rounded-xl transition-all"
+                        >
+                            <X className="w-5 h-5" />
+                        </button>
+
+                        <div className="mb-8">
+                            <div className="w-16 h-16 rounded-2xl bg-brand-500/10 border border-brand-500/20 flex items-center justify-center mb-6">
+                                <Handshake className="w-8 h-8 text-brand-400" />
+                            </div>
+                            <h3 className="text-3xl font-black mb-4">Partner With Us</h3>
+                            <p className="text-slate-400 text-sm leading-relaxed">
+                                Join our mission to build decentralised socio-economic infrastructure. We are looking for development agencies, workforce partners, and employers.
+                            </p>
+                        </div>
+
+                        <div className="space-y-4">
+                            <div className="p-6 rounded-3xl bg-white/5 border border-white/5 flex items-center justify-between group">
+                                <div className="flex items-center gap-4">
+                                    <div className="p-3 bg-brand-500/10 rounded-xl">
+                                        <Mail className="w-4 h-4 text-brand-400" />
+                                    </div>
+                                    <div>
+                                        <div className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-0.5">Contact Email</div>
+                                        <div className="text-sm font-bold text-white selection:bg-brand-500/50">hello@herfuturechain.org</div>
+                                    </div>
+                                </div>
+                                <button
+                                    onClick={() => {
+                                        navigator.clipboard.writeText('hello@herfuturechain.org');
+                                        alert('Email copied to clipboard!');
+                                    }}
+                                    className="p-3 text-slate-500 hover:text-brand-400 hover:bg-brand-500/10 rounded-xl transition-all"
+                                >
+                                    <Copy className="w-4 h-4" />
+                                </button>
+                            </div>
+                        </div>
+
+                        <button
+                            onClick={() => window.location.href = 'mailto:hello@herfuturechain.org'}
+                            className="w-full py-5 mt-8 rounded-2xl bg-brand-500 hover:bg-brand-400 text-white font-black text-xs uppercase tracking-widest transition-all shadow-[0_0_20px_rgba(59,130,246,0.3)]"
+                        >
+                            Send Email Now
+                        </button>
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+}
