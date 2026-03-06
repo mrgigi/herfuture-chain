@@ -184,6 +184,9 @@ export default function LoginSignup() {
                                                 placeholder="+234 801 234 5678"
                                             />
                                         </div>
+                                        <p className="text-[10px] text-slate-500 mt-2 ml-1 leading-relaxed">
+                                            <strong>Why Phone Numbers?</strong> We map your daily mobile identity to a secure blockchain vault, making Web3 accessible without complex crypto keys.
+                                        </p>
                                     </div>
                                 </>
                             ) : (

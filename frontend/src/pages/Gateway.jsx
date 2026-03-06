@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import Footer from '../components/Footer';
-import { User, Activity, LayoutGrid, ArrowRight, ShieldCheck, Phone, Link2 } from 'lucide-react';
+import { User, Activity, LayoutGrid, ArrowRight } from 'lucide-react';
 
 export default function Gateway() {
     const navigate = useNavigate();
@@ -104,55 +104,6 @@ export default function Gateway() {
                                 </div>
                             </div>
                         ))}
-                    </div>
-
-
-                    {/* Tech Showcase */}
-                    <div className="max-w-4xl mx-auto glass-panel p-12 rounded-[50px] border border-white/5 relative overflow-hidden">
-                        <div className="absolute top-0 right-0 p-8 opacity-10 pointer-events-none">
-                            <Phone className="w-48 h-48 rotate-12" />
-                        </div>
-
-                        <div className="relative z-10 grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
-                            <div>
-                                <h2 className="text-3xl font-bold mb-6">Why Phone Numbers?</h2>
-                                <p className="text-slate-400 mb-8 leading-relaxed">
-                                    Traditional crypto is too complex for unbanked teen mothers. We map their daily mobile identity to a secure blockchain vault.
-                                </p>
-
-                                <div className="space-y-4">
-                                    <div className="flex items-center gap-4 bg-emerald-500/10 border border-emerald-500/20 p-3 rounded-2xl w-fit">
-                                        <ShieldCheck className="w-5 h-5 text-emerald-400" />
-                                        <span className="text-xs font-bold text-emerald-400">CELO SOCIAL CONNECT</span>
-                                    </div>
-                                    <div className="flex items-center gap-4 bg-brand-500/10 border border-brand-500/20 p-3 rounded-2xl w-fit">
-                                        <Link2 className="w-5 h-5 text-brand-400" />
-                                        <span className="text-xs font-bold text-brand-400">ON-CHAIN IDENTITY MAPPING</span>
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Visual Flow */}
-                            <div className="flex flex-col gap-4 items-center md:items-end">
-                                <div className="flex items-center gap-6">
-                                    <div className="w-16 h-16 rounded-2xl bg-slate-900 border border-white/5 flex items-center justify-center shadow-2xl relative">
-                                        <Phone className="w-8 h-8 text-slate-400" />
-                                        <div className="absolute inset-0 bg-brand-500/10 filter blur-xl" />
-                                    </div>
-                                    <div className="h-[2px] w-8 bg-gradient-to-r from-slate-700 to-brand-500 shadow-[0_0_15px_rgba(59,130,246,0.5)]" />
-                                    <div className="w-20 h-20 rounded-3xl bg-brand-600/20 border border-brand-500/30 flex items-center justify-center shadow-[0_0_30px_rgba(59,130,246,0.2)]">
-                                        <ShieldCheck className="w-10 h-10 text-brand-400" />
-                                    </div>
-                                    <div className="h-[2px] w-8 bg-gradient-to-r from-brand-500 to-slate-700 shadow-[0_0_15px_rgba(59,130,246,0.5)]" />
-                                    <div className="w-16 h-16 rounded-2xl bg-slate-900 border border-white/5 flex items-center justify-center shadow-2xl relative">
-                                        <Link2 className="w-8 h-8 text-slate-400" />
-                                    </div>
-                                </div>
-                                <div className="mt-4 text-center md:text-right">
-                                    <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-slate-500">Zero-Friction Onboarding</span>
-                                </div>
-                            </div>
-                        </div>
                     </div>
                 </div>
             </div>
