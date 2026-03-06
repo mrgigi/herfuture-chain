@@ -15,7 +15,7 @@ $CFG->dbpass    = $url['pass'];
 $CFG->prefix    = 'her_';
 $CFG->dboptions = array (
   'dbpersist' => 0,
-  'dbport' => $url['port'],
+  'dbport' => $url['port'] ?? 5432,
   'dbsocket' => '',
   'dbcollation' => 'utf8mb4_unicode_ci',
 );
@@ -24,8 +24,7 @@ $CFG->wwwroot   = getenv('RENDER_EXTERNAL_URL');
 $CFG->dataroot  = '/var/www/moodledata';
 $CFG->admin     = 'admin';
 
-// Use this so Moodle doesn't get confused by Render's proxy/SSL
-$CFG->reverseproxy = true;
+// Render uses a load balancer, sslproxy is usually enough for the https redirect
 $CFG->sslproxy = true;
 
 $CFG->directorypermissions = 0777;
