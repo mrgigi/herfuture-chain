@@ -49,8 +49,8 @@ export default function Footer() {
                     </div>
                     <div>
                         <h4 className="text-[10px] uppercase font-black tracking-[0.2em] text-white mb-6">Legal</h4>
-                        <ul className="space-y-4 text-slate-500 text-sm font-medium text-[9px] uppercase tracking-widest">
-                            <li className="hover:text-white cursor-pointer transition-colors">Privacy</li>
+                        <ul className="space-y-4 text-slate-500 text-sm font-medium">
+                            <li className="hover:text-white cursor-pointer transition-colors">Privacy Policy</li>
                             <li className="hover:text-white cursor-pointer transition-colors">Terms of Service</li>
                         </ul>
                     </div>
@@ -58,17 +58,17 @@ export default function Footer() {
             </div>
 
             <div className="max-w-6xl mx-auto mt-20 pt-8 border-t border-white/5 flex justify-between items-center text-[10px] font-black uppercase tracking-widest text-slate-600">
-                <span>© 2026 HERFUTURE PROTOCOL. AN OPEN SOURCE PROJECT.</span>
+                <span>© 2026 HerFuture Protocol. An open source project.</span>
                 <div className="flex gap-6">
-                    <span className="hover:text-white cursor-pointer transition-colors">CELO</span>
-                    <span className="hover:text-white cursor-pointer transition-colors">UNICEF HUB</span>
+                    <span className="hover:text-white cursor-pointer transition-colors">Celo</span>
+                    <span className="hover:text-white cursor-pointer transition-colors">UNICEF Hub</span>
                     <a
                         href="https://github.com/mrgigi/herfuture-chain"
                         target="_blank"
                         rel="noopener noreferrer"
                         className="hover:text-white cursor-pointer transition-colors"
                     >
-                        GITHUB
+                        GitHub
                     </a>
                 </div>
             </div>
