@@ -292,6 +292,51 @@ async function updateSystemSetting(req, res) {
     }
 }
 
+async function updateCourse(req, res) {
+    try {
+        const { courseId } = req.params;
+        const { title, category } = req.body;
+        const { error } = await supabase
+            .from('courses')
+            .update({ title, category })
+            .eq('id', courseId);
+        if (error) throw error;
+        res.json({ success: true });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+}
+
+async function updateModule(req, res) {
+    try {
+        const { moduleId } = req.params;
+        const { title } = req.body;
+        const { error } = await supabase
+            .from('modules')
+            .update({ title })
+            .eq('id', moduleId);
+        if (error) throw error;
+        res.json({ success: true });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+}
+
+async function updateLesson(req, res) {
+    try {
+        const { lessonId } = req.params;
+        const { title, grant_amount } = req.body;
+        const { error } = await supabase
+            .from('lessons')
+            .update({ title, grant_amount })
+            .eq('id', lessonId);
+        if (error) throw error;
+        res.json({ success: true });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+}
+
 module.exports = {
     getCourses,
     getCourseModules,
@@ -302,5 +347,8 @@ module.exports = {
     updateCourseStatus,
     getSystemSettings,
     updateSystemSetting,
-    getLesson
+    getLesson,
+    updateCourse,
+    updateModule,
+    updateLesson
 };

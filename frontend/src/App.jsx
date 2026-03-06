@@ -11,6 +11,7 @@ import Grants from './pages/Grants';
 import Verifier from './pages/Verifier';
 
 import AdminDashboard from './pages/AdminDashboard';
+import AdminLogin from './pages/AdminLogin';
 import ImpactDashboard from './pages/ImpactDashboard';
 import AppFooter from './components/AppFooter';
 
@@ -23,6 +24,7 @@ function App() {
           <Route path="/gate" element={<Gateway />} />
           <Route path="/signup" element={<LoginSignup />} />
           <Route path="/admin" element={<AdminDashboard />} />
+          <Route path="/admin-login" element={<AdminLogin />} />
           <Route path="/impact" element={<ImpactDashboard />} />
           <Route path="/verify" element={<Verifier />} />
 

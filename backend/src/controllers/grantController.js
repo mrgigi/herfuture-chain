@@ -138,7 +138,12 @@ async function getGlobalImpactStats(req, res) {
 
 async function getRecentGrants(req, res) {
     try {
-        const { data, error } = await supabase
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10;
+        const start = (page - 1) * limit;
+        const end = start + limit - 1;
+
+        const { data, error, count } = await supabase
             .from('grants')
             .select(`
                 id,
@@ -149,9 +154,9 @@ async function getRecentGrants(req, res) {
                     first_name,
                     last_name
                 )
-            `)
+            `, { count: 'exact' })
             .order('created_at', { ascending: false })
-            .limit(10);
+            .range(start, end);
 
         if (error) throw error;
 
@@ -171,7 +176,12 @@ async function getRecentGrants(req, res) {
             };
         });
 
-        res.json(formatted);
+        res.json({
+            grants: formatted,
+            total: count,
+            page,
+            limit
+        });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }

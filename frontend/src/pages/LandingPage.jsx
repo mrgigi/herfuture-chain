@@ -22,16 +22,18 @@ import {
     Cpu,
     Github,
     Handshake,
-    AlertCircle,
-    X,
     Mail,
-    Copy
+    Copy,
+    Menu,
+    X,
+    AlertCircle
 } from 'lucide-react';
 
 export default function LandingPage() {
     const navigate = useNavigate();
     const [isPartnerModalOpen, setIsPartnerModalOpen] = useState(false);
     const [activeAccordionTrack, setActiveAccordionTrack] = useState(null);
+    const [isMenuOpen, setIsMenuOpen] = useState(false);
 
     const trackModules = {
         T1: [
@@ -104,43 +106,79 @@ export default function LandingPage() {
                     <div className="w-8 h-8 rounded-lg bg-brand-500 flex items-center justify-center font-black text-white italic">H</div>
                     <span className="font-bold tracking-tight text-xl bg-gradient-to-r from-white to-white/70 bg-clip-text text-transparent">HerFuture</span>
                 </div>
+
+                {/* Desktop Menu */}
                 <div className="hidden md:flex gap-8 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
                     <a href="#problem" className="hover:text-brand-400 transition-colors">The Problem</a>
                     <a href="#solution" className="hover:text-brand-400 transition-colors">Our Solution</a>
                     <a href="#how-it-works" className="hover:text-brand-400 transition-colors">How it Works</a>
                     <a href="#impact" className="hover:text-amber-400 transition-colors">Impact</a>
                 </div>
-                <button
-                    onClick={() => navigate('/gate')}
-                    className="px-6 py-2 rounded-xl bg-brand-500 hover:bg-brand-400 text-white text-[10px] font-black uppercase tracking-widest transition-all shadow-[0_0_20px_rgba(59,130,246,0.3)]"
-                >
-                    GET STARTED
-                </button>
+
+                <div className="flex items-center gap-4">
+                    <button
+                        onClick={() => navigate('/gate')}
+                        className="hidden sm:block px-6 py-2 rounded-xl bg-brand-500 hover:bg-brand-400 text-white text-[10px] font-black uppercase tracking-widest transition-all shadow-[0_0_20px_rgba(59,130,246,0.3)]"
+                    >
+                        GET STARTED
+                    </button>
+
+                    {/* Mobile Menu Toggle */}
+                    <button
+                        className="md:hidden p-2 text-white hover:bg-white/5 rounded-lg transition-colors"
+                        onClick={() => setIsMenuOpen(!isMenuOpen)}
+                    >
+                        {isMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+                    </button>
+                </div>
+
+                {/* Mobile Menu Overlay */}
+                {isMenuOpen && (
+                    <div className="fixed inset-0 top-[72px] bg-[#060914] z-50 p-8 md:hidden animate-in fade-in slide-in-from-right-4 duration-300">
+                        <div className="flex flex-col gap-8">
+                            {[
+                                { label: 'The Problem', href: '#problem' },
+                                { label: 'Our Solution', href: '#solution' },
+                                { label: 'How it Works', href: '#how-it-works' },
+                                { label: 'Impact Data', href: '/impact' }
+                            ].map((item, i) => (
+                                <a
+                                    key={i}
+                                    href={item.href}
+                                    onClick={() => setIsMenuOpen(false)}
+                                    className="text-2xl font-black text-white uppercase tracking-widest border-b border-white/5 pb-4 last:border-0"
+                                >
+                                    {item.label}
+                                </a>
+                            ))}
+                            <button
+                                onClick={() => navigate('/gate')}
+                                className="w-full py-5 rounded-2xl bg-brand-600 text-white font-black text-xs uppercase tracking-[0.3em] mt-8"
+                            >
+                                GATEWAY →
+                            </button>
+                        </div>
+                    </div>
+                )}
             </nav>
 
             {/* Hero Section */}
             <section className="relative pt-44 pb-32 px-6 overflow-hidden">
-                {/* Cinematic Video Background */}
+                {/* High-Fidelity Cinematic Background */}
                 <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden">
-                    <div className="absolute inset-0 bg-gradient-to-b from-[#060914] via-[#060914]/40 to-[#060914] z-10" />
-                    <iframe
-                        className="w-[300%] h-[300%] absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 scale-110 opacity-30 blur-[2px]"
-                        src="https://www.youtube.com/embed/iqlyXt3JYeM?autoplay=1&mute=1&loop=1&playlist=iqlyXt3JYeM&controls=0&showinfo=0&rel=0&iv_load_policy=3&modestbranding=1"
-                        title="Background Video"
-                        frameBorder="0"
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    <img
+                        src="/images/hero.png"
+                        alt="HerFuture Hub"
+                        className="w-full h-full object-cover opacity-30 transform scale-105"
                     />
+                    <div className="absolute inset-0 bg-gradient-to-b from-[#060914] via-[#060914]/60 to-[#060914] z-10" />
                 </div>
                 <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[1000px] bg-brand-600/10 rounded-full blur-[120px] pointer-events-none z-20" />
 
                 <div className="max-w-4xl mx-auto relative z-30 text-center">
-                    <div className="inline-flex items-center gap-3 px-4 py-1.5 rounded-full bg-brand-500/10 border border-brand-500/20 mb-10 animate-in fade-in slide-in-from-bottom-2 duration-700">
-                        <Zap className="w-3.5 h-3.5 text-brand-400 animate-pulse" />
-                        <span className="text-[10px] font-black uppercase tracking-[0.3em] text-brand-400 border-r border-brand-500/20 pr-4">Blockchain Protocol</span>
-                        <span className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400">v1.2 Beta</span>
-                    </div>
 
-                    <h1 className="text-7xl md:text-9xl font-black mb-8 tracking-tighter leading-[0.85] text-white animate-in fade-in slide-in-from-bottom-4 duration-1000">
+
+                    <h1 className="text-5xl sm:text-7xl md:text-9xl font-black mb-8 tracking-tighter leading-[0.85] text-white animate-in fade-in slide-in-from-bottom-4 duration-1000">
                         HerFuture <br />
                         <span className="bg-gradient-to-r from-emerald-400 via-brand-400 to-indigo-400 bg-clip-text text-transparent">Chain.</span>
                     </h1>
@@ -166,16 +204,6 @@ export default function LandingPage() {
                         >
                             Partner With Us
                         </button>
-                    </div>
-
-                    {/* Hero Image Showcase */}
-                    <div className="mt-24 relative p-2 glass-panel rounded-[60px] border border-white/10 max-w-5xl mx-auto shadow-2xl animate-in fade-in zoom-in-95 duration-1000">
-                        <img
-                            src="/images/hero.png"
-                            alt="The Girl Child Learning"
-                            className="rounded-[58px] w-full object-cover aspect-[21/9]"
-                        />
-                        <div className="absolute inset-0 rounded-[58px] bg-gradient-to-t from-[#060914] via-transparent to-transparent opacity-60" />
                     </div>
                 </div>
             </section>
@@ -290,21 +318,21 @@ export default function LandingPage() {
                                 title: "Skills Development",
                                 subtitle: "3 Targeted Learning Tracks",
                                 desc: (
-                                    <div className="space-y-4">
+                                    <div className="space-y-4 text-left">
                                         <p>Structured training powered by Moodle, creating professional pathways for teen mothers, out-of-school girls and unemployed girls:</p>
                                         <div className="grid grid-cols-1 gap-3 mt-4">
                                             {[
-                                                { id: 'T1', label: 'Track 1', title: 'Foundations & Wellbeing', color: 'brand' },
-                                                { id: 'T2', label: 'Track 2', title: 'Digital Income Skills', color: 'emerald' },
-                                                { id: 'T3', label: 'Track 3', title: 'Money & Business', color: 'orange' }
+                                                { id: 'T1', label: 'Track 1', title: 'Foundations & Wellbeing' },
+                                                { id: 'T2', label: 'Track 2', title: 'Digital Income Skills' },
+                                                { id: 'T3', label: 'Track 3', title: 'Money & Business' }
                                             ].map((track) => (
-                                                <div key={track.id} className="overflow-hidden bg-white/[0.03] rounded-2xl border border-white/5">
+                                                <div key={track.id} className="overflow-hidden bg-white/[0.03] rounded-2xl border border-white/5 text-left">
                                                     <button
                                                         onClick={() => setActiveAccordionTrack(activeAccordionTrack === track.id ? null : track.id)}
                                                         className="w-full p-5 flex items-center justify-between hover:bg-white/[0.05] transition-colors group"
                                                     >
                                                         <div className="flex items-center gap-4">
-                                                            <div className={`text-[10px] font-black uppercase text-${track.id === 'T1' ? 'brand-400' : track.id === 'T2' ? 'emerald-400' : 'orange-400'}`}>
+                                                            <div className={`text-[10px] font-black uppercase ${track.id === 'T1' ? 'text-brand-400' : track.id === 'T2' ? 'text-emerald-400' : 'text-orange-400'}`}>
                                                                 {track.label}
                                                             </div>
                                                             <div className="font-bold text-white text-sm">{track.title}</div>
@@ -315,7 +343,7 @@ export default function LandingPage() {
                                                         <div className="px-5 pb-5 pt-0 grid grid-cols-1 sm:grid-cols-2 gap-2">
                                                             {trackModules[track.id].map((module, mIdx) => (
                                                                 <div key={mIdx} className="flex items-center gap-2 p-2 rounded-lg bg-white/5 border border-white/5">
-                                                                    <div className={`w-1 h-1 rounded-full ${track.id === 'T1' ? 'bg-brand-400' : track.id === 'T2' ? 'bg-emerald-400' : 'bg-orange-400'}`} />
+                                                                    <div className={`w-1 h-1 rounded-full ${track.id === 'T1' ? 'text-brand-400' : track.id === 'T2' ? 'text-emerald-400' : 'text-orange-400'}`} />
                                                                     <span className="text-xs text-slate-300">{module}</span>
                                                                 </div>
                                                             ))}
@@ -353,16 +381,16 @@ export default function LandingPage() {
                             <div key={i} className="flex flex-col md:flex-row gap-12 items-center group">
                                 <div className="text-7xl font-black text-white/5 opacity-50 group-hover:text-brand-500/10 transition-colors md:w-32">{step.id}</div>
                                 <div className="flex-1 glass-panel p-10 rounded-[50px] border border-white/5 group-hover:border-brand-500/20 transition-all">
-                                    <div className="flex items-center gap-6 mb-6">
+                                    <div className="flex items-center gap-6 mb-6 text-left">
                                         <div className="p-4 bg-brand-500/10 rounded-2xl text-brand-400">{step.icon}</div>
                                         <div>
                                             <h3 className="text-2xl font-bold text-white">{step.title}</h3>
                                             <p className="text-brand-500/70 text-[10px] uppercase font-black tracking-widest">{step.subtitle}</p>
                                         </div>
                                     </div>
-                                    <p className="text-slate-400 leading-relaxed text-sm md:text-base">
+                                    <div className="text-slate-400 leading-relaxed text-sm md:text-base text-left">
                                         {step.desc}
-                                    </p>
+                                    </div>
                                 </div>
                             </div>
                         ))}
@@ -428,13 +456,13 @@ export default function LandingPage() {
                 </div>
             </section>
 
-            {/* Impact - The Stats Section (High Contrast) */}
+            {/* Impact - The Stats Section */}
             <section id="impact" className="py-32 px-6 bg-brand-500 relative overflow-hidden">
                 <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_50%,rgba(255,255,255,0.15),transparent)] pointer-events-none" />
                 <div className="max-w-6xl mx-auto relative z-10">
                     <div className="flex flex-col md:flex-row justify-between items-end mb-20 gap-8">
                         <div>
-                            <h2 className="text-[060914] text-5xl md:text-7xl font-black tracking-tighter leading-none mb-6">Pilot Outcomes.</h2>
+                            <h2 className="text-[#060914] text-5xl md:text-7xl font-black tracking-tighter leading-none mb-6">Pilot Outcomes.</h2>
                             <p className="text-[#060914]/60 text-lg font-bold uppercase tracking-widest">Transforming teen mothers and unemployed girls from aid recipients into participants</p>
                         </div>
                         <div className="bg-[#060914] text-white/50 p-4 px-8 rounded-full text-xs font-black uppercase tracking-[0.2em] shadow-2xl">
@@ -458,14 +486,14 @@ export default function LandingPage() {
                 </div>
             </section>
 
-            {/* Stakeholder Portals (The Gateway Component) */}
+            {/* Stakeholder Portals */}
             <section id="portals" className="py-32 px-6">
                 <div className="max-w-6xl mx-auto text-center mb-20">
                     <h2 className="text-4xl font-black mb-6">Enter the Chain.</h2>
                     <p className="text-slate-500 max-w-xl mx-auto">Choose your entry point into the ecosystem. Whether you are a student, a donor, or an administrator.</p>
                 </div>
 
-                <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8 mb-20">
+                <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8 mb-20 text-left">
                     {portals.map((portal, idx) => (
                         <div
                             key={idx}
@@ -489,10 +517,9 @@ export default function LandingPage() {
                         </div>
                     ))}
                 </div>
-
             </section>
 
-            {/* Final CTA (Manifesto Style) */}
+            {/* Final CTA */}
             <section className="py-44 px-6 relative overflow-hidden text-center">
                 <h2 className="text-5xl md:text-7xl font-black mb-12 tracking-tight">Join the Future <br /> of Learning & Work.</h2>
                 <div className="flex flex-col sm:flex-row gap-6 justify-center">
@@ -540,7 +567,7 @@ export default function LandingPage() {
                                     <div className="p-3 bg-brand-500/10 rounded-xl">
                                         <Mail className="w-4 h-4 text-brand-400" />
                                     </div>
-                                    <div>
+                                    <div className="text-left">
                                         <div className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-0.5">Contact Email</div>
                                         <div className="text-sm font-bold text-white selection:bg-brand-500/50">hello@herfuturechain.org</div>
                                     </div>

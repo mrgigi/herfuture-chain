@@ -106,5 +106,20 @@ export const updateSystemSetting = async (key, value) => {
     return response.data;
 };
 
+export const updateCourseDetails = async (courseId, data) => {
+    const response = await api.post(`/admin/courses/${courseId}`, data);
+    return response.data;
+};
+
+export const updateModule = async (moduleId, data) => {
+    const response = await api.post(`/admin/modules/${moduleId}`, data);
+    return response.data;
+};
+
+export const updateLesson = async (lessonId, data) => {
+    const response = await api.post(`/admin/lessons/${lessonId}`, data);
+    return response.data;
+};
+
 // Add more API helpers as needed for dashboard data
 export default api;

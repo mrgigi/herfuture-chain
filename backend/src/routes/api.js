@@ -23,6 +23,9 @@ router.get('/progress-overview/:participantId', getProgressOverview);
 // 3. Admin & System Management
 router.get('/admin/participants', getAllParticipantsWithProgress);
 router.post('/admin/course-status', updateCourseStatus);
+router.post('/admin/courses/:courseId', updateCourse);
+router.post('/admin/modules/:moduleId', updateModule);
+router.post('/admin/lessons/:lessonId', updateLesson);
 router.get('/admin/settings', getSystemSettings);
 router.post('/admin/settings', updateSystemSetting);
 

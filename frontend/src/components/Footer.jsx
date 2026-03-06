@@ -1,12 +1,12 @@
-import { Github, Facebook, Instagram, Linkedin } from 'lucide-react';
+import { Github, Facebook, Instagram, Linkedin, Zap } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 export default function Footer() {
     const navigate = useNavigate();
 
     return (
-        <footer className="py-20 px-6 border-t border-white/5 bg-[#060914]">
-            <div className="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-start gap-12">
+        <footer className="pt-12 pb-20 px-6 border-t border-white/5 bg-[#060914]">
+            <div className="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-start gap-8 md:gap-12">
                 <div>
                     <div className="flex items-center gap-2 mb-6 cursor-pointer" onClick={() => navigate('/')}>
                         <div className="w-6 h-6 rounded-md bg-brand-500 flex items-center justify-center font-black text-white italic text-[10px]">H</div>
@@ -42,7 +42,7 @@ export default function Footer() {
                     </div>
                 </div>
 
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-12">
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-8 md:gap-12">
                     <div>
                         <h4 className="text-[10px] uppercase font-black tracking-[0.2em] text-white mb-6">Ecosystem</h4>
                         <ul className="space-y-4 text-slate-500 text-sm font-medium">
@@ -59,7 +59,7 @@ export default function Footer() {
                             <li className="hover:text-brand-400 cursor-pointer transition-colors opacity-50">Partners</li>
                         </ul>
                     </div>
-                    <div>
+                    <div className="hidden md:block">
                         <h4 className="text-[10px] uppercase font-black tracking-[0.2em] text-white mb-6">Legal</h4>
                         <ul className="space-y-4 text-slate-500 text-sm font-medium">
                             <li className="hover:text-white cursor-pointer transition-colors">Privacy Policy</li>
@@ -69,10 +69,17 @@ export default function Footer() {
                 </div>
             </div>
 
-            <div className="max-w-6xl mx-auto mt-20 pt-8 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-4 text-[10px] font-black uppercase tracking-widest text-slate-600">
+            <div className="max-w-6xl mx-auto mt-12 pt-8 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-4 text-[10px] font-black uppercase tracking-widest text-slate-600">
                 <span>© 2026 HerFuture Protocol. An open source project.</span>
-                <div className="flex items-center gap-1.5">
-                    Built with <span className="text-yellow-400 animate-pulse text-xs">💛</span> on the <span className="text-celo">Celo</span> Blockchain
+
+                <div className="flex flex-col md:flex-row items-center gap-4">
+                    <div className="flex items-center gap-1.5 order-2 md:order-1">
+                        Built with <span className="text-yellow-400 animate-pulse text-xs">💛</span> on the <span className="text-celo">Celo</span> Blockchain
+                    </div>
+                    <div className="hidden md:block h-3 w-px bg-white/10 order-2" />
+                    <div className="flex items-center gap-2 order-1 md:order-3 opacity-60">
+                        <span>v1.2 Protocol Beta</span>
+                    </div>
                 </div>
             </div>
         </footer>

@@ -156,10 +156,14 @@ export default function Dashboard() {
                                 { name: "2.1 Digital Literacy & AI Tools", status: progress.percentage >= 31 ? "done" : progress.percentage >= 6 ? "active" : "pending" },
                                 { name: "3.1 Financial Literacy", status: progress.percentage >= 68 ? "done" : progress.percentage >= 31 ? "active" : "pending" },
                             ].map((step, idx) => (
-                                <div key={idx} className={`p-4 rounded-xl border flex items-center justify-between transition-all ${step.status === 'done' ? 'bg-slate-800/50 border-slate-700/50' :
-                                    step.status === 'active' ? 'bg-brand-900/20 border-brand-500/30 ring-1 ring-brand-500/20' :
-                                        'bg-slate-900/50 border-slate-800 opacity-60'
-                                    }`}>
+                                <div
+                                    key={idx}
+                                    onClick={() => step.status === 'active' && navigate('/courses')}
+                                    className={`p-4 rounded-xl border flex items-center justify-between transition-all ${step.status === 'done' ? 'bg-slate-800/50 border-slate-700/50 cursor-pointer' :
+                                        step.status === 'active' ? 'bg-brand-900/20 border-brand-500/30 ring-1 ring-brand-500/20 cursor-pointer hover:bg-brand-900/30' :
+                                            'bg-slate-900/50 border-slate-800 opacity-60'
+                                        }`}
+                                >
                                     <div className="flex items-center gap-4">
                                         <div className={`flex items-center justify-center w-8 h-8 rounded-full ${step.status === 'done' ? 'bg-green-500/20 text-green-400' :
                                             step.status === 'active' ? 'bg-brand-500/20 text-brand-400 animate-pulse' :
@@ -172,10 +176,9 @@ export default function Dashboard() {
 
                                     {step.status === 'active' && (
                                         <button
-                                            onClick={() => navigate('/courses')}
                                             className="text-xs font-semibold bg-brand-600 hover:bg-brand-500 text-white px-4 py-2 rounded-lg transition-colors"
                                         >
-                                            Go to Tracks
+                                            Resume Path
                                         </button>
                                     )}
                                 </div>

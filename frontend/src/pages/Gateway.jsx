@@ -1,5 +1,4 @@
 import { useNavigate } from 'react-router-dom';
-import Footer from '../components/Footer';
 import { User, Activity, LayoutGrid, ArrowRight } from 'lucide-react';
 
 export default function Gateway() {
@@ -72,9 +71,6 @@ export default function Gateway() {
                         <h1 className="text-5xl md:text-7xl font-black mb-4 tracking-tighter">
                             Select Your <span className="bg-gradient-to-r from-brand-400 to-indigo-400 bg-clip-text text-transparent">Pathway.</span>
                         </h1>
-                        <p className="text-slate-400 max-w-xl mx-auto text-lg leading-relaxed font-medium">
-                            Empowering teen mothers, out-of-school girls and unemployed girls through blockchain-verified education and grants.
-                        </p>
                     </div>
 
                     {/* High Fidelity Visual Banner */}
@@ -88,7 +84,7 @@ export default function Gateway() {
                         <div className="absolute bottom-10 left-10 md:left-16 max-w-xl">
                             <h2 className="text-4xl md:text-6xl font-black text-white mb-4 tracking-tighter leading-tight">Your Future <br /> Starts Here.</h2>
                             <p className="text-slate-200 text-sm md:text-lg font-medium opacity-100 leading-relaxed max-w-md">
-                                A dedicated space for teen moms and girls to learn digital skills, earn grants while they study, and build a life they love.
+                                A dedicated space for teen mothers, out-of-school girls and unemployed girls to learn digital skills, earn grants while they study, and build a life they love.
                             </p>
                         </div>
                     </div>
@@ -118,7 +114,10 @@ export default function Gateway() {
 
                                 {portal.metric && (
                                     <div className="mb-6 px-4 py-2 rounded-xl bg-white/5 border border-white/5 inline-flex items-center gap-2">
-                                        <div className={`w-1.5 h-1.5 rounded-full ${portal.color === 'amber' ? 'bg-amber-400' : 'bg-purple-400'} animate-pulse`} />
+                                        <div className={`w-1.5 h-1.5 rounded-full ${portal.color === 'emerald' ? 'bg-emerald-400' :
+                                            portal.color === 'amber' ? 'bg-amber-400' :
+                                                'bg-purple-400'
+                                            } animate-pulse`} />
                                         <span className="text-[10px] font-bold uppercase tracking-widest text-slate-300">{portal.metric}</span>
                                     </div>
                                 )}
@@ -131,8 +130,6 @@ export default function Gateway() {
                     </div>
                 </div>
             </div>
-
-            <Footer />
         </div>
     );
 }
