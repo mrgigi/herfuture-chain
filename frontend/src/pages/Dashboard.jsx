@@ -32,7 +32,8 @@ export default function Dashboard() {
                         getCourses()
                     ]);
                     setProgress(progData);
-                    setCourses(cData.filter(c => c.is_published));
+                    const published = Array.isArray(cData) ? cData.filter(c => c.is_published) : [];
+                    setCourses(published);
                 }
             } catch (err) {
                 console.error('Fetch error:', err);

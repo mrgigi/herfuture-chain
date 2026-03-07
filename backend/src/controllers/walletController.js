@@ -36,7 +36,7 @@ async function createWallet(req, res) {
                 wallet_address: address,
                 did
             }])
-            .select('*')
+            .select('id, first_name, last_name, phone, wallet_address, did')
             .single();
 
         if (error) {
@@ -83,7 +83,7 @@ async function getParticipant(req, res) {
 
         const { data, error } = await supabase
             .from('participants')
-            .select('*')
+            .select('id, first_name, last_name, phone, wallet_address, did, created_at')
             .eq('phone', phone)
             .single();
 
