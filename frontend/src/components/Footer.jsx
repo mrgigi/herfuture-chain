@@ -12,7 +12,7 @@ export default function Footer() {
                         <img src="/images/logo.svg" alt="HerFuture Chain Logo" className="h-full w-auto" />
                     </div>
                     <p className="text-slate-500 text-sm max-w-xs leading-relaxed">
-                        Pioneering distributed socio-economic mobility for teen mothers, out-of-school girls and unemployed girls. Open-source, transparent, and built for impact.
+                        Pioneering distributed socio-economic mobility for teen moms, out-of-school and unemployed girls. Open-source, transparent, and built for impact.
                     </p>
                     <div className="flex gap-4 mt-8">
                         <a

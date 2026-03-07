@@ -178,7 +178,7 @@ export default function LandingPage() {
 
 
                     <h1 className="text-5xl sm:text-7xl md:text-9xl font-black mb-8 tracking-tighter leading-[0.85] text-white animate-in fade-in slide-in-from-bottom-4 duration-1000">
-                        Herfuture <br />
+                        HerFuture <br />
                         <span className="bg-gradient-to-r from-emerald-400 via-brand-400 to-indigo-400 bg-clip-text text-transparent">Chain.</span>
                     </h1>
 
@@ -187,7 +187,7 @@ export default function LandingPage() {
                     </p>
 
                     <p className="text-slate-400 max-w-2xl mx-auto text-sm md:text-base mb-12 animate-in fade-in slide-in-from-bottom-7 duration-1000 font-medium leading-relaxed">
-                        The world's first decentralized socio-economic engine for teen mothers, out-of-school girls and unemployed girls.
+                        The world's first decentralized socio-economic engine for teen moms, out-of-school and unemployed girls.
                     </p>
 
                     <div className="flex flex-col sm:flex-row gap-4 justify-center items-center animate-in fade-in slide-in-from-bottom-8 duration-1000">
@@ -268,7 +268,7 @@ export default function LandingPage() {
                         Integrated Identity, <br /> Education & Inclusion.
                     </h2>
                     <p className="text-slate-400 text-lg leading-relaxed mb-12">
-                        HerFuture Chain provides open-source blockchain infrastructure built on <span className="text-celo font-bold">Celo</span>. We enable teen mothers, out-of-school girls and unemployed girls to build verified digital identities, earn credentials, and access transparent financial support.
+                        HerFuture Chain provides open-source blockchain infrastructure built on <span className="text-celo font-bold">Celo</span>. We enable teen moms, out-of-school and unemployed girls to build verified digital identities, earn credentials, and access transparent financial support.
                     </p>
 
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-20">
@@ -318,7 +318,7 @@ export default function LandingPage() {
                                 subtitle: "3 Tracks + Wellbeing Strand",
                                 desc: (
                                     <div className="space-y-4 text-left">
-                                        <p>Comprehensive 6-month programme covering 18 professional modules and weekly wellbeing sessions:</p>
+                                        <p>Comprehensive 6-month program covering 18 professional modules and weekly wellbeing sessions:</p>
                                         <div className="grid grid-cols-1 gap-3 mt-4">
                                             {[
                                                 { id: 'T1', label: 'Track 1', title: 'Foundations & Wellbeing' },
@@ -403,13 +403,13 @@ export default function LandingPage() {
                     <div className="lg:w-1/3">
                         <h2 className="text-4xl font-black mb-8 leading-tight">Who We <br /> Serve.</h2>
                         <p className="text-slate-500 text-sm leading-relaxed mb-8">
-                            HerFuture Chain is designed for teen mothers, out-of-school girls and unemployed girls who face significant barriers to education and employment.
+                            HerFuture Chain is designed for teen moms, out-of-school and unemployed girls who face significant barriers to education and employment.
                         </p>
                         <Heart className="w-12 h-12 text-pink-500/20" />
                     </div>
                     <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4">
                         {[
-                            "Teen Mothers",
+                            "Teen Moms",
                             "Out-of-school Girls",
                             "Internally Displaced (IDPs)",
                             "Conflict-Affected Youth",
@@ -462,7 +462,7 @@ export default function LandingPage() {
                     <div className="flex flex-col md:flex-row justify-between items-end mb-20 gap-8">
                         <div>
                             <h2 className="text-[#060914] text-5xl md:text-7xl font-black tracking-tighter leading-none mb-6">Pilot Outcomes.</h2>
-                            <p className="text-[#060914]/60 text-lg font-bold uppercase tracking-widest">Transforming teen mothers and unemployed girls from aid recipients into participants</p>
+                            <p className="text-[#060914]/60 text-lg font-bold uppercase tracking-widest">Transforming teen moms and unemployed girls from aid recipients into participants</p>
                         </div>
                         <div className="bg-[#060914] text-white/50 p-4 px-8 rounded-full text-xs font-black uppercase tracking-[0.2em] shadow-2xl">
                             Verified on <span className="text-celo">Celo</span>
@@ -556,7 +556,7 @@ export default function LandingPage() {
                             </div>
                             <h3 className="text-3xl font-black mb-4">Partner With Us</h3>
                             <p className="text-slate-400 text-sm leading-relaxed">
-                                Join our mission to build decentralised socio-economic infrastructure. We are looking for development agencies, workforce partners, and employers.
+                                Join our mission to build decentralized socio-economic infrastructure. We are looking for development agencies, workforce partners, and employers.
                             </p>
                         </div>
 

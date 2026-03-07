@@ -250,7 +250,7 @@ export default function ImpactDashboard() {
                                     </div>
                                 </div>
                                 <p className="text-slate-400 text-sm leading-relaxed mb-10 font-medium">
-                                    Tracking the conversion rate of teen mothers from aid-recipients to participants in the digital economy.
+                                    Tracking the conversion rate of teen moms from aid-recipients to participants in the digital economy.
                                 </p>
                             </div>
 

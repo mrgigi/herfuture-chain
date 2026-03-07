@@ -89,7 +89,7 @@ export default function Gateway() {
                         <div className="absolute bottom-10 left-10 md:left-16 max-w-xl">
                             <h2 className="text-4xl md:text-6xl font-black text-white mb-4 tracking-tighter leading-tight">Your Future <br /> Starts Here.</h2>
                             <p className="text-slate-200 text-sm md:text-lg font-medium opacity-100 leading-relaxed max-w-md">
-                                A dedicated space for teen mothers, out-of-school girls and unemployed girls to learn digital skills, earn grants while they study, and build a life they love.
+                                A dedicated space for teen moms, out-of-school and unemployed girls to learn digital skills, earn grants while they study, and build a life they love.
                             </p>
                         </div>
                     </div>
