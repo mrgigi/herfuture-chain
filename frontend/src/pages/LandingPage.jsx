@@ -38,25 +38,25 @@ export default function LandingPage() {
     const trackModules = {
         T1: [
             "Self-Leadership & Confidence",
-            "Mental Health & Resilience",
-            "Hygiene & Child Wellbeing",
-            "Job Readiness"
+            "Mental Health & Emotional Resilience",
+            "Hygiene, Health & Child Wellbeing",
+            "Job Readiness & Interview Skills"
         ],
         T2: [
             "Digital Literacy & AI Tools",
             "Virtual Assistant Skills",
-            "Exploration: Mars & Beyond",
+            "Content Creation & Social Media",
             "Graphic Design Basics",
-            "Data Entry & AI Work",
+            "Data Entry & AI-Assisted Work",
             "Freelancing & First Client"
         ],
         T3: [
-            "Financial Literacy",
+            "Financial Literacy & Understanding Money",
             "Saving & Budgeting",
-            "Blockchain & The Future",
-            "Branding & Pricing",
-            "Starting a Small Business",
-            "Long-Term Thinking"
+            "Investment Basics",
+            "Branding, Marketing & Pricing",
+            "Entrepreneurship & Small Business",
+            "Managing Money & Long-Term Thinking"
         ]
     };
 
@@ -316,14 +316,14 @@ export default function LandingPage() {
                             {
                                 id: "02",
                                 title: "Skills Development",
-                                subtitle: "3 Targeted Learning Tracks",
+                                subtitle: "3 Tracks + Wellbeing Strand",
                                 desc: (
                                     <div className="space-y-4 text-left">
-                                        <p>Structured training powered by Moodle, creating professional pathways for teen mothers, out-of-school girls and unemployed girls:</p>
+                                        <p>Comprehensive 6-month programme covering 18 professional modules and weekly wellbeing sessions:</p>
                                         <div className="grid grid-cols-1 gap-3 mt-4">
                                             {[
                                                 { id: 'T1', label: 'Track 1', title: 'Foundations & Wellbeing' },
-                                                { id: 'T2', label: 'Track 2', title: 'Digital Income Skills' },
+                                                { id: 'T2', label: 'Track 2', title: 'Income Skills' },
                                                 { id: 'T3', label: 'Track 3', title: 'Money & Business' }
                                             ].map((track) => (
                                                 <div key={track.id} className="overflow-hidden bg-white/[0.03] rounded-2xl border border-white/5 text-left">
