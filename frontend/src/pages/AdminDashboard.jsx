@@ -8,7 +8,8 @@ import {
 import api, {
     getCourses, getAdminParticipants, getSystemSettings,
     updateSystemSetting, updateCourseStatus, updateCourseDetails,
-    updateModule, updateLesson, getModules
+    updateModule, updateLesson, getModules,
+    createModule, deleteModule, createLesson, deleteLesson
 } from '../lib/api';
 
 export default function AdminDashboard() {
@@ -105,10 +106,66 @@ export default function AdminDashboard() {
         setCourses(prev => prev.map(c => c.id === id ? { ...c, is_published: !currentStatus } : c));
     };
 
-    const filteredStudents = students.filter(s =>
-        (s.first_name + ' ' + s.last_name).toLowerCase().includes(searchTerm.toLowerCase()) ||
-        s.phone.includes(searchTerm)
-    );
+    const filteredStudents = students.filter(s => {
+        const fullName = `${s.first_name || ''} ${s.last_name || ''}`.toLowerCase();
+        return fullName.includes(searchTerm.toLowerCase()) || (s.phone && s.phone.includes(searchTerm));
+    });
+
+    const handleAddModule = async () => {
+        try {
+            const nextSeq = courseModules.length + 1;
+            const newMod = await createModule({
+                course_id: editingCourse.id,
+                title: "New Module",
+                sequence_number: nextSeq
+            });
+            setCourseModules([...courseModules, { ...newMod, lessons: [] }]);
+        } catch (err) {
+            console.error("Add module error:", err);
+        }
+    };
+
+    const handleDeleteModule = async (moduleId) => {
+        if (!window.confirm("Delete this module and all its lessons?")) return;
+        try {
+            await deleteModule(moduleId);
+            setCourseModules(courseModules.filter(m => m.id !== moduleId));
+        } catch (err) {
+            console.error("Delete module error:", err);
+        }
+    };
+
+    const handleAddLesson = async (moduleId) => {
+        try {
+            const mod = courseModules.find(m => m.id === moduleId);
+            const nextSeq = mod.lessons.length + 1;
+            const newLesson = await createLesson({
+                course_id: editingCourse.id,
+                module_id: moduleId,
+                title: "New Lesson",
+                sequence_number: nextSeq,
+                grant_amount: 30,
+                video_url: ""
+            });
+            setCourseModules(courseModules.map(m =>
+                m.id === moduleId ? { ...m, lessons: [...m.lessons, newLesson] } : m
+            ));
+        } catch (err) {
+            console.error("Add lesson error:", err);
+        }
+    };
+
+    const handleDeleteLesson = async (lessonId, moduleId) => {
+        if (!window.confirm("Delete this lesson?")) return;
+        try {
+            await deleteLesson(lessonId);
+            setCourseModules(courseModules.map(m =>
+                m.id === moduleId ? { ...m, lessons: m.lessons.filter(l => l.id !== lessonId) } : m
+            ));
+        } catch (err) {
+            console.error("Delete lesson error:", err);
+        }
+    };
 
     const stats = {
         totalStudents: students.length,
@@ -126,9 +183,8 @@ export default function AdminDashboard() {
         <div className="min-h-screen bg-[#060914] text-slate-100 font-sans flex">
             {/* Sidebar */}
             <aside className="w-64 bg-slate-900/50 border-r border-white/5 p-6 hidden md:block">
-                <div className="flex items-center gap-3 mb-12 cursor-pointer" onClick={() => navigate('/')}>
-                    <div className="w-8 h-8 rounded-lg bg-brand-500 flex items-center justify-center font-black text-white italic">H</div>
-                    <span className="font-bold tracking-tight text-white hover:text-brand-400 transition-colors">Admin Console</span>
+                <div className="flex items-center gap-2 mb-10 cursor-pointer h-10" onClick={() => navigate('/')}>
+                    <img src="/images/logo.svg" alt="HerFuture Chain Logo" className="h-full w-auto" />
                 </div>
 
                 <nav className="space-y-1">
@@ -160,7 +216,7 @@ export default function AdminDashboard() {
                             <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                         </div>
                         <h1 className="text-4xl font-black text-white mb-2 tracking-tight">Command Center.</h1>
-                        <p className="text-slate-400 text-sm font-medium">Real-time control over the HerFuture socio-economic engine.</p>
+                        <p className="text-slate-400 text-sm font-medium">Real-time control over the Herfuture socio-economic engine.</p>
                     </div>
 
                     <div className="flex items-center gap-4">
@@ -305,9 +361,11 @@ export default function AdminDashboard() {
                                         <tr key={i} className="border-b border-white/5 hover:bg-white/[0.02] transition-all">
                                             <td className="px-8 py-7">
                                                 <div className="flex items-center gap-3">
-                                                    <div className="w-10 h-10 rounded-xl bg-slate-900 flex items-center justify-center font-black text-slate-400">{s.first_name[0]}</div>
+                                                    <div className="w-10 h-10 rounded-xl bg-slate-900 flex items-center justify-center font-black text-slate-400">
+                                                        {s.first_name ? s.first_name[0] : '?'}
+                                                    </div>
                                                     <div>
-                                                        <div className="font-black text-white">{s.first_name} {s.last_name}</div>
+                                                        <div className="font-black text-white">{s.first_name || 'Anonymous'} {s.last_name || ''}</div>
                                                         <div className="text-[10px] text-slate-500 tracking-widest mt-0.5">{s.phone}</div>
                                                     </div>
                                                 </div>
@@ -378,6 +436,99 @@ export default function AdminDashboard() {
                     </div>
                 )}
 
+                {activeTab === 'Grants' && (
+                    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                            <div className="glass-panel p-8 rounded-[40px] border border-white/5 pb-0 overflow-hidden">
+                                <h3 className="text-xs font-black uppercase tracking-widest text-slate-400 mb-6">Recent Grant Cycles</h3>
+                                <div className="space-y-1">
+                                    {recentGrants.map((grant, i) => (
+                                        <div key={i} className="py-4 border-b border-white/5 flex items-center justify-between">
+                                            <div className="flex items-center gap-3">
+                                                <div className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-400">
+                                                    <ShieldCheck className="w-4 h-4" />
+                                                </div>
+                                                <div>
+                                                    <div className="text-sm font-bold text-white">{grant.student}</div>
+                                                    <div className="text-[10px] text-slate-500">{grant.track}</div>
+                                                </div>
+                                            </div>
+                                            <div className="text-right">
+                                                <div className="text-sm font-black text-emerald-400">+${grant.amount}</div>
+                                                <div className="text-[9px] font-mono text-slate-600 truncate w-24 ml-auto">{grant.tx}</div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+
+                            <div className="glass-panel p-8 rounded-[40px] border border-white/5">
+                                <h3 className="text-xs font-black uppercase tracking-widest text-slate-400 mb-6">Grant Configuration</h3>
+                                <div className="space-y-6">
+                                    <div className="p-6 rounded-3xl bg-white/5 border border-white/5">
+                                        <div className="flex justify-between items-center mb-4">
+                                            <span className="text-sm font-bold text-white">Base Lesson Grant</span>
+                                            <span className="text-sm font-black text-brand-400">$30.00</span>
+                                        </div>
+                                        <div className="w-full h-1.5 bg-slate-900 rounded-full">
+                                            <div className="w-[30%] h-full bg-brand-500 rounded-full" />
+                                        </div>
+                                        <p className="text-[10px] text-slate-500 mt-4 leading-relaxed italic">The standard cUSD amount dispersed upon successful completion of a lesson quiz.</p>
+                                    </div>
+
+                                    <div className="p-6 rounded-3xl bg-white/5 border border-white/5">
+                                        <div className="flex justify-between items-center mb-4">
+                                            <span className="text-sm font-bold text-white">Graduation Bonus</span>
+                                            <span className="text-sm font-black text-amber-400">$100.00</span>
+                                        </div>
+                                        <p className="text-[10px] text-slate-500 leading-relaxed italic">Dispersed upon completion of the final track 3 milestone.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {activeTab === 'Settings' && (
+                    <div className="glass-panel p-10 rounded-[40px] border border-white/5 max-w-2xl animate-in fade-in slide-in-from-bottom-4 duration-500">
+                        <h3 className="text-xl font-black text-white mb-8 italic">System Intelligence & Access</h3>
+                        <div className="space-y-8">
+                            <div className="flex items-center justify-between p-6 rounded-3xl bg-white/5 border border-white/5 hover:border-brand-500/20 transition-all">
+                                <div>
+                                    <h4 className="font-bold text-white text-sm">On-Chain Grant Disbursement</h4>
+                                    <p className="text-xs text-slate-500 mt-1">If disabled, lessons will complete but no funds will move.</p>
+                                </div>
+                                <button
+                                    onClick={toggleGrants}
+                                    className={`w-14 h-8 rounded-full relative transition-all duration-300 ${settings.grant_disbursement_active ? 'bg-emerald-500' : 'bg-slate-800'}`}
+                                >
+                                    <div className={`absolute top-1.5 w-5 h-5 rounded-full transition-all duration-300 bg-white shadow-lg ${settings.grant_disbursement_active ? 'right-1.5' : 'left-1.5 bg-slate-400'}`} />
+                                </button>
+                            </div>
+
+                            <div className="space-y-4">
+                                <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 block">Bridge Address (Admin Wallet)</label>
+                                <div className="p-4 bg-[#060914] border border-white/5 rounded-2xl flex items-center justify-between group">
+                                    <code className="text-xs text-slate-400 font-mono">0x71C7656EC7ab88b098defB751B7401B5f6d8976F</code>
+                                    <span className="text-[9px] font-black text-brand-400 opacity-0 group-hover:opacity-100 transition-opacity">Copy Address</span>
+                                </div>
+                            </div>
+
+                            <div className="pt-8 border-t border-white/5">
+                                <div className="bg-amber-500/10 border border-amber-500/20 p-6 rounded-3xl">
+                                    <div className="flex items-center gap-3 mb-2">
+                                        <Activity className="w-4 h-4 text-amber-500" />
+                                        <span className="text-xs font-black uppercase tracking-widest text-amber-500">Node Maintenance</span>
+                                    </div>
+                                    <p className="text-xs text-amber-200/60 leading-relaxed italic">
+                                        The Celo node synchronization is currently at 99.8%. No maintenance required for this epoch.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
                 {activeTab === 'CurriculumEditor' && editingCourse && (
                     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
                         <div className="flex items-center gap-4 mb-2">
@@ -429,7 +580,10 @@ export default function AdminDashboard() {
                             <div className="lg:col-span-2 space-y-6">
                                 <div className="flex justify-between items-center mb-2 px-4">
                                     <h3 className="text-[10px] font-black uppercase tracking-widest text-slate-500 font-medium">Syllabus Structure</h3>
-                                    <button className="flex items-center gap-2 text-[10px] font-bold text-brand-400 hover:text-white transition-colors">
+                                    <button
+                                        onClick={handleAddModule}
+                                        className="flex items-center gap-2 text-[10px] font-bold text-brand-400 hover:text-white transition-colors"
+                                    >
                                         <PlusCircle className="w-3 h-3" /> Add Module
                                     </button>
                                 </div>
@@ -449,39 +603,78 @@ export default function AdminDashboard() {
                                                     className="bg-transparent border-none text-white font-black focus:outline-none text-sm p-0 min-w-[200px]"
                                                 />
                                             </div>
-                                            <div className="text-[9px] font-mono text-slate-600 uppercase tracking-widest">ID: {mod.id}</div>
+                                            <div className="text-[9px] font-mono text-slate-600 uppercase tracking-widest flex items-center gap-4">
+                                                ID: {mod.id}
+                                                <button
+                                                    onClick={() => handleDeleteModule(mod.id)}
+                                                    className="p-1 hover:text-red-400 transition-colors"
+                                                >
+                                                    <X className="w-3 h-3" />
+                                                </button>
+                                            </div>
                                         </div>
                                         <div className="p-4 space-y-2 font-medium">
                                             {mod.lessons.map((lesson, li) => (
-                                                <div key={lesson.id} className="p-4 bg-white/5 rounded-2xl border border-white/5 hover:border-brand-500/30 transition-all flex items-center justify-between group">
-                                                    <div className="flex items-center gap-4 flex-1">
-                                                        <div className="w-2 h-2 rounded-full bg-slate-700 group-hover:bg-brand-500 transition-colors" />
-                                                        <input
-                                                            type="text"
-                                                            value={lesson.title}
-                                                            onChange={(e) => saveLessonValue(lesson.id, 'title', e.target.value)}
-                                                            className="bg-transparent border-none text-xs text-slate-300 focus:text-white focus:outline-none flex-1 p-0"
-                                                        />
-                                                    </div>
-                                                    <div className="flex items-center gap-4">
-                                                        <div className="flex items-center gap-2 bg-[#060914] px-3 py-1.5 rounded-xl border border-white/5">
-                                                            <DollarSign className="w-3 h-3 text-emerald-400" />
+                                                <div key={lesson.id} className="p-6 bg-white/5 rounded-[28px] border border-white/5 hover:border-brand-500/30 transition-all space-y-4 group">
+                                                    <div className="flex items-center justify-between">
+                                                        <div className="flex items-center gap-4 flex-1">
+                                                            <div className="w-2 h-2 rounded-full bg-slate-700 group-hover:bg-brand-500 transition-colors" />
                                                             <input
-                                                                type="number"
-                                                                value={lesson.grant_amount}
-                                                                onChange={(e) => saveLessonValue(lesson.id, 'grant_amount', parseInt(e.target.value))}
-                                                                className="bg-transparent border-none text-[10px] font-black text-white w-12 text-center focus:outline-none p-0"
+                                                                type="text"
+                                                                value={lesson.title}
+                                                                onChange={(e) => saveLessonValue(lesson.id, 'title', e.target.value)}
+                                                                className="bg-transparent border-none text-sm font-bold text-white focus:outline-none flex-1 p-0"
                                                             />
-                                                            <span className="text-[8px] font-black text-slate-600 uppercase">cUSD</span>
                                                         </div>
-                                                        <button className="opacity-0 group-hover:opacity-100 p-2 hover:bg-white/10 rounded-lg transition-all">
-                                                            <MoreHorizontal className="w-4 h-4 text-slate-600" />
-                                                        </button>
+                                                        <div className="flex items-center gap-4">
+                                                            <div className="flex items-center gap-2 bg-[#060914] px-3 py-1.5 rounded-xl border border-white/5">
+                                                                <DollarSign className="w-3 h-3 text-emerald-400" />
+                                                                <input
+                                                                    type="number"
+                                                                    value={lesson.grant_amount}
+                                                                    onChange={(e) => saveLessonValue(lesson.id, 'grant_amount', parseInt(e.target.value))}
+                                                                    className="bg-transparent border-none text-[10px] font-black text-white w-12 text-center focus:outline-none p-0"
+                                                                />
+                                                                <span className="text-[8px] font-black text-slate-600 uppercase">cUSD</span>
+                                                            </div>
+                                                            <button
+                                                                onClick={() => handleDeleteLesson(lesson.id, mod.id)}
+                                                                className="opacity-0 group-hover:opacity-100 p-2 hover:bg-red-500/20 hover:text-red-400 rounded-lg transition-all"
+                                                            >
+                                                                <X className="w-4 h-4" />
+                                                            </button>
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                        <div>
+                                                            <label className="text-[8px] font-black uppercase tracking-widest text-slate-600 block mb-1.5 ml-1">Video Endpoint (Embed URL)</label>
+                                                            <input
+                                                                type="text"
+                                                                value={lesson.video_url || ''}
+                                                                onChange={(e) => saveLessonValue(lesson.id, 'video_url', e.target.value)}
+                                                                placeholder="https://www.youtube.com/embed/..."
+                                                                className="w-full bg-[#060914] border border-white/5 rounded-xl py-2 px-3 text-[10px] text-slate-400 focus:outline-none focus:border-brand-500/50"
+                                                            />
+                                                        </div>
+                                                        <div>
+                                                            <label className="text-[8px] font-black uppercase tracking-widest text-slate-600 block mb-1.5 ml-1">Curriculum Summary</label>
+                                                            <input
+                                                                type="text"
+                                                                value={lesson.content || ''}
+                                                                onChange={(e) => saveLessonValue(lesson.id, 'content', e.target.value)}
+                                                                placeholder="Self-leadership and mindset..."
+                                                                className="w-full bg-[#060914] border border-white/5 rounded-xl py-2 px-3 text-[10px] text-slate-400 focus:outline-none focus:border-brand-500/50"
+                                                            />
+                                                        </div>
                                                     </div>
                                                 </div>
                                             ))}
-                                            <button className="w-full py-3 border border-dashed border-white/10 rounded-2xl flex items-center justify-center gap-2 text-[9px] font-black uppercase tracking-widest text-slate-600 hover:text-slate-400 hover:border-white/20 transition-all">
-                                                <PlusCircle className="w-3 h-3" /> Add Lesson
+                                            <button
+                                                onClick={() => handleAddLesson(mod.id)}
+                                                className="w-full py-3 border border-dashed border-white/10 rounded-2xl flex items-center justify-center gap-2 text-[9px] font-black uppercase tracking-widest text-slate-600 hover:text-slate-400 hover:border-white/20 transition-all mt-4"
+                                            >
+                                                <PlusCircle className="w-3 h-3" /> Add Lesson to {mod.title}
                                             </button>
                                         </div>
                                     </div>

@@ -102,9 +102,8 @@ export default function LandingPage() {
         <div className="min-h-screen bg-[#060914] text-slate-100 font-sans selection:bg-brand-500/30 overflow-x-hidden">
             {/* Top Navigation */}
             <nav className="fixed top-0 left-0 w-full z-50 px-6 py-4 flex justify-between items-center bg-[#060914]/80 backdrop-blur-xl border-b border-white/5">
-                <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate('/')}>
-                    <div className="w-8 h-8 rounded-lg bg-brand-500 flex items-center justify-center font-black text-white italic">H</div>
-                    <span className="font-bold tracking-tight text-xl bg-gradient-to-r from-white to-white/70 bg-clip-text text-transparent">HerFuture</span>
+                <div className="flex items-center gap-2 cursor-pointer h-10" onClick={() => navigate('/')}>
+                    <img src="/images/logo.svg" alt="HerFuture Chain Logo" className="h-full w-auto" />
                 </div>
 
                 {/* Desktop Menu */}
@@ -179,8 +178,8 @@ export default function LandingPage() {
 
 
                     <h1 className="text-5xl sm:text-7xl md:text-9xl font-black mb-8 tracking-tighter leading-[0.85] text-white animate-in fade-in slide-in-from-bottom-4 duration-1000">
-                        HerFuture <br />
-                        <span className="bg-gradient-to-r from-emerald-400 via-brand-400 to-indigo-400 bg-clip-text text-transparent">Chain.</span>
+                        Herfuture <br />
+                        <span className="bg-gradient-to-r from-emerald-400 via-brand-400 to-indigo-400 bg-clip-text text-transparent">chain.</span>
                     </h1>
 
                     <p className="text-slate-400 text-xl md:text-2xl font-medium leading-relaxed mb-6 animate-in fade-in slide-in-from-bottom-6 duration-1000">

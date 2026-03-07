@@ -8,9 +8,8 @@ export default function Footer() {
         <footer className="pt-12 pb-20 px-6 border-t border-white/5 bg-[#060914]">
             <div className="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-start gap-8 md:gap-12">
                 <div>
-                    <div className="flex items-center gap-2 mb-6 cursor-pointer" onClick={() => navigate('/')}>
-                        <div className="w-6 h-6 rounded-md bg-brand-500 flex items-center justify-center font-black text-white italic text-[10px]">H</div>
-                        <span className="font-bold tracking-tight text-white uppercase tracking-widest text-sm">HerFuture Chain</span>
+                    <div className="flex items-center gap-2 mb-6 cursor-pointer h-10" onClick={() => navigate('/')}>
+                        <img src="/images/logo.svg" alt="HerFuture Chain Logo" className="h-full w-auto" />
                     </div>
                     <p className="text-slate-500 text-sm max-w-xs leading-relaxed">
                         Pioneering distributed socio-economic mobility for teen mothers, out-of-school girls and unemployed girls. Open-source, transparent, and built for impact.

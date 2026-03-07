@@ -337,6 +337,90 @@ async function updateLesson(req, res) {
     }
 }
 
+async function createCourse(req, res) {
+    try {
+        const { title, category, track_number } = req.body;
+        const { data, error } = await supabase
+            .from('courses')
+            .insert([{ title, category, track_number, is_published: false }])
+            .select();
+        if (error) throw error;
+        res.json(data[0]);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+}
+
+async function deleteCourse(req, res) {
+    try {
+        const { courseId } = req.params;
+        const { error } = await supabase
+            .from('courses')
+            .delete()
+            .eq('id', courseId);
+        if (error) throw error;
+        res.json({ success: true });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+}
+
+async function createModule(req, res) {
+    try {
+        const { course_id, title, sequence_number } = req.body;
+        const { data, error } = await supabase
+            .from('modules')
+            .insert([{ course_id, title, sequence_number }])
+            .select();
+        if (error) throw error;
+        res.json(data[0]);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+}
+
+async function deleteModule(req, res) {
+    try {
+        const { moduleId } = req.params;
+        const { error } = await supabase
+            .from('modules')
+            .delete()
+            .eq('id', moduleId);
+        if (error) throw error;
+        res.json({ success: true });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+}
+
+async function createLesson(req, res) {
+    try {
+        const { course_id, module_id, title, sequence_number, grant_amount, video_url } = req.body;
+        const { data, error } = await supabase
+            .from('lessons')
+            .insert([{ course_id, module_id, title, sequence_number, grant_amount: grant_amount || 0, video_url: video_url || '' }])
+            .select();
+        if (error) throw error;
+        res.json(data[0]);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+}
+
+async function deleteLesson(req, res) {
+    try {
+        const { lessonId } = req.params;
+        const { error } = await supabase
+            .from('lessons')
+            .delete()
+            .eq('id', lessonId);
+        if (error) throw error;
+        res.json({ success: true });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+}
+
 module.exports = {
     getCourses,
     getCourseModules,
@@ -350,5 +434,11 @@ module.exports = {
     getLesson,
     updateCourse,
     updateModule,
-    updateLesson
+    updateLesson,
+    createCourse,
+    deleteCourse,
+    createModule,
+    deleteModule,
+    createLesson,
+    deleteLesson
 };

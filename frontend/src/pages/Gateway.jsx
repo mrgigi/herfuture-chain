@@ -64,6 +64,10 @@ export default function Gateway() {
                 <div className="max-w-6xl mx-auto px-6 pt-10 pb-32 relative z-10">
                     {/* Header */}
                     <div className="text-center mb-16 animate-in fade-in slide-in-from-top-4 duration-1000">
+                        <div className="flex justify-center mb-12">
+                            <img src="/images/logo.svg" alt="HerFuture Chain Logo" className="h-16 w-auto" />
+                        </div>
+
                         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-800/50 border border-slate-700/50 mb-6 backdrop-blur-sm">
                             <div className="w-2 h-2 rounded-full bg-brand-500 animate-pulse" />
                             <span className="text-[10px] uppercase tracking-[0.2em] font-bold text-slate-400">Mainnet Beta Gateway</span>
@@ -78,9 +82,9 @@ export default function Gateway() {
                         <img
                             src="/images/banner.png"
                             alt="Empowerment Hub"
-                            className="w-full h-[380px] object-cover rounded-[44px] transition-transform duration-[2000ms] group-hover:scale-105"
+                            className="w-full h-[380px] object-cover rounded-[44px] transition-transform duration-[2000ms] group-hover:scale-105 opacity-40 group-hover:opacity-50"
                         />
-                        <div className="absolute inset-0 bg-gradient-to-t from-[#0A0F1C] via-[#0A0F1C]/10 to-transparent" />
+                        <div className="absolute inset-0 bg-gradient-to-t from-[#0A0F1C] via-[#0A0F1C]/60 to-transparent" />
                         <div className="absolute bottom-10 left-10 md:left-16 max-w-xl">
                             <h2 className="text-4xl md:text-6xl font-black text-white mb-4 tracking-tighter leading-tight">Your Future <br /> Starts Here.</h2>
                             <p className="text-slate-200 text-sm md:text-lg font-medium opacity-100 leading-relaxed max-w-md">

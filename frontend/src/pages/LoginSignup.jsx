@@ -86,9 +86,8 @@ export default function LoginSignup() {
                 <div className="absolute inset-0 bg-gradient-to-t from-[#0A0F1C] via-[#0A0F1C]/20 to-transparent" />
 
                 {/* Branding on top of image */}
-                <div className="absolute top-10 left-10 z-20 flex items-center gap-2 cursor-pointer transition-transform active:scale-95" onClick={() => navigate('/')}>
-                    <div className="w-8 h-8 rounded-lg bg-brand-500 flex items-center justify-center font-black text-white italic">H</div>
-                    <span className="font-bold tracking-tight text-white uppercase tracking-widest text-sm">HerFuture</span>
+                <div className="absolute top-10 left-10 z-20 flex items-center gap-2 cursor-pointer transition-transform active:scale-95 h-10" onClick={() => navigate('/')}>
+                    <img src="/images/logo.svg" alt="HerFuture Chain Logo" className="h-full w-auto" />
                 </div>
 
                 {/* Floating Content */}
@@ -106,8 +105,8 @@ export default function LoginSignup() {
             <div className="w-full lg:w-[55%] xl:w-[50%] flex flex-col h-screen overflow-y-auto">
                 {/* Mobile/Small Screen Header */}
                 <nav className="lg:hidden relative z-30 px-6 py-6 flex justify-between items-center w-full">
-                    <div className="flex items-center gap-2 cursor-pointer transition-transform active:scale-95" onClick={() => navigate('/')}>
-                        <div className="w-8 h-8 rounded-lg bg-brand-500 flex items-center justify-center font-black text-white italic">H</div>
+                    <div className="flex items-center gap-2 cursor-pointer transition-transform active:scale-95 h-8" onClick={() => navigate('/')}>
+                        <img src="/images/logo.svg" alt="HerFuture Chain Logo" className="h-full w-auto" />
                     </div>
                     <button
                         onClick={() => navigate('/gate')}

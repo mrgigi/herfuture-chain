@@ -74,10 +74,9 @@ export default function ImpactDashboard() {
     return (
         <div className="min-h-screen bg-[#0A0F1C] text-slate-100 font-sans pb-20">
             {/* Nav */}
-            <nav className="p-4 md:p-6 flex justify-between items-center border-b border-white/5 bg-slate-900/20 backdrop-blur-md sticky top-0 z-50">
-                <div className="flex items-center gap-2 cursor-pointer group" onClick={() => navigate('/')}>
-                    <div className="w-8 h-8 rounded-lg bg-brand-500 flex items-center justify-center font-black text-white italic text-xs group-hover:scale-110 transition-transform">H</div>
-                    <span className="font-bold tracking-tight text-lg md:text-xl text-white group-hover:text-brand-400 transition-colors">Impact & Audit</span>
+            <nav className="p-4 md:p-6 flex justify-between items-center border-b border-white/5 bg-slate-900/20 backdrop-blur-md sticky top-0 z-50 h-20">
+                <div className="flex items-center gap-2 cursor-pointer group h-full" onClick={() => navigate('/')}>
+                    <img src="/images/logo.svg" alt="HerFuture Chain Logo" className="h-full w-auto" />
                 </div>
                 <div className="hidden md:flex gap-8 text-xs font-bold uppercase tracking-widest text-slate-500">
                     <span className="text-white">Active Projects</span>

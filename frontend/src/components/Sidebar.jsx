@@ -12,11 +12,8 @@ export default function Sidebar({ active }) {
 
     return (
         <div className="w-64 bg-slate-900 border-r border-slate-800 hidden md:flex flex-col h-full fixed top-0 left-0 z-40">
-            <div className="p-6">
-                <h2 className="text-2xl font-bold bg-gradient-to-r from-brand-400 to-indigo-400 bg-clip-text text-transparent">
-                    HerFuture
-                </h2>
-                <p className="text-xs text-slate-500 font-mono mt-1 tracking-widest uppercase">Chain</p>
+            <div className="p-6 h-20 flex items-center">
+                <img src="/images/logo.svg" alt="HerFuture Chain Logo" className="h-full w-auto cursor-pointer" onClick={() => navigate('/')} />
             </div>
 
             <nav className="flex-1 mt-6">

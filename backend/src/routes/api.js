@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 
 const { createWallet, getParticipant } = require('../controllers/walletController');
-const { getCourses, getCourseModules, getLessonQuiz, completeLesson, getProgressOverview, getAllParticipantsWithProgress, updateCourseStatus, getSystemSettings, updateSystemSetting, getLesson } = require('../controllers/lmsController');
+const { getCourses, getCourseModules, getLessonQuiz, completeLesson, getProgressOverview, getAllParticipantsWithProgress, updateCourseStatus, getSystemSettings, updateSystemSetting, getLesson, updateCourse, updateModule, updateLesson, createCourse, deleteCourse, createModule, deleteModule, createLesson, deleteLesson } = require('../controllers/lmsController');
 const { issueCredential, verifyCredential, getCredentialsByAddress } = require('../controllers/credentialController');
 const { releaseGrant, getGrants, getGlobalImpactStats, getRecentGrants } = require('../controllers/grantController');
 
@@ -22,10 +22,18 @@ router.get('/progress-overview/:participantId', getProgressOverview);
 
 // 3. Admin & System Management
 router.get('/admin/participants', getAllParticipantsWithProgress);
+router.post('/admin/courses', createCourse);
 router.post('/admin/course-status', updateCourseStatus);
 router.post('/admin/courses/:courseId', updateCourse);
+router.delete('/admin/courses/:courseId', deleteCourse);
+
+router.post('/admin/modules', createModule);
 router.post('/admin/modules/:moduleId', updateModule);
+router.delete('/admin/modules/:moduleId', deleteModule);
+
+router.post('/admin/lessons', createLesson);
 router.post('/admin/lessons/:lessonId', updateLesson);
+router.delete('/admin/lessons/:lessonId', deleteLesson);
 router.get('/admin/settings', getSystemSettings);
 router.post('/admin/settings', updateSystemSetting);
 

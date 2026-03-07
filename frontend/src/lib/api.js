@@ -121,5 +121,34 @@ export const updateLesson = async (lessonId, data) => {
     return response.data;
 };
 
-// Add more API helpers as needed for dashboard data
+export const createCourse = async (data) => {
+    const response = await api.post('/admin/courses', data);
+    return response.data;
+};
+
+export const deleteCourse = async (courseId) => {
+    const response = await api.delete(`/admin/courses/${courseId}`);
+    return response.data;
+};
+
+export const createModule = async (data) => {
+    const response = await api.post('/admin/modules', data);
+    return response.data;
+};
+
+export const deleteModule = async (moduleId) => {
+    const response = await api.delete(`/admin/modules/${moduleId}`);
+    return response.data;
+};
+
+export const createLesson = async (data) => {
+    const response = await api.post('/admin/lessons', data);
+    return response.data;
+};
+
+export const deleteLesson = async (lessonId) => {
+    const response = await api.delete(`/admin/lessons/${lessonId}`);
+    return response.data;
+};
+
 export default api;
