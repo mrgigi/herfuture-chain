@@ -49,10 +49,15 @@ export default function Gateway() {
         <div className="flex flex-col min-h-screen bg-[#0A0F1C] text-slate-100 font-sans overflow-x-hidden">
             {/* Header Nav */}
             <nav className="relative z-30 px-6 py-6 flex justify-between items-center bg-transparent w-full max-w-7xl mx-auto">
-                <div className="flex items-center gap-2 cursor-pointer transition-transform active:scale-95" onClick={() => navigate('/')}>
-                    <div className="w-8 h-8 rounded-lg bg-brand-500 flex items-center justify-center font-black text-white italic">H</div>
-                    <span className="font-bold tracking-tight text-white uppercase tracking-widest text-sm hidden sm:block">HerFuture</span>
+                <div className="flex items-center gap-2 cursor-pointer transition-transform active:scale-95 h-10" onClick={() => navigate('/')}>
+                    <img src="/images/logo.svg" alt="HerFuture Chain Logo" className="h-full w-auto" />
                 </div>
+                <button
+                    onClick={() => navigate('/')}
+                    className="text-xs font-bold uppercase tracking-widest text-slate-500 hover:text-white transition-colors"
+                >
+                    Back to Home
+                </button>
             </nav>
 
             <div className="flex-grow flex flex-col relative">
@@ -64,10 +69,6 @@ export default function Gateway() {
                 <div className="max-w-6xl mx-auto px-6 pt-10 pb-32 relative z-10">
                     {/* Header */}
                     <div className="text-center mb-16 animate-in fade-in slide-in-from-top-4 duration-1000">
-                        <div className="flex justify-center mb-12">
-                            <img src="/images/logo.svg" alt="HerFuture Chain Logo" className="h-16 w-auto" />
-                        </div>
-
                         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-800/50 border border-slate-700/50 mb-6 backdrop-blur-sm">
                             <div className="w-2 h-2 rounded-full bg-brand-500 animate-pulse" />
                             <span className="text-[10px] uppercase tracking-[0.2em] font-bold text-slate-400">Mainnet Beta Gateway</span>

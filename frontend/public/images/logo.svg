@@ -16,6 +16,6 @@
   <!-- Text Group (Transparent optimized version) -->
   <g transform="translate(240, 75)">
     <text y="30" font-family="Inter, Arial, sans-serif" font-weight="900" font-size="72" fill="white" style="letter-spacing: -2px;">Herfuture</text>
-    <text y="105" x="2" font-family="Inter, Arial, sans-serif" font-weight="900" font-size="64" fill="#F4A623" style="letter-spacing: 2px;">chain</text>
+    <text y="105" x="2" font-family="Inter, Arial, sans-serif" font-weight="900" font-size="64" fill="#F4A623" style="letter-spacing: 2px;">Chain</text>
   </g>
 </svg>

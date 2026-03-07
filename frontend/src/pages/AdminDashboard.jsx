@@ -216,7 +216,7 @@ export default function AdminDashboard() {
                             <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                         </div>
                         <h1 className="text-4xl font-black text-white mb-2 tracking-tight">Command Center.</h1>
-                        <p className="text-slate-400 text-sm font-medium">Real-time control over the Herfuture socio-economic engine.</p>
+                        <p className="text-slate-400 text-sm font-medium">Real-time control over the Herfuture Chain socio-economic engine.</p>
                     </div>
 
                     <div className="flex items-center gap-4">

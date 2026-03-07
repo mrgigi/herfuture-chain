@@ -179,7 +179,7 @@ export default function LandingPage() {
 
                     <h1 className="text-5xl sm:text-7xl md:text-9xl font-black mb-8 tracking-tighter leading-[0.85] text-white animate-in fade-in slide-in-from-bottom-4 duration-1000">
                         Herfuture <br />
-                        <span className="bg-gradient-to-r from-emerald-400 via-brand-400 to-indigo-400 bg-clip-text text-transparent">chain.</span>
+                        <span className="bg-gradient-to-r from-emerald-400 via-brand-400 to-indigo-400 bg-clip-text text-transparent">Chain.</span>
                     </h1>
 
                     <p className="text-slate-400 text-xl md:text-2xl font-medium leading-relaxed mb-6 animate-in fade-in slide-in-from-bottom-6 duration-1000">
