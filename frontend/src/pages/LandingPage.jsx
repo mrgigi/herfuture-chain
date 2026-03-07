@@ -248,8 +248,8 @@ export default function LandingPage() {
                                 className="rounded-[38px] w-full aspect-square object-cover grayscale group-hover:grayscale-0 transition-all duration-700"
                             />
                             <div className="absolute inset-x-8 bottom-8 glass-panel p-6 rounded-3xl border border-white/10 backdrop-blur-xl translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-500">
-                                <h3 className="text-xl font-bold mb-2 italic">Building Pathways</h3>
-                                <p className="text-slate-400 text-xs">Transforming geographical barriers into digital bridges.</p>
+                                <h3 className="text-xl font-bold mb-2 italic">A Path Forward</h3>
+                                <p className="text-slate-400 text-xs">Helping you build a life you love, right from your community.</p>
                             </div>
                         </div>
                     </div>
