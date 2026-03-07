@@ -26,7 +26,7 @@ export default function AppFooter() {
                     <div>
                         <div className="text-[8px] font-black text-white/30 uppercase tracking-[0.2em] leading-none mb-1">Network Status</div>
                         <div className="text-[10px] font-bold text-white flex items-center gap-1.5 whitespace-nowrap">
-                            <span className="text-celo">Celo</span> Sepolia <Shield className={`w-3 h-3 ${accentColor}`} />
+                            <span className="text-white">Network</span> Status <Shield className={`w-3 h-3 ${accentColor}`} />
                         </div>
                     </div>
                 </div>
@@ -51,7 +51,7 @@ export default function AppFooter() {
                 <div className={`hidden lg:flex items-center gap-3 px-4 py-1.5 rounded-full ${accentBg} border border-white/5`}>
                     <Globe className={`w-3 h-3 ${accentColor} animate-spin-slow`} />
                     <div className="text-[9px] font-bold text-white/80 whitespace-nowrap tracking-tight">
-                        Proof-of-Learn Mining Active
+                        Verified Achievement Sync Active
                     </div>
                 </div>
 

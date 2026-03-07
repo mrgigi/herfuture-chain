@@ -261,7 +261,7 @@ export default function LoginSignup() {
 
                             {!isLogin && step === 'phone' && (
                                 <p className="mt-8 text-[9px] text-center text-slate-600 uppercase font-black tracking-[0.1em] leading-relaxed border-t border-white/5 pt-6">
-                                    Powered by <span className="text-celo">Celo Mainnet</span> Layer 2 Protocol.
+                                    Powered by <span className="text-white">Secure Mainnet</span> Layer 2 Protocol.
                                 </p>
                             )}
                         </div>

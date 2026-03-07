@@ -3,15 +3,16 @@ import { useNavigate } from 'react-router-dom';
 import {
     Users, BookOpen, DollarSign, Settings, Search, MoreHorizontal,
     GraduationCap, ArrowUpRight, ShieldCheck, Power, LayoutGrid, Activity,
-    Edit3, ChevronRight, Save, X, PlusCircle
+    Edit3, ChevronRight, Save, X, PlusCircle, Home, Globe, LogOut
 } from 'lucide-react';
 import api, {
     getCourses, getAdminParticipants, getSystemSettings,
     updateSystemSetting, updateCourseStatus, updateCourseDetails,
     updateModule, updateLesson, getModules,
     createModule, deleteModule, createLesson, deleteLesson,
-    createCourse
+    createCourse, generateQuizAI, getQuiz, saveQuiz
 } from '../lib/api';
+import { Sparkles, Loader2, HelpCircle, List } from 'lucide-react';
 
 export default function AdminDashboard() {
     const navigate = useNavigate();
@@ -25,6 +26,11 @@ export default function AdminDashboard() {
     const [courseModules, setCourseModules] = useState([]);
     const [loading, setLoading] = useState(true);
     const [authorized, setAuthorized] = useState(false);
+    const [isGeneratingQuiz, setIsGeneratingQuiz] = useState(null); // lessonId of current generation
+    const [quizEditorOpen, setQuizEditorOpen] = useState(false);
+    const [currentLessonForQuiz, setCurrentLessonForQuiz] = useState(null);
+    const [quizData, setQuizData] = useState([]);
+    const [isSavingQuiz, setIsSavingQuiz] = useState(false);
 
     useEffect(() => {
         const isAdmin = sessionStorage.getItem('is_admin') === 'true';
@@ -73,7 +79,10 @@ export default function AdminDashboard() {
         try {
             await updateCourseDetails(editingCourse.id, {
                 title: editingCourse.title,
-                category: editingCourse.category
+                learning_outcome: editingCourse.learning_outcome,
+                description: editingCourse.description,
+                image_url: editingCourse.image_url,
+                track_number: parseInt(editingCourse.track_number) || 1
             });
             setCourses(prev => prev.map(c => c.id === editingCourse.id ? editingCourse : c));
         } catch (err) {
@@ -95,6 +104,67 @@ export default function AdminDashboard() {
         }
     };
 
+    const handleGenerateAIQuiz = async (lesson) => {
+        if (!lesson.title && !lesson.content) {
+            alert("Please provide a lesson title or summary first!");
+            return;
+        }
+        setIsGeneratingQuiz(lesson.id);
+        try {
+            const result = await generateQuizAI({
+                lessonId: lesson.id,
+                title: lesson.title,
+                learning_outcome: editingCourse.learning_outcome,
+                content: lesson.content
+            });
+            alert(`Successfully generated a 5-question quiz for "${lesson.title}"!`);
+            // Optionally refresh lesson data if needed
+        } catch (err) {
+            console.error("AI Generation error:", err);
+            alert("Failed to generate quiz. Check console for details.");
+        } finally {
+            setIsGeneratingQuiz(null);
+        }
+    };
+
+    const handleEditQuizManual = async (lesson) => {
+        setCurrentLessonForQuiz(lesson);
+        setQuizData([]);
+        setQuizEditorOpen(true);
+        try {
+            const data = await getQuiz(lesson.id);
+            if (data && data.length > 0) {
+                setQuizData(data[0].data || []);
+            }
+        } catch (err) {
+            console.error("Fetch quiz error:", err);
+        }
+    };
+
+    const handleSaveQuizManual = async () => {
+        if (!currentLessonForQuiz) return;
+        setIsSavingQuiz(true);
+        try {
+            await saveQuiz(currentLessonForQuiz.id, quizData);
+            setQuizEditorOpen(false);
+            alert("Quiz saved successfully!");
+        } catch (err) {
+            console.error("Save quiz error:", err);
+            alert("Failed to save quiz");
+        } finally {
+            setIsSavingQuiz(false);
+        }
+    };
+
+    const addQuestion = () => {
+        setQuizData([...quizData, {
+            question: "",
+            options: ["", "", "", ""],
+            answer: ""
+        }]);
+    };
+
+
     const saveModuleTitle = async (moduleId, title) => {
         try {
             await updateModule(moduleId, { title });
@@ -114,10 +184,25 @@ export default function AdminDashboard() {
         setCourses(prev => prev.map(c => c.id === id ? { ...c, is_published: !currentStatus } : c));
     };
 
-    const filteredStudents = students.filter(s => {
+    const filteredStudents = students ? students.filter(s => {
         const fullName = `${s.first_name || ''} ${s.last_name || ''}`.toLowerCase();
         return fullName.includes(searchTerm.toLowerCase()) || (s.phone && s.phone.includes(searchTerm));
-    });
+    }) : [];
+
+    const handleAddCourse = async () => {
+        try {
+            const nextTrack = courses.length + 1;
+            const newCourse = await createCourse({
+                title: "New Track",
+                learning_outcome: "Track Learning Outcomes...",
+                track_number: nextTrack
+            });
+            setCourses([...courses, newCourse]);
+            handleCourseClick(newCourse);
+        } catch (err) {
+            console.error("Add course error:", err);
+        }
+    };
 
     const handleAddModule = async () => {
         try {
@@ -197,7 +282,7 @@ export default function AdminDashboard() {
                     <img src="/images/logo.svg" alt="HerFuture Chain Logo" className="h-full w-auto" />
                 </div>
 
-                <nav className="space-y-1">
+                <nav className="space-y-1 flex-1">
                     {[
                         { icon: <LayoutGrid className="w-4 h-4" />, label: 'Overview' },
                         { icon: <Users className="w-4 h-4" />, label: 'Students' },
@@ -218,6 +303,33 @@ export default function AdminDashboard() {
                         </div>
                     ))}
                 </nav>
+
+                <div className="mt-8 space-y-1 pt-6 border-t border-white/5">
+                    <div
+                        onClick={() => navigate('/')}
+                        className="flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer transition-all text-slate-500 hover:text-slate-300 hover:bg-white/5"
+                    >
+                        <Home className="w-4 h-4" />
+                        <span className="text-sm font-semibold">Home</span>
+                    </div>
+                    <div
+                        onClick={() => navigate('/gate')}
+                        className="flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer transition-all text-slate-500 hover:text-slate-300 hover:bg-white/5"
+                    >
+                        <Globe className="w-4 h-4" />
+                        <span className="text-sm font-semibold">Gateway</span>
+                    </div>
+                    <div
+                        onClick={() => {
+                            sessionStorage.removeItem('is_admin');
+                            navigate('/admin-login');
+                        }}
+                        className="flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer transition-all text-red-500/70 hover:text-red-400 hover:bg-red-500/10 mt-2"
+                    >
+                        <LogOut className="w-4 h-4" />
+                        <span className="text-sm font-semibold">Logout</span>
+                    </div>
+                </div>
             </aside>
 
             {/* Main Content */}
@@ -292,7 +404,7 @@ export default function AdminDashboard() {
                                             <DollarSign className="w-8 h-8 text-amber-400" />
                                         </div>
                                         <div>
-                                            <div className="text-3xl font-black text-white">$4,850.00</div>
+                                            <div className="text-3xl font-black text-white">$100,000.00</div>
                                             <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Available cUSD Reserve</div>
                                         </div>
                                     </div>
@@ -354,6 +466,7 @@ export default function AdminDashboard() {
                                             <th className="px-8 py-5">Full Identity</th>
                                             <th className="px-8 py-5">Milestone Velocity</th>
                                             <th className="px-8 py-5">Chain Address</th>
+                                            <th className="px-8 py-5">Registered</th>
                                             <th className="px-8 py-5 text-right">Actions</th>
                                         </tr>
                                     </thead>
@@ -385,6 +498,9 @@ export default function AdminDashboard() {
                                                         <div className="text-[11px] font-mono text-slate-500 tracking-tighter">{s.wallet_address?.slice(0, 16)}...</div>
                                                     </div>
                                                 </td>
+                                                <td className="px-8 py-7 text-sm text-slate-500">
+                                                    {s.created_at ? new Date(s.created_at).toLocaleDateString() : '-'}
+                                                </td>
                                                 <td className="px-8 py-7 text-right">
                                                     <button className="px-3 py-2 bg-white/5 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-white/10 transition-colors">View Profile</button>
                                                 </td>
@@ -399,11 +515,17 @@ export default function AdminDashboard() {
 
                 {activeTab === 'Curriculum' && (
                     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                        <div className="flex justify-between items-end mb-4">
+                        <div className="flex justify-between items-end mb-8">
                             <div>
                                 <h1 className="text-3xl font-black text-white mb-1 italic">Knowledge Tracks.</h1>
                                 <p className="text-xs text-slate-500 tracking-tight">Managing the core educational engine and grant milestones.</p>
                             </div>
+                            <button
+                                onClick={handleAddCourse}
+                                className="flex items-center gap-2 px-6 py-3 bg-brand-600 hover:bg-brand-500 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all shadow-[0_0_20px_rgba(59,130,246,0.2)]"
+                            >
+                                <PlusCircle className="w-4 h-4" /> Add New Track
+                            </button>
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                             {courses.map(course => (
@@ -418,12 +540,7 @@ export default function AdminDashboard() {
                                                 <Edit3 className="w-8 h-8 text-white" />
                                             </div>
                                         </div>
-                                        <div className="flex items-center gap-2 mb-3">
-                                            <span className={`text-[9px] font-black uppercase tracking-[0.2em] px-3 py-1 rounded-full ${course.id === 'track-1' ? 'bg-brand-500/20 text-brand-400' : course.id === 'track-2' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-amber-500/20 text-amber-400'}`}>
-                                                {course.category}
-                                            </span>
-                                            <span className="text-[9px] font-black uppercase tracking-[0.2em] text-slate-600">Track {course.track_number}</span>
-                                        </div>
+
                                         <h3 className="text-xl font-bold text-white mb-2 leading-tight">{course.title}</h3>
                                         <p className="text-xs text-slate-500 font-medium leading-relaxed">System-assigned track for the socio-economic empowerment path.</p>
                                     </div>
@@ -583,13 +700,40 @@ export default function AdminDashboard() {
                                             />
                                         </div>
                                         <div>
-                                            <label className="text-[9px] font-black uppercase tracking-widest text-slate-500 mb-2 block pl-1">Visual Category</label>
-                                            <input
-                                                type="text"
-                                                value={editingCourse.category}
-                                                onChange={(e) => setEditingCourse({ ...editingCourse, category: e.target.value })}
-                                                className="w-full bg-[#060914] border border-white/5 rounded-2xl py-3 px-4 text-sm text-white focus:outline-none focus:border-brand-500/50"
+                                            <label className="text-[9px] font-black uppercase tracking-widest text-slate-500 mb-2 block pl-1">Track Learning Outcomes</label>
+                                            <textarea
+                                                value={editingCourse.learning_outcome || ''}
+                                                onChange={(e) => setEditingCourse({ ...editingCourse, learning_outcome: e.target.value })}
+                                                className="w-full bg-[#060914] border border-white/5 rounded-2xl py-3 px-4 text-sm text-white focus:outline-none focus:border-brand-500/50 min-h-[60px]"
                                             />
+                                        </div>
+                                        <div>
+                                            <label className="text-[9px] font-black uppercase tracking-widest text-slate-500 mb-2 block pl-1">Description</label>
+                                            <textarea
+                                                value={editingCourse.description || ''}
+                                                onChange={(e) => setEditingCourse({ ...editingCourse, description: e.target.value })}
+                                                className="w-full bg-[#060914] border border-white/5 rounded-2xl py-3 px-4 text-sm text-white focus:outline-none focus:border-brand-500/50 min-h-[80px]"
+                                            />
+                                        </div>
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div>
+                                                <label className="text-[9px] font-black uppercase tracking-widest text-slate-500 mb-2 block pl-1">Track #</label>
+                                                <input
+                                                    type="number"
+                                                    value={editingCourse.track_number || ''}
+                                                    onChange={(e) => setEditingCourse({ ...editingCourse, track_number: e.target.value })}
+                                                    className="w-full bg-[#060914] border border-white/5 rounded-2xl py-3 px-4 text-sm text-white focus:outline-none focus:border-brand-500/50"
+                                                />
+                                            </div>
+                                            <div>
+                                                <label className="text-[9px] font-black uppercase tracking-widest text-slate-500 mb-2 block pl-1">Cover Image URL</label>
+                                                <input
+                                                    type="text"
+                                                    value={editingCourse.image_url || ''}
+                                                    onChange={(e) => setEditingCourse({ ...editingCourse, image_url: e.target.value })}
+                                                    className="w-full bg-[#060914] border border-white/5 rounded-2xl py-3 px-4 text-[10px] text-white focus:outline-none focus:border-brand-500/50"
+                                                />
+                                            </div>
                                         </div>
                                         <button
                                             onClick={saveCourse}
@@ -665,6 +809,25 @@ export default function AdminDashboard() {
                                                                 <span className="text-[8px] font-black text-slate-600 uppercase">cUSD</span>
                                                             </div>
                                                             <button
+                                                                onClick={() => handleGenerateAIQuiz(lesson)}
+                                                                disabled={isGeneratingQuiz === lesson.id}
+                                                                className={`flex items-center gap-2 px-3 py-1.5 rounded-xl border border-brand-500/30 text-[9px] font-black uppercase tracking-widest transition-all ${isGeneratingQuiz === lesson.id ? 'bg-brand-500/20 text-brand-400' : 'bg-brand-500/10 text-brand-400 hover:bg-brand-500 hover:text-white hover:shadow-[0_0_15px_rgba(59,130,246,0.4)]'}`}
+                                                            >
+                                                                {isGeneratingQuiz === lesson.id ? (
+                                                                    <Loader2 className="w-3 h-3 animate-spin" />
+                                                                ) : (
+                                                                    <Sparkles className="w-3 h-3" />
+                                                                )}
+                                                                {isGeneratingQuiz === lesson.id ? 'Generating...' : 'AI Quiz'}
+                                                            </button>
+                                                            <button
+                                                                onClick={() => handleEditQuizManual(lesson)}
+                                                                className="flex items-center gap-2 px-3 py-1.5 rounded-xl border border-white/5 bg-white/5 text-slate-400 text-[9px] font-black uppercase tracking-widest hover:bg-white/10 hover:text-white transition-all"
+                                                            >
+                                                                <HelpCircle className="w-3 h-3" />
+                                                                Curate
+                                                            </button>
+                                                            <button
                                                                 onClick={() => handleDeleteLesson(lesson.id, mod.id)}
                                                                 className="opacity-0 group-hover:opacity-100 p-2 hover:bg-red-500/20 hover:text-red-400 rounded-lg transition-all"
                                                             >
@@ -706,6 +869,116 @@ export default function AdminDashboard() {
                                         </div>
                                     </div>
                                 ))}
+                            </div>
+                        </div>
+                    </div>
+                )}
+                {/* Quiz Editor Modal */}
+                {quizEditorOpen && (
+                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 backdrop-blur-xl bg-black/60">
+                        <div className="glass-panel w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col rounded-[48px] border border-white/10 shadow-2xl animate-in zoom-in-95 duration-300">
+                            <div className="p-8 border-b border-white/5 flex justify-between items-center bg-white/[0.02]">
+                                <div>
+                                    <h3 className="text-xl font-black text-white italic">Curating Quiz.</h3>
+                                    <p className="text-[10px] text-slate-500 font-bold uppercase tracking-tighter">Lesson: {currentLessonForQuiz?.title}</p>
+                                </div>
+                                <button onClick={() => setQuizEditorOpen(false)} className="p-2 hover:bg-white/5 rounded-full transition-colors">
+                                    <X className="w-5 h-5 text-slate-500" />
+                                </button>
+                            </div>
+
+                            <div className="flex-1 overflow-y-auto p-8 space-y-8 custom-scrollbar">
+                                {quizData.length === 0 && (
+                                    <div className="text-center py-12">
+                                        <div className="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-4">
+                                            <HelpCircle className="w-8 h-8 text-slate-700" />
+                                        </div>
+                                        <p className="text-slate-500 text-xs font-medium">No questions yet. Use AI or add manually.</p>
+                                    </div>
+                                )}
+
+                                {quizData.map((q, idx) => (
+                                    <div key={idx} className="space-y-4 p-6 bg-white/[0.03] rounded-3xl border border-white/5 relative group">
+                                        <button
+                                            onClick={() => setQuizData(quizData.filter((_, i) => i !== idx))}
+                                            className="absolute top-4 right-4 p-1.5 text-slate-600 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-all"
+                                        >
+                                            <X className="w-4 h-4" />
+                                        </button>
+                                        <div>
+                                            <label className="text-[9px] font-black uppercase text-slate-500 mb-2 block">Question {idx + 1}</label>
+                                            <input
+                                                type="text"
+                                                value={q.question}
+                                                onChange={(e) => {
+                                                    const newData = [...quizData];
+                                                    newData[idx].question = e.target.value;
+                                                    setQuizData(newData);
+                                                }}
+                                                className="w-full bg-[#060914]/50 border border-white/5 rounded-2xl py-3 px-4 text-sm text-white focus:outline-none focus:border-brand-500/50"
+                                                placeholder="e.g. What is a smart contract?"
+                                            />
+                                        </div>
+                                        <div className="grid grid-cols-2 gap-4">
+                                            {q.options.map((opt, oIdx) => (
+                                                <div key={oIdx}>
+                                                    <label className="text-[8px] font-black uppercase text-slate-600 mb-1.5 block ml-1">Option {String.fromCharCode(65 + oIdx)}</label>
+                                                    <input
+                                                        type="text"
+                                                        value={opt}
+                                                        onChange={(e) => {
+                                                            const newData = [...quizData];
+                                                            newData[idx].options[oIdx] = e.target.value;
+                                                            setQuizData(newData);
+                                                        }}
+                                                        className="w-full bg-[#060914]/30 border border-white/5 rounded-xl py-2 px-3 text-[10px] text-slate-400 focus:outline-none focus:border-brand-500/50"
+                                                    />
+                                                </div>
+                                            ))}
+                                        </div>
+                                        <div>
+                                            <label className="text-[9px] font-black uppercase text-brand-500/50 mb-2 block">Correct Answer</label>
+                                            <select
+                                                value={q.answer}
+                                                onChange={(e) => {
+                                                    const newData = [...quizData];
+                                                    newData[idx].answer = e.target.value;
+                                                    setQuizData(newData);
+                                                }}
+                                                className="w-full bg-brand-500/5 border border-brand-500/20 rounded-2xl py-3 px-4 text-sm text-brand-400 focus:outline-none appearance-none"
+                                            >
+                                                <option value="" disabled>Select the correct option</option>
+                                                {q.options.filter(o => o.trim() !== "").map((opt, oIdx) => (
+                                                    <option key={oIdx} value={opt} className="bg-[#0D1525]">{opt}</option>
+                                                ))}
+                                            </select>
+                                        </div>
+                                    </div>
+                                ))}
+
+                                <button
+                                    onClick={addQuestion}
+                                    className="w-full py-4 border-2 border-dashed border-white/5 rounded-3xl flex items-center justify-center gap-2 text-[10px] font-black uppercase tracking-widest text-slate-500 hover:text-brand-400 hover:border-brand-500/20 transition-all font-black"
+                                >
+                                    <PlusCircle className="w-4 h-4" /> Add Question
+                                </button>
+                            </div>
+
+                            <div className="p-8 border-t border-white/5 bg-white/[0.02] flex items-center justify-between">
+                                <button
+                                    onClick={() => setQuizEditorOpen(false)}
+                                    className="px-6 py-3 text-slate-500 text-[10px] font-black uppercase tracking-widest hover:text-white transition-colors"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    onClick={handleSaveQuizManual}
+                                    disabled={isSavingQuiz}
+                                    className="flex items-center gap-2 px-8 py-3 bg-brand-600 hover:bg-brand-500 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all shadow-xl shadow-brand-500/10 disabled:opacity-50"
+                                >
+                                    {isSavingQuiz ? <Loader2 className="w-4 h-4 animate-spin" /> : <ShieldCheck className="w-4 h-4" />}
+                                    Save Quiz
+                                </button>
                             </div>
                         </div>
                     </div>

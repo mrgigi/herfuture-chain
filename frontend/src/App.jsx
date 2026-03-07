@@ -1,5 +1,8 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import LandingPage from './pages/LandingPage';
+import Students from './pages/Students';
+import Technology from './pages/Technology';
+import HomeGate from './pages/HomeGate';
 import Gateway from './pages/Gateway';
 import LoginSignup from './pages/LoginSignup';
 import Dashboard from './pages/Dashboard';
@@ -20,7 +23,9 @@ function App() {
     <BrowserRouter>
       <div className="min-h-screen bg-slate-900 text-slate-100 flex flex-col font-sans">
         <Routes>
-          <Route path="/" element={<LandingPage />} />
+          <Route path="/" element={<HomeGate />} />
+          <Route path="/students" element={<Students />} />
+          <Route path="/tech" element={<Technology />} />
           <Route path="/gate" element={<Gateway />} />
           <Route path="/signup" element={<LoginSignup />} />
           <Route path="/admin" element={<AdminDashboard />} />

@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 
 const { createWallet, getParticipant } = require('../controllers/walletController');
+const { generateQuiz, saveLessonQuiz } = require('../controllers/lmsController');
 const { getCourses, getCourseModules, getLessonQuiz, completeLesson, getProgressOverview, getAllParticipantsWithProgress, updateCourseStatus, getSystemSettings, updateSystemSetting, getLesson, updateCourse, updateModule, updateLesson, createCourse, deleteCourse, createModule, deleteModule, createLesson, deleteLesson } = require('../controllers/lmsController');
 const { issueCredential, verifyCredential, getCredentialsByAddress } = require('../controllers/credentialController');
 const { releaseGrant, getGrants, getGlobalImpactStats, getRecentGrants } = require('../controllers/grantController');
@@ -16,6 +17,7 @@ router.get('/participant/:phone', getParticipant);
 router.get('/courses', getCourses);
 router.get('/courses/:courseId/modules', getCourseModules);
 router.get('/lessons/:lessonId/quiz', getLessonQuiz);
+router.post('/lessons/:lessonId/quiz', saveLessonQuiz);
 router.post('/complete-lesson', completeLesson);
 router.get('/lessons/:lessonId', getLesson);
 router.get('/progress-overview/:participantId', getProgressOverview);
@@ -50,4 +52,6 @@ router.get('/grants/:participantId', getGrants);
 router.get('/impact/stats', getGlobalImpactStats);
 router.get('/impact/recent-grants', getRecentGrants);
 
+// AI Quiz Generation endpoint
+router.post('/ai/generate-quiz', generateQuiz);
 module.exports = router;

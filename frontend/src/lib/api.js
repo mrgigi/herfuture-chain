@@ -141,6 +141,16 @@ export const deleteModule = async (moduleId) => {
     return response.data;
 };
 
+export const generateQuizAI = async (data) => {
+    const response = await api.post('/ai/generate-quiz', data);
+    return response.data;
+};
+
+export const saveQuiz = async (lessonId, data) => {
+    const response = await api.post(`/lessons/${lessonId}/quiz`, { data });
+    return response.data;
+};
+
 export const createLesson = async (data) => {
     const response = await api.post('/admin/lessons', data);
     return response.data;
