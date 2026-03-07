@@ -252,7 +252,7 @@ export default function LoginSignup() {
                                         <div className="h-5 w-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                                     ) : (
                                         <>
-                                            {step === 'phone' ? 'Continue' : (isLogin ? 'Access Dashboard' : 'Explore Portals')}
+                                            {step === 'phone' ? 'Continue' : (isLogin ? 'Access Dashboard' : 'Enter Dashboard')}
                                             <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                                         </>
                                     )}
