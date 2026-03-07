@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Layout, Award, DollarSign, Wallet, ShieldCheck, ExternalLink, BookOpen, ArrowRight, CheckCircle } from 'lucide-react';
+import { Layout, Award, DollarSign, Wallet, ShieldCheck, ExternalLink, BookOpen, ArrowRight, CheckCircle, LayoutGrid } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
 import Topbar from '../components/Topbar';
@@ -140,10 +140,10 @@ export default function Dashboard() {
                                             key={course.id}
                                             onClick={() => (isActive || isDone) && navigate('/courses')}
                                             className={`group relative overflow-hidden p-6 rounded-[32px] border transition-all duration-500 cursor-pointer ${isActive
-                                                    ? 'bg-brand-500/5 border-brand-500/30 ring-1 ring-brand-500/10 shadow-[0_0_30px_rgba(59,130,246,0.1)]'
-                                                    : isDone
-                                                        ? 'bg-slate-900/40 border-slate-800 hover:bg-slate-900/60'
-                                                        : 'bg-slate-950/20 border-white/5 opacity-40 shadow-none'
+                                                ? 'bg-brand-500/5 border-brand-500/30 ring-1 ring-brand-500/10 shadow-[0_0_30px_rgba(59,130,246,0.1)]'
+                                                : isDone
+                                                    ? 'bg-slate-900/40 border-slate-800 hover:bg-slate-900/60'
+                                                    : 'bg-slate-950/20 border-white/5 opacity-40 shadow-none'
                                                 }`}
                                         >
                                             <div className="flex items-center justify-between relative z-10">

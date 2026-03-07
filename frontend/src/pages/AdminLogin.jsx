@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { ShieldCheck, Lock, ArrowRight } from 'lucide-react';
 
 export default function AdminLogin() {
-    const [password, setPassword] = useState('');
+    const [password, setPassword] = useState('herfuture2026');
     const [error, setError] = useState('');
     const navigate = useNavigate();
 
