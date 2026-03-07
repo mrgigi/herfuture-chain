@@ -95,6 +95,14 @@ export default function AdminDashboard() {
         }
     };
 
+    const saveModuleTitle = async (moduleId, title) => {
+        try {
+            await updateModule(moduleId, { title });
+        } catch (err) {
+            console.error("Save module error:", err);
+        }
+    };
+
     const toggleGrants = async () => {
         const newVal = !settings.grant_disbursement_active;
         await updateSystemSetting('grant_disbursement_active', newVal);
@@ -618,6 +626,7 @@ export default function AdminDashboard() {
                                                         newMods[i].title = e.target.value;
                                                         setCourseModules(newMods);
                                                     }}
+                                                    onBlur={(e) => saveModuleTitle(mod.id, e.target.value)}
                                                     className="bg-transparent border-none text-white font-black focus:outline-none text-sm p-0 min-w-[200px]"
                                                 />
                                             </div>

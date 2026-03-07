@@ -18,49 +18,42 @@ async function getCourses(req, res) {
 async function getCourseModules(req, res) {
     try {
         const { courseId } = req.params;
-        const { participantId } = req.query; // Pass participantId to check locks
+        const { participantId } = req.query;
 
-        const { data: modules, error } = await supabase
+        // 1. Fetch all modules for this course
+        const { data: modules, error: mError } = await supabase
+            .from('modules')
+            .select('*')
+            .eq('course_id', courseId)
+            .order('sequence_number', { ascending: true });
+
+        if (mError) throw mError;
+
+        // 2. Fetch all lessons for this course
+        const { data: lessons, error: lError } = await supabase
             .from('lessons')
             .select('*')
             .eq('course_id', courseId)
             .order('sequence_number', { ascending: true });
 
-        if (error) throw error;
+        if (lError) throw lError;
 
-        if (!participantId) {
-            return res.json(modules.map(m => ({ ...m, locked: m.sequence_number > 1 })));
-        }
-
-        // Get completed modules for this participant
-        const { data: progress } = await supabase
-            .from('student_progress')
-            .select('lesson_id, status')
-            .eq('participant_id', participantId)
-            .eq('status', 'completed');
-
-        const completedIds = new Set(progress?.map(p => p.lesson_id) || []);
-
-        // Logic: Module is unlocked if it's the first one OR if the previous exists and is completed
-        // For simplicity in the demo, we'll fetch ALL modules briefly to check sequencing
-        const { data: allModules } = await supabase
-            .from('lessons')
-            .select('id, sequence_number')
-            .order('sequence_number', { ascending: true });
-
-        const modulesWithLock = modules.map(m => {
-            const isFirst = m.sequence_number === 1;
-            const prevModule = allModules.find(am => am.sequence_number === m.sequence_number - 1);
-            const isUnlocked = isFirst || (prevModule && completedIds.has(prevModule.id));
-
-            return {
-                ...m,
-                locked: !isUnlocked,
-                completed: completedIds.has(m.id)
-            };
+        // 3. Group lessons by module_id
+        const lessonsByModule = {};
+        lessons.forEach(lesson => {
+            if (!lessonsByModule[lesson.module_id]) {
+                lessonsByModule[lesson.module_id] = [];
+            }
+            lessonsByModule[lesson.module_id].push(lesson);
         });
 
-        res.json(modulesWithLock);
+        // 4. Combine into nested structure
+        const result = modules.map(mod => ({
+            ...mod,
+            lessons: lessonsByModule[mod.id] || []
+        }));
+
+        res.json(result);
     } catch (error) {
         res.status(500).json({ error: error.message });
     }

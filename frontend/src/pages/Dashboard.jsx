@@ -3,13 +3,14 @@ import { Layout, Award, DollarSign, Wallet, ShieldCheck, ExternalLink, BookOpen,
 import { useNavigate } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
 import Topbar from '../components/Topbar';
-import { getParticipant, getProgressOverview } from '../lib/api';
+import { getParticipant, getProgressOverview, getCourses } from '../lib/api';
 
 export default function Dashboard() {
     const [participant, setParticipant] = useState(null);
     const [progress, setProgress] = useState({ percentage: 0, completedCount: 0, totalModules: 16 });
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [courses, setCourses] = useState([]);
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -26,8 +27,12 @@ export default function Dashboard() {
                 setParticipant(pData);
 
                 if (pData?.id) {
-                    const progData = await getProgressOverview(pData.id);
+                    const [progData, cData] = await Promise.all([
+                        getProgressOverview(pData.id),
+                        getCourses()
+                    ]);
                     setProgress(progData);
+                    setCourses(cData.filter(c => c.is_published));
                 }
             } catch (err) {
                 console.error('Fetch error:', err);
@@ -151,38 +156,51 @@ export default function Dashboard() {
                         </div>
 
                         <div className="space-y-4">
-                            {[
-                                { name: "1.1 Self-Leadership & Confidence", status: progress.percentage >= 6 ? "done" : "active" },
-                                { name: "2.1 Digital Literacy & AI Tools", status: progress.percentage >= 31 ? "done" : progress.percentage >= 6 ? "active" : "pending" },
-                                { name: "3.1 Financial Literacy", status: progress.percentage >= 68 ? "done" : progress.percentage >= 31 ? "active" : "pending" },
-                            ].map((step, idx) => (
-                                <div
-                                    key={idx}
-                                    onClick={() => step.status === 'active' && navigate('/courses')}
-                                    className={`p-4 rounded-xl border flex items-center justify-between transition-all ${step.status === 'done' ? 'bg-slate-800/50 border-slate-700/50 cursor-pointer' :
-                                        step.status === 'active' ? 'bg-brand-900/20 border-brand-500/30 ring-1 ring-brand-500/20 cursor-pointer hover:bg-brand-900/30' :
-                                            'bg-slate-900/50 border-slate-800 opacity-60'
-                                        }`}
-                                >
-                                    <div className="flex items-center gap-4">
-                                        <div className={`flex items-center justify-center w-8 h-8 rounded-full ${step.status === 'done' ? 'bg-green-500/20 text-green-400' :
-                                            step.status === 'active' ? 'bg-brand-500/20 text-brand-400 animate-pulse' :
-                                                'bg-slate-800 text-slate-500'
-                                            }`}>
-                                            {step.status === 'done' ? <CheckCircle className="w-4 h-4" /> : <span className="text-xs font-bold">{idx + 1}</span>}
-                                        </div>
-                                        <span className={`font-medium ${step.status === 'active' ? 'text-white' : 'text-slate-300'}`}>{step.name}</span>
-                                    </div>
+                            {courses.map((course, idx) => {
+                                // Simplified status logic for demo
+                                // In a real app, this would be based on per-course progress
+                                const courseThresholds = [0, 31, 68]; // Rough thresholds for Track 1, 2, 3
+                                const threshold = courseThresholds[idx] || 0;
+                                const isDone = progress.percentage > (courseThresholds[idx + 1] || 100);
+                                const isActive = progress.percentage >= threshold && !isDone;
+                                const isPending = !isDone && !isActive;
 
-                                    {step.status === 'active' && (
-                                        <button
-                                            className="text-xs font-semibold bg-brand-600 hover:bg-brand-500 text-white px-4 py-2 rounded-lg transition-colors"
-                                        >
-                                            Resume Path
-                                        </button>
-                                    )}
+                                return (
+                                    <div
+                                        key={course.id}
+                                        onClick={() => (isActive || isDone) && navigate('/courses')}
+                                        className={`p-4 rounded-xl border flex items-center justify-between transition-all ${isDone ? 'bg-slate-800/50 border-slate-700/50 cursor-pointer' :
+                                            isActive ? 'bg-brand-900/20 border-brand-500/30 ring-1 ring-brand-500/20 cursor-pointer hover:bg-brand-900/30' :
+                                                'bg-slate-900/50 border-slate-800 opacity-60'
+                                            }`}
+                                    >
+                                        <div className="flex items-center gap-4">
+                                            <div className={`flex items-center justify-center w-8 h-8 rounded-full ${isDone ? 'bg-green-500/20 text-green-400' :
+                                                isActive ? 'bg-brand-500/20 text-brand-400 animate-pulse' :
+                                                    'bg-slate-800 text-slate-500'
+                                                }`}>
+                                                {isDone ? <CheckCircle className="w-4 h-4" /> : <span className="text-xs font-bold">{idx + 1}</span>}
+                                            </div>
+                                            <span className={`font-medium ${isActive ? 'text-white' : 'text-slate-300'}`}>
+                                                {course.track_number}.1 {course.title}
+                                            </span>
+                                        </div>
+
+                                        {isActive && (
+                                            <button
+                                                className="text-xs font-semibold bg-brand-600 hover:bg-brand-500 text-white px-4 py-2 rounded-lg transition-colors"
+                                            >
+                                                Resume Track
+                                            </button>
+                                        )}
+                                    </div>
+                                );
+                            })}
+                            {courses.length === 0 && (
+                                <div className="p-8 text-center text-slate-500 italic text-sm">
+                                    No active tracks available in your region.
                                 </div>
-                            ))}
+                            )}
                         </div>
                     </div>
 
