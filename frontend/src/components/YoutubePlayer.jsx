@@ -56,6 +56,7 @@ export default function YoutubePlayer({ url }) {
     const [duration, setDuration] = useState(0);
     const [showControls, setShowControls] = useState(true);
     const [isFullscreen, setIsFullscreen] = useState(false);
+    const [isFakeFullscreen, setIsFakeFullscreen] = useState(false);
     const wrapperRef = useRef(null);
     const hideTimeout = useRef(null);
 
@@ -181,17 +182,42 @@ export default function YoutubePlayer({ url }) {
     const toggleFullscreen = () => {
         const el = wrapperRef.current;
         if (!el) return;
-        if (!document.fullscreenElement) {
-            el.requestFullscreen?.();
+
+        // Already in native or fake fullscreen → exit
+        if (document.fullscreenElement || document.webkitFullscreenElement) {
+            (document.exitFullscreen || document.webkitExitFullscreen)?.call(document);
+            return;
+        }
+        if (isFakeFullscreen) {
+            setIsFakeFullscreen(false);
+            return;
+        }
+
+        // Try native fullscreen (with webkit prefix for iOS Safari)
+        const requestFs = el.requestFullscreen || el.webkitRequestFullscreen;
+        if (requestFs) {
+            requestFs.call(el).catch(() => {
+                // Native API failed (common on iOS) — fall back to CSS fake fullscreen
+                setIsFakeFullscreen(true);
+            });
         } else {
-            document.exitFullscreen?.();
+            // No API at all (very old browsers) → fake fullscreen
+            setIsFakeFullscreen(true);
         }
     };
 
     useEffect(() => {
-        const onFsChange = () => setIsFullscreen(!!document.fullscreenElement);
+        const onFsChange = () => {
+            const fsEl = document.fullscreenElement || document.webkitFullscreenElement;
+            setIsFullscreen(!!fsEl);
+            if (!fsEl) setIsFakeFullscreen(false);
+        };
         document.addEventListener('fullscreenchange', onFsChange);
-        return () => document.removeEventListener('fullscreenchange', onFsChange);
+        document.addEventListener('webkitfullscreenchange', onFsChange);
+        return () => {
+            document.removeEventListener('fullscreenchange', onFsChange);
+            document.removeEventListener('webkitfullscreenchange', onFsChange);
+        };
     }, []);
 
     if (!videoId) {
@@ -206,7 +232,10 @@ export default function YoutubePlayer({ url }) {
     return (
         <div
             ref={wrapperRef}
-            className="w-full aspect-video bg-black relative select-none group"
+            className={`bg-black relative select-none group transition-all duration-300 ${isFakeFullscreen
+                    ? 'fixed inset-0 z-[9999] w-screen h-screen'
+                    : 'w-full aspect-video'
+                }`}
             onMouseMove={revealControls}
             onTouchStart={revealControls}
             onClick={togglePlay}
@@ -309,12 +338,12 @@ export default function YoutubePlayer({ url }) {
                     {/* Fullscreen */}
                     <button
                         onClick={(e) => { e.stopPropagation(); toggleFullscreen(); }}
-                        className="text-white/70 hover:text-white transition-colors ml-1"
-                        title={isFullscreen ? 'Exit Fullscreen' : 'Fullscreen'}
+                        className="text-white/70 hover:text-white transition-colors ml-1 p-1 touch-manipulation"
+                        title={isFullscreen || isFakeFullscreen ? 'Exit Fullscreen' : 'Fullscreen'}
                     >
-                        {isFullscreen
-                            ? <Minimize className="w-4 h-4" />
-                            : <Maximize className="w-4 h-4" />
+                        {isFullscreen || isFakeFullscreen
+                            ? <Minimize className="w-5 h-5" />
+                            : <Maximize className="w-5 h-5" />
                         }
                     </button>
                 </div>

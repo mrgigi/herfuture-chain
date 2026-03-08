@@ -70,8 +70,9 @@ const ModuleAccordion = ({ module, index, navigate, formatNaira, toNaira }) => {
                                             {lesson.is_wellbeing ? 'Wellbeing' : 'Skill Development'}
                                         </span>
                                         {lesson.grant_amount > 0 && (
-                                            <span className="flex items-center gap-1 text-[9px] font-bold text-emerald-500 tracking-wider">
-                                                {formatNaira(toNaira(lesson.grant_amount))} <span className="text-slate-600">({lesson.grant_amount} cUSD)</span>
+                                            <span className="flex items-center gap-1 text-[9px] font-bold text-emerald-500 tracking-wider whitespace-nowrap">
+                                                {formatNaira(toNaira(lesson.grant_amount))}
+                                                <span className="text-slate-600 font-normal">({lesson.grant_amount} cUSD)</span>
                                             </span>
                                         )}
                                     </div>
