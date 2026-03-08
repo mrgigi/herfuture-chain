@@ -3,9 +3,10 @@ import { useNavigate } from 'react-router-dom';
 import { Check, ArrowRight } from 'lucide-react';
 
 const AVATARS = [
-    { id: 'avatar1', url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Aaliyah&top=longHair&hairColor=2c1b18&skinColor=614335&clothing=graphicShirt', name: 'Zainab' },
-    { id: 'avatar2', url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Nala&top=shaggy&hairColor=2c1b18&skinColor=ae5d32&clothing=hoodie', name: 'Ifueko' },
-    { id: 'avatar3', url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Zuri&top=turban&hairColor=2c1b18&skinColor=ffdbb4&clothing=overall', name: 'Fatimat' }
+    { id: 'avatar1', url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Aaliyah&top=longHair&hairColor=2c1b18&skinColor=614335&clothing=graphicShirt' },
+    { id: 'avatar2', url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Nala&top=shaggy&hairColor=2c1b18&skinColor=ae5d32&clothing=hoodie' },
+    { id: 'avatar3', url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Zuri&top=turban&hairColor=2c1b18&skinColor=ffdbb4&clothing=overall' },
+    { id: 'avatar4', url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Fatima&top=longHair&hairColor=2c1b18&skinColor=432d26&clothing=blazer' }
 ];
 
 export default function AvatarSelection() {
@@ -21,13 +22,13 @@ export default function AvatarSelection() {
 
     return (
         <div className="min-h-screen bg-[#060912] flex items-center justify-center p-6 bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-fuchsia-900/20 via-slate-950 to-slate-950">
-            <div className="max-w-xl w-full">
+            <div className="max-w-2xl w-full">
                 <div className="text-center mb-12">
-                    <h1 className="text-4xl font-black text-white mb-4 tracking-tighter">Choose Your Character!</h1>
-                    <p className="text-slate-400 font-medium">Pick an avatar that represents you on HerFuture Chain.</p>
+                    <h1 className="text-4xl font-black text-white mb-2 tracking-tighter">Choose Your Character</h1>
+                    <p className="text-slate-500 text-sm font-medium">Pick an avatar to represent you.</p>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-12">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-12">
                     {AVATARS.map((avatar) => (
                         <div
                             key={avatar.id}
@@ -39,7 +40,7 @@ export default function AvatarSelection() {
                                 ? 'border-brand-500 shadow-[0_0_40px_rgba(217,70,239,0.3)] bg-brand-500/10'
                                 : 'border-white/5 grayscale-[50%] opacity-60 group-hover:opacity-100 group-hover:grayscale-0 group-hover:border-white/20'
                                 }`}>
-                                <img src={avatar.url} alt={avatar.name} className="w-full h-full object-cover p-4" />
+                                <img src={avatar.url} alt="Avatar" className="w-full h-full object-cover p-4" />
                             </div>
 
                             {selected?.id === avatar.id && (
@@ -47,11 +48,6 @@ export default function AvatarSelection() {
                                     <Check className="w-5 h-5 text-white" />
                                 </div>
                             )}
-
-                            <p className={`mt-4 text-center text-sm font-black uppercase tracking-widest transition-colors ${selected?.id === avatar.id ? 'text-brand-400' : 'text-slate-500'
-                                }`}>
-                                {avatar.name}
-                            </p>
                         </div>
                     ))}
                 </div>
