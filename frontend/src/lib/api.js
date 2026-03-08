@@ -175,4 +175,9 @@ export const deleteLesson = async (lessonId) => {
     return response.data;
 };
 
+export const deleteParticipant = async (participantId) => {
+    const response = await api.delete(`/admin/participants/${participantId}`);
+    return response.data;
+};
+
 export default api;

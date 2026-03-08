@@ -135,11 +135,9 @@ export default function CourseDetail() {
                 <div className="mb-12">
                     <div className="flex items-center gap-3 mb-4">
                         <span className="px-3 py-1 bg-brand-500/10 text-brand-400 text-[10px] font-black uppercase tracking-widest rounded-full border border-brand-500/20">Learning Path</span>
-                        <span className="w-1.5 h-1.5 rounded-full bg-slate-700" />
-                        <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">Chain-Verified Certification</span>
                     </div>
                     <h1 className="text-4xl md:text-5xl font-black text-white tracking-tighter mb-4 leading-none">
-                        Program <span className="text-brand-500">Syllabus</span>
+                        Program Syllabus
                     </h1>
 
                 </div>

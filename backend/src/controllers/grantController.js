@@ -73,18 +73,39 @@ async function getGrants(req, res) {
             return res.status(400).json({ error: "Missing participantId parameter" });
         }
 
-        const { data, error } = await supabase
+        // 1. Fetch grants for the participant
+        const { data: grants, error: gError } = await supabase
             .from('grants')
             .select('*')
             .eq('participant_id', participantId)
             .order('created_at', { ascending: false });
 
-        if (error) {
-            console.error("Supabase grants fetch error:", error);
+        if (gError) {
+            console.error("Supabase grants fetch error:", gError);
             throw new Error("Failed to fetch grants from Supabase");
         }
 
-        return res.status(200).json(data);
+        // 2. Fetch all lessons to map milestone labels to names and amounts
+        // We match grant.milestone with lesson.track_label
+        const { data: lessons, error: lError } = await supabase
+            .from('lessons')
+            .select('track_label, title, grant_amount');
+
+        if (lError) {
+            console.error("Supabase lessons fetch error:", lError);
+            // Non-blocking, we'll just return raw data if mapping fails
+        }
+
+        const formattedGrants = grants.map(grant => {
+            const lesson = (lessons || []).find(l => l.track_label === grant.milestone);
+            return {
+                ...grant,
+                milestone_name: lesson ? lesson.title : `Milestone ${grant.milestone}`,
+                amount: lesson ? lesson.grant_amount : 0
+            };
+        });
+
+        return res.status(200).json(formattedGrants);
     } catch (err) {
         console.error("Get Grants Error:", err);
         return res.status(500).json({ error: "Internal Server Error" });

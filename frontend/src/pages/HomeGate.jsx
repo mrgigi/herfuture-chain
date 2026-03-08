@@ -26,16 +26,16 @@ export default function HomeGate() {
                 </div>
 
                 {/* Navigation Menu */}
-                <div className="flex items-center gap-4 md:gap-8">
+                <div className="flex flex-col items-end gap-2 md:flex-row md:items-center md:gap-8">
                     <button
                         onClick={() => navigate('/impact')}
-                        className="text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 hover:text-white transition-all active:scale-95"
+                        className="text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 hover:text-white transition-all active:scale-95 text-right w-full"
                     >
                         Impact & Audit
                     </button>
                     <button
                         onClick={() => navigate('/admin')}
-                        className="text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 hover:text-white transition-all active:scale-95"
+                        className="text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 hover:text-white transition-all active:scale-95 text-right w-full"
                     >
                         Management Hub
                     </button>
@@ -46,8 +46,8 @@ export default function HomeGate() {
             </nav>
 
             <div className="flex-grow flex flex-col items-center justify-center px-6 py-12 relative z-10">
-                <div className="max-w-4xl w-full text-center mb-16">
-                    <h1 className="text-5xl md:text-8xl font-black mb-6 tracking-tighter leading-tight">
+                <div className="max-w-6xl w-full text-center mb-16 px-4">
+                    <h1 className="text-3xl sm:text-4xl md:text-7xl lg:text-8xl font-black mb-6 tracking-tighter leading-tight md:whitespace-nowrap">
                         Choose Your <span className="bg-gradient-to-r from-brand-400 via-emerald-400 to-fuchsia-400 bg-clip-text text-transparent">Journey.</span>
                     </h1>
                 </div>

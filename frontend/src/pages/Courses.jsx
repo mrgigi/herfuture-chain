@@ -30,7 +30,7 @@ export default function Courses() {
         <div className="p-4 md:p-8 pb-32">
             <div className="mb-10 text-center md:text-left">
                 <h2 className="text-3xl font-bold text-white mb-2">HerFuture Academy</h2>
-                <p className="text-slate-400">Master the basics of blockchain and earn as you learn.</p>
+                <p className="text-slate-400">Master the basics of digital skills and earn as you learn.</p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">

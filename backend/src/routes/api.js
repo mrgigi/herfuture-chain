@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 
-const { createWallet, getParticipant } = require('../controllers/walletController');
+const { createWallet, getParticipant, deleteParticipant } = require('../controllers/walletController');
 const { generateQuiz, saveLessonQuiz } = require('../controllers/lmsController');
 const { getCourses, getCourseModules, getLessonQuiz, completeLesson, getProgressOverview, getAllParticipantsWithProgress, updateCourseStatus, getSystemSettings, updateSystemSetting, getLesson, updateCourse, updateModule, updateLesson, createCourse, deleteCourse, createModule, deleteModule, createLesson, deleteLesson } = require('../controllers/lmsController');
 const { issueCredential, verifyCredential, getCredentialsByAddress } = require('../controllers/credentialController');
@@ -12,6 +12,7 @@ const { releaseGrant, getGrants, getGlobalImpactStats, getRecentGrants } = requi
 // 1. Participant Routes
 router.post('/create-wallet', createWallet);
 router.get('/participant/:phone', getParticipant);
+router.delete('/admin/participants/:participantId', deleteParticipant);
 
 // 2. LMS Routes
 router.get('/courses', getCourses);

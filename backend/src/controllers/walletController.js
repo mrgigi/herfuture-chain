@@ -120,7 +120,44 @@ async function getParticipant(req, res) {
     }
 }
 
+/**
+ * Permanently deletes a participant from Supabase.
+ * NOTE: On-chain DID and registrations are immutable and will remain.
+ */
+async function deleteParticipant(req, res) {
+    try {
+        const { participantId } = req.params;
+
+        if (!participantId) {
+            return res.status(400).json({ error: "Missing participant ID" });
+        }
+
+        console.log(`🗑️ Hard deleting participant: ${participantId}`);
+
+        const { error } = await supabase
+            .from('participants')
+            .delete()
+            .eq('id', participantId);
+
+        if (error) {
+            console.error("❌ Supabase delete error:", error);
+            throw new Error(`Failed to delete participant: ${error.message}`);
+        }
+
+        console.log("✅ Participant deleted from Supabase");
+
+        return res.status(200).json({
+            message: "Participant permanently removed from database"
+        });
+
+    } catch (err) {
+        console.error("💥 Delete Participant Error:", err);
+        return res.status(500).json({ error: err.message || "Internal Server Error" });
+    }
+}
+
 module.exports = {
     createWallet,
-    getParticipant
+    getParticipant,
+    deleteParticipant
 };

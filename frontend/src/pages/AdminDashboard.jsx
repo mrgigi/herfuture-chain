@@ -14,7 +14,8 @@ import api, {
     updateSystemSetting, updateCourseStatus, updateCourseDetails,
     updateModule, updateLesson,
     createModule, deleteModule, createLesson, deleteLesson,
-    createCourse, deleteCourse, generateQuizAI, getQuiz, saveQuiz
+    createCourse, deleteCourse, generateQuizAI, getQuiz, saveQuiz,
+    deleteParticipant
 } from '../lib/api';
 
 const CurriculumInput = ({ value, onChange, onBlur, className, placeholder, isTextArea = false }) => {
@@ -61,6 +62,9 @@ export default function AdminDashboard() {
     const [courseModules, setCourseModules] = useState([]);
     const [loading, setLoading] = useState(true);
     const [authorized, setAuthorized] = useState(false);
+    const [isSavingMetadata, setIsSavingMetadata] = useState(false);
+    const [isAddingModule, setIsAddingModule] = useState(false);
+    const [isAddingLesson, setIsAddingLesson] = useState(false);
     const [isGeneratingQuiz, setIsGeneratingQuiz] = useState(null); // lessonId of current generation
     const [quizEditorOpen, setQuizEditorOpen] = useState(false);
     const [currentLessonForQuiz, setCurrentLessonForQuiz] = useState(null);
@@ -70,6 +74,7 @@ export default function AdminDashboard() {
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(null); // stores course object
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [selectedStudent, setSelectedStudent] = useState(null);
+    const [showStudentDeleteConfirm, setShowStudentDeleteConfirm] = useState(null); // stores student object
 
     const showToast = (message, type = 'success') => {
         setToast({ message, type });
@@ -134,6 +139,7 @@ export default function AdminDashboard() {
     };
 
     const saveCourse = async () => {
+        setIsSavingMetadata(true);
         try {
             await updateCourseDetails(editingCourse.id, {
                 title: editingCourse.title,
@@ -143,11 +149,13 @@ export default function AdminDashboard() {
                 track_number: parseInt(editingCourse.track_number) || 1
             });
             queryClient.setQueryData(['admin-courses'], prev => prev.map(c => c.id === editingCourse.id ? editingCourse : c));
-            showToast("Metadata updated");
+            showToast("Learning Path metadata updated");
         } catch (err) {
             console.error("Save course error:", err);
             const errorMsg = err.response?.data?.error || "Update failed";
             showToast(errorMsg, "error");
+        } finally {
+            setIsSavingMetadata(false);
         }
     };
 
@@ -171,7 +179,7 @@ export default function AdminDashboard() {
     const handleDeleteTrack = async (courseId) => {
         try {
             await deleteCourse(courseId);
-            showToast("Track deleted");
+            showToast("Learning Path permanently erased", "success");
             queryClient.invalidateQueries({ queryKey: ['admin-courses'] });
             setShowDeleteConfirm(null);
             if (editingCourse && editingCourse.id === courseId) {
@@ -180,7 +188,20 @@ export default function AdminDashboard() {
             }
         } catch (err) {
             console.error("Delete track error:", err);
-            showToast(err.response?.data?.error || "Delete failed", "error");
+            showToast(err.response?.data?.error || "Failed to erase Learning Path", "error");
+        }
+    };
+
+    const handleDeleteStudent = async (participantId) => {
+        try {
+            await deleteParticipant(participantId);
+            showToast("Student permanently removed from registry", "success");
+            queryClient.invalidateQueries({ queryKey: ['admin-participants'] });
+            setShowStudentDeleteConfirm(null);
+            setSelectedStudent(null);
+        } catch (err) {
+            console.error("Delete student error:", err);
+            showToast(err.response?.data?.error || "Failed to remove student", "error");
         }
     };
 
@@ -303,20 +324,23 @@ export default function AdminDashboard() {
 
     const handleAddCourse = async () => {
         try {
-            const nextTrack = courses.length + 1;
+            const nextPathNum = courses.length + 1;
             const newCourse = await createCourse({
-                title: "New Track",
-                learning_outcome: "Track Learning Outcomes...",
-                track_number: nextTrack
+                title: "New Learning Path",
+                learning_outcome: "Learning Outcomes...",
+                track_number: nextPathNum
             });
+            showToast("New Learning Path initialized", "success");
             queryClient.invalidateQueries({ queryKey: ['admin-courses'] });
             handleCourseClick(newCourse);
         } catch (err) {
-            console.error("Add course error:", err);
+            console.error("Add path error:", err);
+            showToast("Failed to initialize path", "error");
         }
     };
 
     const handleAddModule = async () => {
+        setIsAddingModule(true);
         try {
             const nextSeq = courseModules.length + 1;
             const newMod = await createModule({
@@ -325,10 +349,12 @@ export default function AdminDashboard() {
                 sequence_number: nextSeq
             });
             setCourseModules([...courseModules, { ...newMod, lessons: [] }]);
-            showToast("Module added");
+            showToast("New module added to syllabus", "success");
         } catch (err) {
             console.error("Add module error:", err);
             showToast("Failed to add module", "error");
+        } finally {
+            setIsAddingModule(false);
         }
     };
 
@@ -345,6 +371,7 @@ export default function AdminDashboard() {
     };
 
     const handleAddLesson = async (moduleId) => {
+        setIsAddingLesson(true);
         try {
             const mod = courseModules.find(m => m.id === moduleId);
             const nextSeq = mod.lessons.length + 1;
@@ -359,10 +386,12 @@ export default function AdminDashboard() {
             setCourseModules(courseModules.map(m =>
                 m.id === moduleId ? { ...m, lessons: [...m.lessons, newLesson] } : m
             ));
-            showToast("Lesson added");
+            showToast("New lesson integrated", "success");
         } catch (err) {
             console.error("Add lesson error:", err);
             showToast("Failed to add lesson", "error");
+        } finally {
+            setIsAddingLesson(false);
         }
     };
 
@@ -735,8 +764,44 @@ export default function AdminDashboard() {
 
                                     <div className="mt-10 flex gap-4">
                                         <button className="flex-1 py-4 bg-brand-600 hover:bg-brand-500 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all shadow-lg shadow-brand-500/20">Message Student</button>
-                                        <button className="flex-1 py-4 bg-white/5 hover:bg-white/10 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all">Download Log</button>
+                                        <button
+                                            onClick={() => setShowStudentDeleteConfirm(selectedStudent)}
+                                            className="flex-1 py-4 bg-red-500/10 hover:bg-red-500/20 text-red-500 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all"
+                                        >
+                                            Hard Delete
+                                        </button>
                                     </div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Student Delete Confirmation Modal */}
+                    {showStudentDeleteConfirm && (
+                        <div className="fixed inset-0 z-[210] flex items-center justify-center p-4 bg-black/90 backdrop-blur-md animate-in fade-in duration-300">
+                            <div className="glass-panel max-w-md w-full p-10 rounded-[40px] border border-white/10 shadow-2xl text-center space-y-6">
+                                <div className="w-20 h-20 bg-red-500/20 rounded-full flex items-center justify-center mx-auto mb-2">
+                                    <Trash2 className="w-10 h-10 text-red-500" />
+                                </div>
+                                <div>
+                                    <h2 className="text-2xl font-black text-white italic">Hard Delete.</h2>
+                                    <p className="text-slate-400 text-sm mt-3 leading-relaxed">
+                                        Are you sure you want to permanently delete <span className="text-white font-bold">{showStudentDeleteConfirm.first_name} {showStudentDeleteConfirm.last_name}</span>?
+                                    </p>
+                                </div>
+                                <div className="flex flex-col gap-3 pt-4">
+                                    <button
+                                        onClick={() => handleDeleteStudent(showStudentDeleteConfirm.id)}
+                                        className="w-full py-4 bg-red-600 hover:bg-red-500 text-white font-black text-[10px] uppercase tracking-[0.2em] rounded-2xl transition-all"
+                                    >
+                                        Permanently Erase
+                                    </button>
+                                    <button
+                                        onClick={() => setShowStudentDeleteConfirm(null)}
+                                        className="w-full py-4 bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white font-black text-[10px] uppercase tracking-[0.2em] rounded-2xl transition-all"
+                                    >
+                                        Cancel
+                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -746,14 +811,14 @@ export default function AdminDashboard() {
                         <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
                             <div className="flex justify-between items-end mb-8">
                                 <div>
-                                    <h1 className="text-3xl font-black text-white mb-1 italic">Knowledge Tracks.</h1>
+                                    <h1 className="text-3xl font-black text-white mb-1 italic">Learning Paths.</h1>
                                     <p className="text-xs text-slate-500 tracking-tight">Managing the core educational engine and grant milestones.</p>
                                 </div>
                                 <button
                                     onClick={handleAddCourse}
                                     className="flex items-center gap-2 px-6 py-3 bg-brand-600 hover:bg-brand-500 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all shadow-[0_0_20px_rgba(59,130,246,0.2)]"
                                 >
-                                    <PlusCircle className="w-4 h-4" /> Add New Track
+                                    <PlusCircle className="w-4 h-4" /> Add New Path
                                 </button>
                             </div>
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -771,7 +836,7 @@ export default function AdminDashboard() {
                                             </div>
 
                                             <h3 className="text-xl font-bold text-white mb-2 leading-tight">{course.title}</h3>
-                                            <p className="text-xs text-slate-500 font-medium leading-relaxed">System-assigned track for the socio-economic empowerment path.</p>
+                                            <p className="text-xs text-slate-500 font-medium leading-relaxed">System-assigned learning path for the socio-economic empowerment journey.</p>
                                         </div>
 
                                         <div className="flex items-center justify-between pt-6 border-t border-white/5">
@@ -779,7 +844,7 @@ export default function AdminDashboard() {
                                                 <button
                                                     onClick={() => setShowDeleteConfirm(course)}
                                                     className="p-2 text-slate-600 hover:text-red-400 hover:bg-red-500/10 rounded-xl transition-all"
-                                                    title="Delete Track"
+                                                    title="Delete Learning Path"
                                                 >
                                                     <Trash2 className="w-4 h-4" />
                                                 </button>
@@ -815,7 +880,7 @@ export default function AdminDashboard() {
                                         <div>
                                             <h2 className="text-2xl font-black text-white italic">Confirm Deletion.</h2>
                                             <p className="text-slate-400 text-sm mt-3 leading-relaxed">
-                                                Are you sure you want to permanently delete <span className="text-white font-bold">"{showDeleteConfirm.title}"</span>? This action will erase all modules and lessons within this track.
+                                                Are you sure you want to permanently delete <span className="text-white font-bold">"{showDeleteConfirm.title}"</span>? This action will erase all modules and lessons within this learning path.
                                             </p>
                                         </div>
                                         <div className="flex flex-col gap-3 pt-4">
@@ -829,7 +894,7 @@ export default function AdminDashboard() {
                                                 onClick={() => setShowDeleteConfirm(null)}
                                                 className="w-full py-4 bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white font-black text-[10px] uppercase tracking-[0.2em] rounded-2xl transition-all"
                                             >
-                                                Keep Track
+                                                Keep Path
                                             </button>
                                         </div>
                                     </div>
@@ -858,7 +923,7 @@ export default function AdminDashboard() {
                                                     </div>
                                                     <div>
                                                         <div className="text-sm font-bold text-white">{grant.student}</div>
-                                                        <div className="text-[10px] text-slate-500">{grant.track}</div>
+                                                        <div className="text-[10px] text-slate-500">{grant.track || 'Learning Path'}</div>
                                                     </div>
                                                 </div>
                                                 <div className="text-right">
@@ -891,7 +956,7 @@ export default function AdminDashboard() {
                                                 <span className="text-sm font-bold text-white">Graduation Bonus</span>
                                                 <span className="text-sm font-black text-amber-400">${settings.default_graduation_grant || 150}.00</span>
                                             </div>
-                                            <p className="text-[10px] text-slate-500 leading-relaxed italic">Dispersed upon completion of the final track 3 milestone.</p>
+                                            <p className="text-[10px] text-slate-500 leading-relaxed italic">Dispersed upon completion of the final learning path milestone.</p>
                                         </div>
                                     </div>
                                 </div>
@@ -993,7 +1058,7 @@ export default function AdminDashboard() {
                                         <h3 className="text-[10px] font-black uppercase tracking-widest text-brand-400 mb-6 font-medium">Core Metadata</h3>
                                         <div className="space-y-4">
                                             <div>
-                                                <label className="text-[9px] font-black uppercase tracking-widest text-slate-500 mb-2 block pl-1">Track Title</label>
+                                                <label className="text-[9px] font-black uppercase tracking-widest text-slate-500 mb-2 block pl-1">Path Title</label>
                                                 <input
                                                     type="text"
                                                     value={editingCourse.title}
@@ -1002,7 +1067,7 @@ export default function AdminDashboard() {
                                                 />
                                             </div>
                                             <div>
-                                                <label className="text-[9px] font-black uppercase tracking-widest text-slate-500 mb-2 block pl-1">Track Learning Outcomes</label>
+                                                <label className="text-[9px] font-black uppercase tracking-widest text-slate-500 mb-2 block pl-1">Learning Outcomes</label>
                                                 <textarea
                                                     value={editingCourse.learning_outcome || ''}
                                                     onChange={(e) => setEditingCourse({ ...editingCourse, learning_outcome: e.target.value })}
@@ -1010,7 +1075,7 @@ export default function AdminDashboard() {
                                                 />
                                             </div>
                                             <div className="mb-6">
-                                                <label className="text-[9px] font-black uppercase tracking-widest text-slate-500 mb-3 block pl-1">Track Cover Image</label>
+                                                <label className="text-[9px] font-black uppercase tracking-widest text-slate-500 mb-3 block pl-1">Path Cover Image</label>
                                                 <div
                                                     className="relative group cursor-pointer h-32 w-full rounded-2xl overflow-hidden border border-white/5 bg-[#060914] flex items-center justify-center transition-all hover:border-brand-500/30"
                                                     onClick={() => document.getElementById('cover-upload').click()}
@@ -1044,7 +1109,7 @@ export default function AdminDashboard() {
                                                 />
                                             </div>
                                             <div className="mb-6">
-                                                <label className="text-[9px] font-black uppercase tracking-widest text-slate-500 mb-2 block pl-1">Track #</label>
+                                                <label className="text-[9px] font-black uppercase tracking-widest text-slate-500 mb-2 block pl-1">Path #</label>
                                                 <input
                                                     type="number"
                                                     value={editingCourse.track_number || ''}
@@ -1054,10 +1119,15 @@ export default function AdminDashboard() {
                                             </div>
                                             <button
                                                 onClick={saveCourse}
-                                                className="w-full bg-brand-600 hover:bg-brand-500 text-white font-black py-4 rounded-2xl text-[10px] uppercase tracking-widest transition-all mt-4 flex items-center justify-center gap-2"
+                                                disabled={isSavingMetadata}
+                                                className="w-full bg-brand-600 hover:bg-brand-500 text-white font-black py-4 rounded-2xl text-[10px] uppercase tracking-widest transition-all mt-4 flex items-center justify-center gap-2 disabled:opacity-50"
                                             >
-                                                <Save className="w-4 h-4" />
-                                                Update Metadata
+                                                {isSavingMetadata ? (
+                                                    <Loader2 className="w-4 h-4 animate-spin" />
+                                                ) : (
+                                                    <Save className="w-4 h-4" />
+                                                )}
+                                                {isSavingMetadata ? 'Updating...' : 'Update Metadata'}
                                             </button>
                                         </div>
                                     </div>
@@ -1069,9 +1139,15 @@ export default function AdminDashboard() {
                                         <h3 className="text-[10px] font-black uppercase tracking-widest text-slate-500 font-medium">Syllabus Structure</h3>
                                         <button
                                             onClick={handleAddModule}
-                                            className="flex items-center gap-2 text-[10px] font-bold text-brand-400 hover:text-white transition-colors"
+                                            disabled={isAddingModule}
+                                            className="flex items-center gap-2 text-[10px] font-bold text-brand-400 hover:text-white transition-colors disabled:opacity-50"
                                         >
-                                            <PlusCircle className="w-3 h-3" /> Add Module
+                                            {isAddingModule ? (
+                                                <Loader2 className="w-3 h-3 animate-spin" />
+                                            ) : (
+                                                <PlusCircle className="w-3 h-3" />
+                                            )}
+                                            {isAddingModule ? 'Adding...' : 'Add Module'}
                                         </button>
                                     </div>
                                     {(courseModules || []).map((mod, i) => (
@@ -1175,9 +1251,15 @@ export default function AdminDashboard() {
                                                 ))}
                                                 <button
                                                     onClick={() => handleAddLesson(mod.id)}
-                                                    className="w-full py-3 border border-dashed border-white/10 rounded-2xl flex items-center justify-center gap-2 text-[9px] font-black uppercase tracking-widest text-slate-600 hover:text-slate-400 hover:border-white/20 transition-all mt-4"
+                                                    disabled={isAddingLesson}
+                                                    className="w-full py-3 border border-dashed border-white/10 rounded-2xl flex items-center justify-center gap-2 text-[9px] font-black uppercase tracking-widest text-slate-600 hover:text-slate-400 hover:border-white/20 transition-all mt-4 disabled:opacity-50"
                                                 >
-                                                    <PlusCircle className="w-3 h-3" /> Add Lesson to {mod.title}
+                                                    {isAddingLesson ? (
+                                                        <Loader2 className="w-3 h-3 animate-spin" />
+                                                    ) : (
+                                                        <PlusCircle className="w-3 h-3" />
+                                                    )}
+                                                    {isAddingLesson ? 'Adding...' : `Add Lesson to ${mod.title}`}
                                                 </button>
                                             </div>
                                         </div>
