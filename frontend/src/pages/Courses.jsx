@@ -9,6 +9,10 @@ import BottomNav from '../components/BottomNav';
 import { getCourses } from '../lib/api';
 
 export default function Courses() {
+    const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+    const navigate = useNavigate();
+
     const { data: courses = [], isLoading: queryLoading } = useQuery({
         queryKey: ['courses'],
         queryFn: getCourses,

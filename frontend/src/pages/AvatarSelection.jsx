@@ -3,10 +3,10 @@ import { useNavigate } from 'react-router-dom';
 import { Check, ArrowRight } from 'lucide-react';
 
 const AVATARS = [
-    { id: 'avatar1', url: 'https://api.dicebear.com/7.x/lorelei/svg?seed=Amina&backgroundColor=ffd5dc' },
-    { id: 'avatar2', url: 'https://api.dicebear.com/7.x/lorelei/svg?seed=Kezia&backgroundColor=c0aede' },
-    { id: 'avatar3', url: 'https://api.dicebear.com/7.x/lorelei/svg?seed=Nala&backgroundColor=b6e3f4' },
-    { id: 'avatar4', url: 'https://api.dicebear.com/7.x/lorelei/svg?seed=Zara&backgroundColor=d1d4f9' }
+    { id: 'avatar1', url: 'https://api.dicebear.com/7.x/adventurer/svg?seed=Amina&mouth=smile01&backgroundColor=ffd5dc&eyebrows=variant08' },
+    { id: 'avatar2', url: 'https://api.dicebear.com/7.x/adventurer/svg?seed=Kezia&mouth=smile02&backgroundColor=c0aede&eyebrows=variant08' },
+    { id: 'avatar3', url: 'https://api.dicebear.com/7.x/adventurer/svg?seed=Nala&mouth=smile03&backgroundColor=b6e3f4&eyebrows=variant08' },
+    { id: 'avatar4', url: 'https://api.dicebear.com/7.x/adventurer/svg?seed=Zara&mouth=smile04&backgroundColor=d1d4f9&eyebrows=variant08' }
 ];
 
 export default function AvatarSelection() {

@@ -142,15 +142,38 @@ async function completeLesson(req, res) {
     try {
         const { participantId, lessonId, score } = req.body;
 
-        const { data, error } = await supabase
+        if (!participantId || !lessonId) {
+            return res.status(400).json({ error: 'participantId and lessonId are required.' });
+        }
+
+        // First check if record already exists
+        const { data: existing } = await supabase
             .from('student_progress')
-            .upsert({
-                participant_id: participantId,
-                lesson_id: lessonId,
-                status: 'completed',
-                score: score
-            })
-            .select();
+            .select('id')
+            .eq('participant_id', participantId)
+            .eq('lesson_id', lessonId)
+            .single();
+
+        let data, error;
+        if (existing) {
+            // Update existing record
+            const result = await supabase
+                .from('student_progress')
+                .update({ status: 'completed', score: score })
+                .eq('participant_id', participantId)
+                .eq('lesson_id', lessonId)
+                .select();
+            data = result.data;
+            error = result.error;
+        } else {
+            // Insert new record
+            const result = await supabase
+                .from('student_progress')
+                .insert([{ participant_id: participantId, lesson_id: lessonId, status: 'completed', score: score }])
+                .select();
+            data = result.data;
+            error = result.error;
+        }
 
         if (error) throw error;
 
