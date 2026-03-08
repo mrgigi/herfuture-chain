@@ -64,44 +64,45 @@ export default function Technology() {
                     </button>
                 </div>
 
-                {/* Mobile Menu Overlay */}
-                {isMenuOpen && (
-                    <div className="fixed inset-0 bg-[#060914] z-[999] p-8 md:hidden animate-in fade-in slide-in-from-top-4 duration-300 flex flex-col">
-                        <div className="flex justify-end w-full mb-12">
-                            <button
-                                onClick={() => setIsMenuOpen(false)}
-                                className="p-3 text-white/50 hover:text-white transition-all active:scale-95"
-                            >
-                                <X className="w-8 h-8" />
-                            </button>
-                        </div>
-
-                        <div className="flex flex-col gap-8 text-center w-full max-w-xs mx-auto flex-1 justify-center pb-20">
-                            {[
-                                { label: 'Ecosystem', href: '#ecosystem' },
-                                { label: 'Protocol', href: '#infrastructure' },
-                                { label: 'Partnership', href: '#partnership' },
-                                { label: 'Donate', href: '#donate' }
-                            ].map((item, i) => (
-                                <a
-                                    key={i}
-                                    href={item.href}
-                                    onClick={() => setIsMenuOpen(false)}
-                                    className="text-xl sm:text-2xl font-black text-white uppercase tracking-[0.2em] hover:text-indigo-400 transition-all active:scale-95 py-2"
-                                >
-                                    {item.label}
-                                </a>
-                            ))}
-                            <button
-                                onClick={() => { setIsPartnerModalOpen(true); setIsMenuOpen(false); }}
-                                className="w-full mt-6 px-8 sm:px-12 py-5 rounded-2xl bg-indigo-600 text-white font-black text-xs uppercase tracking-[0.4em] shadow-2xl shadow-indigo-600/20 active:scale-95 transition-all"
-                            >
-                                PARTNER NOW →
-                            </button>
-                        </div>
-                    </div>
-                )}
             </nav>
+
+            {/* Mobile Menu Overlay */}
+            {isMenuOpen && (
+                <div className="fixed inset-0 bg-[#060914] z-[999] p-8 md:hidden animate-in fade-in slide-in-from-top-4 duration-300 flex flex-col">
+                    <div className="flex justify-end w-full mb-12">
+                        <button
+                            onClick={() => setIsMenuOpen(false)}
+                            className="p-3 text-white/50 hover:text-white transition-all active:scale-95"
+                        >
+                            <X className="w-8 h-8" />
+                        </button>
+                    </div>
+
+                    <div className="flex flex-col gap-8 text-center w-full max-w-xs mx-auto flex-1 justify-center pb-20">
+                        {[
+                            { label: 'Ecosystem', href: '#ecosystem' },
+                            { label: 'Protocol', href: '#infrastructure' },
+                            { label: 'Partnership', href: '#partnership' },
+                            { label: 'Donate', href: '#donate' }
+                        ].map((item, i) => (
+                            <a
+                                key={i}
+                                href={item.href}
+                                onClick={() => setIsMenuOpen(false)}
+                                className="text-xl sm:text-2xl font-black text-white uppercase tracking-[0.2em] hover:text-indigo-400 transition-all active:scale-95 py-2"
+                            >
+                                {item.label}
+                            </a>
+                        ))}
+                        <button
+                            onClick={() => { setIsPartnerModalOpen(true); setIsMenuOpen(false); }}
+                            className="w-full mt-6 px-8 sm:px-12 py-5 rounded-2xl bg-indigo-600 text-white font-black text-xs uppercase tracking-[0.4em] shadow-2xl shadow-indigo-600/20 active:scale-95 transition-all"
+                        >
+                            PARTNER NOW →
+                        </button>
+                    </div>
+                </div>
+            )}
 
             {/* Hero Section */}
             <section className="relative pt-44 pb-32 px-6 overflow-hidden">
@@ -217,8 +218,8 @@ export default function Technology() {
                         </a>
                     </div>
                     <div className="lg:w-1/2 relative">
-                        <img src="/images/tech_gate.png" alt="Collaborative Tech" className="rounded-[40px] opacity-80 filter brightness-75" />
-                        <div className="absolute inset-0 bg-gradient-to-tr from-indigo-500/20 to-transparent pointer-events-none" />
+                        <img src="/images/tech_ecosystem_african.png" alt="African Tech Collaboration" className="rounded-[40px] opacity-80 filter brightness-75 w-full h-full object-cover" />
+                        <div className="absolute inset-0 bg-gradient-to-tr from-indigo-500/20 to-transparent pointer-events-none rounded-[40px]" />
                     </div>
                 </div>
             </section>

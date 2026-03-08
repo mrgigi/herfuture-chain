@@ -3,10 +3,10 @@ import { useNavigate } from 'react-router-dom';
 import { Check, ArrowRight } from 'lucide-react';
 
 const AVATARS = [
-    { id: 'avatar1', url: 'https://api.dicebear.com/7.x/micah/svg?seed=Amina&backgroundColor=ffd5dc' },
-    { id: 'avatar2', url: 'https://api.dicebear.com/7.x/micah/svg?seed=Kezia&backgroundColor=c0aede' },
-    { id: 'avatar3', url: 'https://api.dicebear.com/7.x/micah/svg?seed=Nala&backgroundColor=b6e3f4' },
-    { id: 'avatar4', url: 'https://api.dicebear.com/7.x/micah/svg?seed=Zara&backgroundColor=d1d4f9' }
+    { id: 'avatar1', url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Amina&backgroundColor=ffd5dc&top=longHair,bob&clothing=blazerAndShirt&mouth=smile&eye=happy' },
+    { id: 'avatar2', url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Kezia&backgroundColor=c0aede&top=hijab&clothing=blazerAndSweater&mouth=twinkle&eye=default' },
+    { id: 'avatar3', url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Nala&backgroundColor=b6e3f4&top=longHairCurvy&clothing=shirtCrewNeck&mouth=smile&eye=happy' },
+    { id: 'avatar4', url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Zara&backgroundColor=d1d4f9&top=bob&clothing=overall&mouth=twinkle&eye=default' }
 ];
 
 export default function AvatarSelection() {
