@@ -216,47 +216,61 @@ async function completeLesson(req, res) {
             .single();
 
         if (lesson && lesson.grant_amount > 0) {
-            console.log(`Grant detected: ${lesson.grant_amount} cUSD. Triggering blockchain payout...`);
-            try {
-                // Fetch participant wallet
-                const { data: participant } = await supabase
-                    .from('participants')
-                    .select('wallet_address')
-                    .eq('id', participantId)
-                    .single();
+            // Check if grant disbursement is active in system settings
+            const { data: settingsData } = await supabase
+                .from('system_settings')
+                .select('value')
+                .eq('key', 'grant_disbursement_active')
+                .single();
 
-                if (participant && participant.wallet_address) {
-                    const milestone = lesson.track_label || `M_${lesson.id}`;
-                    console.log(`Executing Celo transaction for milestone: ${milestone}...`);
+            const isDisbursementActive = settingsData ? settingsData.value : true;
 
-                    // Blockchain logic: 
-                    // 1. Mark complete 
-                    // 2. Release funds
-                    const txComplete = await grantDisbursementContract.completeMilestone(participant.wallet_address, milestone);
-                    await txComplete.wait();
+            if (!isDisbursementActive) {
+                console.log(`[LMS] Grant detected, but disbursement is currently PAUSED. Skipping payout.`);
+            } else {
+                console.log(`Grant detected: ${lesson.grant_amount} cUSD. Triggering blockchain payout...`);
+                try {
+                    // Fetch participant wallet
+                    const { data: participant } = await supabase
+                        .from('participants')
+                        .select('wallet_address')
+                        .eq('id', participantId)
+                        .single();
 
-                    const txRelease = await grantDisbursementContract.releaseGrant(participant.wallet_address);
-                    const receipt = await txRelease.wait();
+                    if (participant && participant.wallet_address) {
+                        const milestone = lesson.track_label || `M_${lesson.id}`;
+                        console.log(`Executing Celo transaction for milestone: ${milestone}...`);
 
-                    console.log(`Grant dispersed! Tx: ${receipt.hash}`);
+                        // Blockchain logic: 
+                        // 1. Mark complete 
+                        // 2. Release funds
+                        const txComplete = await grantDisbursementContract.completeMilestone(participant.wallet_address, milestone);
+                        await txComplete.wait();
 
-                    // Log to grants table
-                    await supabase
-                        .from('grants')
-                        .insert([{
-                            participant_id: participantId,
-                            milestone: milestone,
-                            tx_hash: receipt.hash
-                        }]);
+                        const txRelease = await grantDisbursementContract.releaseGrant(participant.wallet_address);
+                        const receipt = await txRelease.wait();
+
+                        console.log(`Grant dispersed! Tx: ${receipt.hash}`);
+
+                        // Log to grants table
+                        await supabase
+                            .from('grants')
+                            .insert([{
+                                participant_id: participantId,
+                                milestone: milestone,
+                                tx_hash: receipt.hash
+                            }]);
+                    }
+                } catch (payoutError) {
+                    console.error("Blockchain payout failed:", payoutError.message);
+                    // We still report lesson completion success even if payout fails (for dashboard visibility)
                 }
-            } catch (payoutError) {
-                console.error("Blockchain payout failed:", payoutError.message);
-                // We still report lesson completion success even if payout fails (for dashboard visibility)
             }
         }
 
         res.json({ message: "Lesson completed!", data, grant_triggered: !!(lesson && lesson.grant_amount > 0) });
     } catch (error) {
+        console.error("completeLesson error:", error);
         res.status(500).json({ error: error.message });
     }
 }
@@ -281,6 +295,7 @@ async function getProgressOverview(req, res) {
             percentage: totalModules ? Math.round((progress?.length / totalModules) * 100) : 0
         });
     } catch (error) {
+        console.error("getProgressOverview error:", error);
         res.status(500).json({ error: error.message });
     }
 }

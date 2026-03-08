@@ -59,9 +59,21 @@ router.get('/credentials/:address', getCredentialsByAddress);
 router.post('/release-grant', releaseGrant);
 router.get('/grants/:participantId', getGrants);
 
+const { getExchangeRate } = require('../services/exchangeRateService');
+
 // 5. Impact & Analytics (Public)
 router.get('/impact/stats', getGlobalImpactStats);
 router.get('/impact/recent-grants', getRecentGrants);
+
+// 6. Currency Exchange
+router.get('/exchange-rate', async (req, res) => {
+    try {
+        const rate = await getExchangeRate();
+        res.json({ USD_NGN: rate });
+    } catch (error) {
+        res.status(500).json({ error: 'Failed to fetch exchange rate' });
+    }
+});
 
 // AI Quiz Generation endpoint
 router.post('/ai/generate-quiz', generateQuiz);

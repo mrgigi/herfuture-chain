@@ -146,22 +146,29 @@ app.post('/api/complete-lesson', async (req, res) => {
         const { data: lesson } = await supabase.from('lessons').select('*').eq('id', lessonId).single();
 
         if (lesson && lesson.grant_amount > 0) {
-            const { data: p } = await supabase.from('participants').select('wallet_address').eq('id', participantId).single();
-            if (p?.wallet_address) {
-                const milestone = lesson.track_label || `M_${lesson.id}`;
-                try {
-                    const tx1 = await grantDisbursementContract.completeMilestone(p.wallet_address, milestone);
-                    await tx1.wait();
-                    const tx2 = await grantDisbursementContract.releaseGrant(p.wallet_address);
-                    const rec = await tx2.wait();
-                    await supabase.from('grants').insert([{ participant_id: participantId, milestone, tx_hash: rec.hash, amount: lesson.grant_amount }]);
-                } catch (bcErr) {
-                    console.error("[Vercel API] Blockchain Grant Error:", bcErr.message);
+            // Check if grant disbursement is active
+            const { data: sData } = await supabase.from('system_settings').select('value').eq('key', 'grant_disbursement_active').single();
+            const isActive = sData ? sData.value : true;
+
+            if (isActive) {
+                const { data: p } = await supabase.from('participants').select('wallet_address').eq('id', participantId).single();
+                if (p?.wallet_address) {
+                    const milestone = lesson.track_label || `M_${lesson.id}`;
+                    try {
+                        const tx1 = await grantDisbursementContract.completeMilestone(p.wallet_address, milestone);
+                        await tx1.wait();
+                        const tx2 = await grantDisbursementContract.releaseGrant(p.wallet_address);
+                        const rec = await tx2.wait();
+                        await supabase.from('grants').insert([{ participant_id: participantId, milestone, tx_hash: rec.hash, amount: lesson.grant_amount }]);
+                    } catch (bcErr) {
+                        console.error("[Vercel API] Blockchain Grant Error:", bcErr.message);
+                    }
                 }
             }
         }
         res.json({ success: true });
     } catch (err) {
+        console.error("[Vercel API] Error:", err.message);
         res.status(500).json({ error: err.message });
     }
 });

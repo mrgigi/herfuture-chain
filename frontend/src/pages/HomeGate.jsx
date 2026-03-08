@@ -7,11 +7,11 @@ export default function HomeGate() {
 
     const partners = [
         "Empower Afriq Foundation",
+        "A+ Agency",
+        "Gigimobile Tech",
         "Celo Foundation",
         "Blockchain for Social Good",
-        "Lagos Tech Hub",
-        "UN Women (Support)",
-        "Digital Nigeria Initiative"
+        "Lagos Tech Hub"
     ];
 
     return (

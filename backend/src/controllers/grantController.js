@@ -26,6 +26,23 @@ async function releaseGrant(req, res) {
 
         const walletAddress = participant.wallet_address;
 
+        // --- System Settings Check ---
+        const { data: settingsData } = await supabase
+            .from('system_settings')
+            .select('value')
+            .eq('key', 'grant_disbursement_active')
+            .single();
+
+        const isDisbursementActive = settingsData ? settingsData.value : true;
+
+        if (!isDisbursementActive) {
+            console.log(`[Grants] Attempted release for ${walletAddress}, but system is PAUSED.`);
+            return res.status(403).json({
+                error: "Grant disbursement is currently paused by administrator. Manual releases are disabled.",
+                system_paused: true
+            });
+        }
+
         // --- Smart Contract Interactions ---
         // 2. Mark Milestone Complete on Celo
         console.log(`Setting milestone [${milestone}] complete for address ${walletAddress}...`);

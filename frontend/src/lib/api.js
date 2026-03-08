@@ -180,4 +180,9 @@ export const deleteParticipant = async (participantId) => {
     return response.data;
 };
 
+export const getExchangeRate = async () => {
+    const response = await api.get('/exchange-rate');
+    return response.data;
+};
+
 export default api;

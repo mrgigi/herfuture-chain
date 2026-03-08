@@ -43,6 +43,7 @@ export default function Dashboard() {
 
     const name = participant?.first_name || "Learner";
     const totalGrantsReceived = progress.completedCount * 30;
+    const nextMilestoneAmount = 150;
     const buttonText = progress.completedCount === 0 ? "Get Started" : "Resume Learning";
 
     return (
@@ -59,14 +60,16 @@ export default function Dashboard() {
                     {[
                         {
                             label: 'Total Earned',
-                            value: `$${totalGrantsReceived}.00`,
+                            value: formatNaira(toNaira(totalGrantsReceived)),
+                            secondary: `${formatCUSD(totalGrantsReceived)} cUSD`,
                             icon: <Wallet className="w-4 h-4 text-emerald-400" />,
                             badge: 'Verified',
                             badgeColor: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
                         },
                         {
                             label: 'Upcoming Reward',
-                            value: `$150.00`,
+                            value: formatNaira(toNaira(nextMilestoneAmount)),
+                            secondary: `${formatCUSD(nextMilestoneAmount)} cUSD`,
                             icon: <Trophy className="w-4 h-4 text-brand-400" />,
                             badge: 'Next Milestone',
                             badgeColor: 'bg-brand-500/10 text-brand-400 border-brand-500/20'
@@ -82,7 +85,10 @@ export default function Dashboard() {
                                 </span>
                             </div>
                             <div className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 mb-1">{stat.label}</div>
-                            <div className="text-3xl font-black text-white tracking-tight">{stat.value}</div>
+                            <div className="flex items-baseline gap-2">
+                                <div className="text-3xl font-black text-white tracking-tight">{stat.value}</div>
+                                <div className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">{stat.secondary}</div>
+                            </div>
                         </div>
                     ))}
                 </div>

@@ -651,16 +651,16 @@ export default function AdminDashboard() {
                                 </div>
 
                                 <div className="flex items-center gap-4">
-                                    <div className={`p-1 pl-4 rounded-2xl flex items-center gap-6 border transition-all ${settings.grant_disbursement_active ? 'bg-emerald-500/10 border-emerald-500/20' : 'bg-red-500/10 border-red-500/20'}`}>
+                                    <div className={`p-1 pl-4 rounded-2xl flex items-center gap-6 border transition-all duration-500 ${settings.grant_disbursement_active ? 'bg-emerald-500/5 border-emerald-500/10 ring-1 ring-emerald-500/5' : 'bg-red-500/10 border-red-500/20'}`}>
                                         <div className="flex flex-col">
                                             <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">Grant System</span>
-                                            <span className={`text-xs font-bold ${settings.grant_disbursement_active ? 'text-emerald-400' : 'text-red-400'}`}>
+                                            <span className={`text-xs font-bold ${settings.grant_disbursement_active ? 'text-emerald-500' : 'text-red-400'}`}>
                                                 {settings.grant_disbursement_active ? 'OPERATIONAL' : 'PAUSED'}
                                             </span>
                                         </div>
                                         <button
                                             onClick={toggleGrants}
-                                            className={`p-4 rounded-xl transition-all ${settings.grant_disbursement_active ? 'bg-emerald-500 text-white shadow-[0_0_20px_rgba(16,185,129,0.3)]' : 'bg-red-500 text-white shadow-[0_0_20px_rgba(239,68,68,0.3)]'}`}
+                                            className={`p-4 rounded-xl transition-all duration-500 ${settings.grant_disbursement_active ? 'bg-emerald-600 text-white shadow-[0_0_25px_rgba(5,150,105,0.3)]' : 'bg-red-500 text-white shadow-[0_0_25px_rgba(239,68,68,0.3)]'}`}
                                         >
                                             <Power className="w-4 h-4" />
                                         </button>
@@ -1106,34 +1106,36 @@ export default function AdminDashboard() {
                                         </div>
                                         <button
                                             onClick={toggleGrants}
-                                            className={`w-14 h-8 rounded-full relative transition-all duration-300 ${settings.grant_disbursement_active ? 'bg-emerald-500' : 'bg-slate-800'}`}
+                                            className={`w-14 h-8 rounded-full relative transition-all duration-500 ${settings.grant_disbursement_active ? 'bg-emerald-600' : 'bg-slate-800'}`}
                                         >
-                                            <div className={`absolute top-1.5 w-5 h-5 rounded-full transition-all duration-300 bg-white shadow-lg ${settings.grant_disbursement_active ? 'right-1.5' : 'left-1.5 bg-slate-400'}`} />
+                                            <div className={`absolute top-1.5 w-5 h-5 rounded-full transition-all duration-500 bg-white shadow-xl ${settings.grant_disbursement_active ? 'right-1.5' : 'left-1.5 bg-slate-400'}`} />
                                         </button>
                                     </div>
 
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                         <div className="p-6 rounded-3xl bg-white/5 border border-white/5 hover:border-brand-500/20 transition-all">
                                             <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-3 block pl-1">Default Lesson Grant ($)</label>
-                                            <div className="flex items-center gap-4">
+                                            <div className="flex items-center gap-3 bg-[#060914] border border-white/5 rounded-2xl px-4 py-1">
+                                                <span className="text-emerald-500 font-black text-xs">cUSD</span>
                                                 <input
                                                     type="number"
                                                     value={settings.default_lesson_grant || 30}
                                                     onChange={(e) => queryClient.setQueryData(['admin-settings'], { ...settings, default_lesson_grant: parseInt(e.target.value) })}
                                                     onBlur={(e) => updateGlobalGrant('default_lesson_grant', parseInt(e.target.value))}
-                                                    className="bg-[#060914] border border-white/5 rounded-2xl py-3 px-4 text-sm text-white focus:outline-none focus:border-brand-500/50 w-full"
+                                                    className="bg-transparent border-none py-3 text-sm text-white focus:outline-none w-full"
                                                 />
                                             </div>
                                         </div>
                                         <div className="p-6 rounded-3xl bg-white/5 border border-white/5 hover:border-brand-500/20 transition-all">
                                             <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-3 block pl-1">Graduation Bonus ($)</label>
-                                            <div className="flex items-center gap-4">
+                                            <div className="flex items-center gap-3 bg-[#060914] border border-white/5 rounded-2xl px-4 py-1">
+                                                <span className="text-emerald-500 font-black text-xs">cUSD</span>
                                                 <input
                                                     type="number"
                                                     value={settings.default_graduation_grant || 150}
                                                     onChange={(e) => queryClient.setQueryData(['admin-settings'], { ...settings, default_graduation_grant: parseInt(e.target.value) })}
                                                     onBlur={(e) => updateGlobalGrant('default_graduation_grant', parseInt(e.target.value))}
-                                                    className="w-full bg-[#060914] border border-white/5 rounded-2xl py-3 px-4 text-sm text-white focus:outline-none focus:border-brand-500/50"
+                                                    className="bg-transparent border-none py-3 text-sm text-white focus:outline-none w-full"
                                                 />
                                             </div>
                                         </div>
@@ -1141,9 +1143,12 @@ export default function AdminDashboard() {
 
                                     <div className="space-y-4">
                                         <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 block pl-1">Bridge Address (Admin Wallet)</label>
-                                        <div className="p-4 bg-[#060914] border border-white/5 rounded-2xl flex items-center justify-between group">
-                                            <code className="text-xs text-slate-400 font-mono">0x71C7656EC7ab88b098defB751B7401B5f6d8976F</code>
-                                            <span className="text-[9px] font-black text-brand-400 opacity-0 group-hover:opacity-100 transition-opacity">Copy Address</span>
+                                        <div className="p-5 bg-black/40 border border-white/5 rounded-2xl flex items-center justify-between group hover:border-brand-500/30 transition-all">
+                                            <code className="text-[11px] text-slate-400 font-mono tracking-tight">0x71C7656EC7ab88b098defB751B7401B5f6d8976F</code>
+                                            <div className="flex items-center gap-2">
+                                                <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                                                <span className="text-[9px] font-black uppercase tracking-widest text-brand-400 opacity-60 group-hover:opacity-100 transition-opacity">Copy</span>
+                                            </div>
                                         </div>
                                     </div>
 

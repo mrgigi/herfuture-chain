@@ -79,11 +79,13 @@ export default function Grants() {
                                 <h3 className="text-sm font-bold text-white truncate group-hover:text-brand-400 transition-colors">{grant.milestone_name}</h3>
                             </div>
 
-                            <div className="col-span-3 sm:col-span-2 flex items-center gap-1.5">
+                            <div className="col-span-3 sm:col-span-2 flex flex-col items-start gap-0.5">
                                 <span className="text-emerald-400 font-black text-sm">
-                                    ${grant.amount}
+                                    {formatNaira(toNaira(grant.amount))}
                                 </span>
-                                <span className="text-[10px] font-bold text-slate-500">cUSD</span>
+                                <span className="text-[10px] font-bold text-slate-500">
+                                    {formatCUSD(grant.amount)} cUSD
+                                </span>
                             </div>
 
                             <div className="col-span-4 sm:col-span-3 hidden sm:flex items-center gap-2 text-xs font-medium text-slate-400 font-mono">
