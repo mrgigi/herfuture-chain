@@ -212,7 +212,7 @@ export default function LoginSignup() {
                                 {step === 'phone' ? (
                                     <>
                                         {!isLogin && (
-                                            <div className="flex gap-4">
+                                            <div className="flex flex-col md:flex-row gap-4">
                                                 <div className="flex-1 space-y-1.5">
                                                     <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">First Name</label>
                                                     <div className="relative group">
@@ -311,11 +311,7 @@ export default function LoginSignup() {
                                 </button>
                             </form>
 
-                            {!isLogin && step === 'phone' && (
-                                <p className="mt-8 text-[9px] text-center text-slate-600 uppercase font-black tracking-[0.1em] leading-relaxed border-t border-white/5 pt-6">
-                                    Powered by <span className="text-white">Secure Mainnet</span> Layer 2 Protocol.
-                                </p>
-                            )}
+
                         </div>
                     </div>
                 </div>

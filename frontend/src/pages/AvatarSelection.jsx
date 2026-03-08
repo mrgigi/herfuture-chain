@@ -3,10 +3,10 @@ import { useNavigate } from 'react-router-dom';
 import { Check, ArrowRight } from 'lucide-react';
 
 const AVATARS = [
-    { id: 'avatar1', url: 'https://api.dicebear.com/7.x/adventurer/svg?seed=Amina&backgroundColor=ffd5dc' },
-    { id: 'avatar2', url: 'https://api.dicebear.com/7.x/adventurer/svg?seed=Kezia&backgroundColor=c0aede' },
-    { id: 'avatar3', url: 'https://api.dicebear.com/7.x/adventurer/svg?seed=Nala&backgroundColor=b6e3f4' },
-    { id: 'avatar4', url: 'https://api.dicebear.com/7.x/adventurer/svg?seed=Zara&backgroundColor=d1d4f9' }
+    { id: 'avatar1', url: 'https://api.dicebear.com/7.x/micah/svg?seed=Amina&backgroundColor=ffd5dc' },
+    { id: 'avatar2', url: 'https://api.dicebear.com/7.x/micah/svg?seed=Kezia&backgroundColor=c0aede' },
+    { id: 'avatar3', url: 'https://api.dicebear.com/7.x/micah/svg?seed=Nala&backgroundColor=b6e3f4' },
+    { id: 'avatar4', url: 'https://api.dicebear.com/7.x/micah/svg?seed=Zara&backgroundColor=d1d4f9' }
 ];
 
 export default function AvatarSelection() {

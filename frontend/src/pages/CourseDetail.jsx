@@ -93,13 +93,13 @@ const ModuleAccordion = ({ module, index, navigate }) => {
 };
 
 export default function CourseDetail() {
-    const { courseId } = useParams();
+    const { id } = useParams();
+    const navigate = useNavigate();
     const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-    const navigate = useNavigate();
 
     const { data: modules = [], isLoading: queryLoading } = useQuery({
-        queryKey: ['course-modules', courseId],
+        queryKey: ['course-modules', id],
         queryFn: async () => {
             const phone = localStorage.getItem('userPhone');
             const participant = await getParticipant(phone);

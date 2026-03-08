@@ -33,10 +33,6 @@ async function getCourseModules(req, res) {
             modules = [{ id: 'default-module', title: 'Main Curriculum', sequence_number: 1 }];
         } else if (mError) throw mError;
 
-        if (!modules || modules.length === 0) {
-            modules = [{ id: 'default-module', title: 'Main Curriculum', sequence_number: 1 }];
-        }
-
         // 2. Fetch all lessons for this course
         const { data: lessons, error: lError } = await supabase
             .from('lessons')
@@ -82,18 +78,24 @@ async function saveLessonQuiz(req, res) {
             return res.status(400).json({ error: "Cannot save quiz for unsaved lesson. Please save lesson metadata first." });
         }
 
-        const { error } = await supabase
-            .from('quizzes')
-            .upsert({
-                lesson_id: lessonId,
-                data: data,
-                updated_at: new Date()
-            }, { onConflict: 'lesson_id' })
-            .select();
+        // 1. Delete old quizzes for this lesson
+        await supabase.from('quizzes').delete().eq('lesson_id', lessonId);
 
-        if (error) throw error;
+        // 2. Insert new questions as individual rows
+        if (data && Array.isArray(data) && data.length > 0) {
+            const rowsRows = data.map(q => ({
+                lesson_id: lessonId,
+                question: q.question,
+                options: q.options,
+                correct_answer: q.answer || q.correct_answer
+            }));
+            const { error: insertErr } = await supabase.from('quizzes').insert(rowsRows);
+            if (insertErr) throw insertErr;
+        }
+
         res.json({ success: true });
     } catch (error) {
+        console.error("Save Quiz Error:", error);
         res.status(500).json({ error: error.message });
     }
 }
@@ -116,7 +118,8 @@ async function getLessonQuiz(req, res) {
             return q;
         });
 
-        res.json(refined);
+        // Wrap to maintain frontend backward compatibility where it expects data[0].data
+        res.json([{ data: refined }]);
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
@@ -493,11 +496,8 @@ async function deleteCourse(req, res) {
 
         // 2. Delete progress records for these lessons
         if (lessonIds.length > 0) {
-            // Delete from potential tables (student_progress, participant_progress)
-            await supabase.from('student_progress').delete().in('lesson_id', lessonIds);
-
-            // Check if participant_progress exists before trying to delete (optional safety)
-            const { error: pError } = await supabase.from('participant_progress').delete().in('lesson_id', lessonIds);
+            // Delete from new lesson_completions table to satisfy foreign keys
+            const { error: pError } = await supabase.from('lesson_completions').delete().in('lesson_id', lessonIds);
             if (pError && !pError.message.includes('not find')) throw pError;
 
             // 3. Delete quizzes for these lessons
@@ -505,7 +505,7 @@ async function deleteCourse(req, res) {
         }
 
         // 4. Delete the lessons themselves
-        await supabase.from('lessons').delete().eq('course_id', courseId);
+        await supabase.from('lessons').delete().in('id', lessonIds);
 
         // 5. Delete the modules
         if (moduleIds.length > 0) {
@@ -550,14 +550,32 @@ async function deleteModule(req, res) {
     try {
         const { moduleId } = req.params;
 
-        // Cascade delete would be ideal, but for safety and clear feedback:
-        // 1. Delete all lessons in this module
-        const { error: lError } = await supabase
+        // 1. Fetch lessons
+        const { data: lessons, error: lFetchError } = await supabase
             .from('lessons')
-            .delete()
+            .select('id')
             .eq('module_id', moduleId);
 
-        if (lError) throw lError;
+        if (lFetchError) throw lFetchError;
+
+        const lessonIds = lessons.map(l => l.id);
+
+        if (lessonIds.length > 0) {
+            // Delete participant progress
+            const { error: pError } = await supabase.from('participant_progress').delete().in('lesson_id', lessonIds);
+            if (pError && !pError.message.includes('not find')) throw pError;
+
+            // Delete quizzes
+            await supabase.from('quizzes').delete().in('lesson_id', lessonIds);
+
+            // Delete the lessons
+            const { error: lError } = await supabase
+                .from('lessons')
+                .delete()
+                .eq('module_id', moduleId);
+
+            if (lError) throw lError;
+        }
 
         // 2. Delete the module itself
         const { error } = await supabase
@@ -565,6 +583,7 @@ async function deleteModule(req, res) {
             .delete()
             .eq('id', moduleId);
         if (error) throw error;
+
         res.json({ success: true });
     } catch (error) {
         res.status(500).json({ error: error.message });
@@ -611,11 +630,21 @@ async function createLesson(req, res) {
 async function deleteLesson(req, res) {
     try {
         const { lessonId } = req.params;
+
+        // 1. Delete participant progress
+        const { error: pError } = await supabase.from('participant_progress').delete().eq('lesson_id', lessonId);
+        if (pError && !pError.message.includes('not find')) throw pError;
+
+        // 2. Delete quizzes
+        await supabase.from('quizzes').delete().eq('lesson_id', lessonId);
+
+        // 3. Delete the lesson itself
         const { error } = await supabase
             .from('lessons')
             .delete()
             .eq('id', lessonId);
         if (error) throw error;
+
         res.json({ success: true });
     } catch (error) {
         res.status(500).json({ error: error.message });
@@ -666,14 +695,13 @@ async function generateQuiz(req, res) {
         }
         // Persist quiz if lessonId provided
         if (lessonId && Array.isArray(quiz)) {
-            const { error } = await supabase
-                .from('quizzes')
-                .insert([
-                    {
-                        lesson_id: lessonId,
-                        data: quiz
-                    }
-                ]);
+            const rowsRows = quiz.map(q => ({
+                lesson_id: lessonId,
+                question: q.question,
+                options: q.options,
+                correct_answer: q.answer || q.correct_answer
+            }));
+            const { error } = await supabase.from('quizzes').insert(rowsRows);
             if (error) console.warn('Failed to store generated quiz:', error);
         }
         res.json({ quiz });

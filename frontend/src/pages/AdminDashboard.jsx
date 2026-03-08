@@ -1100,8 +1100,7 @@ export default function AdminDashboard() {
                                                         className="bg-transparent border-none text-white font-black focus:outline-none text-sm p-0 min-w-[200px]"
                                                     />
                                                 </div>
-                                                <div className="text-[9px] font-mono text-slate-600 uppercase tracking-widest flex items-center gap-4">
-                                                    ID: {mod.id}
+                                                <div className="flex items-center gap-4">
                                                     <button
                                                         onClick={() => handleDeleteModule(mod.id)}
                                                         className="p-1 hover:text-red-400 transition-colors"
