@@ -93,17 +93,17 @@ const ModuleAccordion = ({ module, index, navigate }) => {
 };
 
 export default function CourseDetail() {
-    const { id } = useParams();
+    const { courseId } = useParams();
     const navigate = useNavigate();
     const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
     const { data: modules = [], isLoading: queryLoading } = useQuery({
-        queryKey: ['course-modules', id],
+        queryKey: ['course-modules', courseId],
         queryFn: async () => {
             const phone = localStorage.getItem('userPhone');
             const participant = await getParticipant(phone);
-            return await getModules(id, participant?.id);
+            return await getModules(courseId, participant?.id);
         }
     });
 
