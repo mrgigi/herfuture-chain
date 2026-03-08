@@ -6,7 +6,8 @@ import {
     GraduationCap, ArrowUpRight, ShieldCheck, Power, LayoutGrid, Activity,
     Edit3, ChevronRight, Save, X, PlusCircle, Home, Globe, LogOut,
     HelpCircle, List, Loader2, Book, CheckCircle, Trash2, Sparkles,
-    Trophy, ArrowRight, ExternalLink, Menu, AlertCircle, GripVertical
+    Trophy, ArrowRight, ExternalLink, Menu, AlertCircle, GripVertical,
+    ChevronUp, ChevronDown
 } from 'lucide-react';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import LoadingScreen from '../components/LoadingScreen';
@@ -420,19 +421,42 @@ export default function AdminDashboard() {
         }
     };
 
-    const handleSaveQuizManual = async () => {
+
+    // Auto-save Quiz Effect
+    useEffect(() => {
+        if (!quizEditorOpen || !currentLessonForQuiz || isSavingQuiz) return;
+
+        const delayDebounceFn = setTimeout(() => {
+            handleSaveQuizManual(true); // true means silent/auto save
+        }, 1500);
+
+        return () => clearTimeout(delayDebounceFn);
+    }, [quizData]);
+
+    const handleSaveQuizManual = async (isSilent = false) => {
         if (!currentLessonForQuiz) return;
-        setIsSavingQuiz(true);
+        if (!isSilent) setIsSavingQuiz(true);
         try {
             await saveQuiz(currentLessonForQuiz.id, quizData);
-            setQuizEditorOpen(false);
-            alert("Quiz saved successfully!");
+            if (!isSilent) {
+                setQuizEditorOpen(false);
+                alert("Quiz saved successfully!");
+            }
         } catch (err) {
             console.error("Save quiz error:", err);
-            alert("Failed to save quiz");
+            if (!isSilent) alert("Failed to save quiz");
         } finally {
-            setIsSavingQuiz(false);
+            if (!isSilent) setIsSavingQuiz(false);
         }
+    };
+
+    const moveQuestion = (idx, direction) => {
+        const newData = [...quizData];
+        const targetIdx = direction === 'up' ? idx - 1 : idx + 1;
+        if (targetIdx < 0 || targetIdx >= newData.length) return;
+
+        [newData[idx], newData[targetIdx]] = [newData[targetIdx], newData[idx]];
+        setQuizData(newData);
     };
 
     const addQuestion = () => {
@@ -1542,6 +1566,22 @@ export default function AdminDashboard() {
                                             <div className="bg-white/[0.02] rounded-[40px] border border-white/5 p-10 transition-all hover:bg-white/[0.04] hover:border-brand-500/20">
                                                 <div className="flex justify-between items-start mb-8">
                                                     <div className="flex items-center gap-4">
+                                                        <div className="flex flex-col gap-1">
+                                                            <button
+                                                                onClick={() => moveQuestion(idx, 'up')}
+                                                                disabled={idx === 0}
+                                                                className="p-1 hover:bg-white/10 rounded-md text-slate-500 hover:text-white disabled:opacity-20"
+                                                            >
+                                                                <ChevronUp className="w-3 h-3" />
+                                                            </button>
+                                                            <button
+                                                                onClick={() => moveQuestion(idx, 'down')}
+                                                                disabled={idx === quizData.length - 1}
+                                                                className="p-1 hover:bg-white/10 rounded-md text-slate-500 hover:text-white disabled:opacity-20"
+                                                            >
+                                                                <ChevronDown className="w-3 h-3" />
+                                                            </button>
+                                                        </div>
                                                         <div className="w-10 h-10 rounded-xl bg-brand-500/10 flex items-center justify-center text-brand-400 text-xs font-black border border-brand-500/10">
                                                             {idx + 1}
                                                         </div>
