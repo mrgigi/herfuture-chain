@@ -856,12 +856,12 @@ export default function AdminDashboard() {
                                                 >
                                                     <Trash2 className="w-4 h-4" />
                                                 </button>
-                                                <div className="flex items-center gap-4">
-                                                    <div className="flex items-center gap-1.5">
+                                                <div className="flex items-center gap-3 shrink-0">
+                                                    <div className="flex items-center gap-1.5 whitespace-nowrap">
                                                         <Users className="w-3.5 h-3.5 text-slate-500" />
                                                         <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">{course.student_count || 0} Students</span>
                                                     </div>
-                                                    <div className="flex items-center gap-2">
+                                                    <div className="flex items-center gap-2 whitespace-nowrap">
                                                         <div className={`w-1.5 h-1.5 rounded-full ${course.is_published ? 'bg-emerald-500 animate-pulse' : 'bg-slate-700'}`} />
                                                         <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">{course.is_published ? 'Published' : 'Draft'}</span>
                                                     </div>
