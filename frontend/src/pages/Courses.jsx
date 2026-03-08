@@ -9,10 +9,15 @@ export default function Courses() {
     const [courses, setCourses] = useState([]);
     const [loading, setLoading] = useState(true);
     const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const navigate = useNavigate();
 
     useEffect(() => {
         const fetchCourses = async () => {
+            if (!localStorage.getItem('userAvatar')) {
+                navigate('/avatar-selection');
+                return;
+            }
             try {
                 const data = await getCourses();
                 setCourses(data.filter(c => c.is_published));
@@ -33,8 +38,16 @@ export default function Courses() {
 
     return (
         <div className="min-h-screen bg-[#060912] font-sans text-slate-200 flex flex-col">
-            <Sidebar active="courses" onCollapseChange={setSidebarCollapsed} />
-            <Topbar sidebarCollapsed={sidebarCollapsed} />
+            <Sidebar
+                active="courses"
+                onCollapseChange={setSidebarCollapsed}
+                isOpen={isMobileMenuOpen}
+                onClose={() => setIsMobileMenuOpen(false)}
+            />
+            <Topbar
+                sidebarCollapsed={sidebarCollapsed}
+                onOpenMobileMenu={() => setIsMobileMenuOpen(true)}
+            />
 
             <main className={`${sidebarCollapsed ? 'md:ml-[72px]' : 'md:ml-64'} flex-grow p-4 md:p-8 max-w-7xl transition-all duration-300`}>
                 <div className="mb-10 text-center md:text-left">

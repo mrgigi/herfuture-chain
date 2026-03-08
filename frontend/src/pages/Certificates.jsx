@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Award, ExternalLink, ShieldCheck } from 'lucide-react';
 import Sidebar from '../components/Sidebar';
 import Topbar from '../components/Topbar';
+import { useNavigate } from 'react-router-dom';
 import { getParticipant, getCredentialsByAddress } from '../lib/api';
 
 export default function Certificates() {
@@ -9,6 +10,8 @@ export default function Certificates() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+    const navigate = useNavigate();
 
     useEffect(() => {
         const fetchCertificates = async () => {
@@ -16,6 +19,11 @@ export default function Certificates() {
             if (!phone) {
                 setLoading(false);
                 setError('Please log in to view credentials');
+                return;
+            }
+
+            if (!localStorage.getItem('userAvatar')) {
+                navigate('/avatar-selection');
                 return;
             }
 
@@ -46,8 +54,16 @@ export default function Certificates() {
 
     return (
         <div className="min-h-screen bg-[#060912] font-sans text-slate-200 flex flex-col">
-            <Sidebar active="certificates" onCollapseChange={setSidebarCollapsed} />
-            <Topbar sidebarCollapsed={sidebarCollapsed} />
+            <Sidebar
+                active="certificates"
+                onCollapseChange={setSidebarCollapsed}
+                isOpen={isMobileMenuOpen}
+                onClose={() => setIsMobileMenuOpen(false)}
+            />
+            <Topbar
+                sidebarCollapsed={sidebarCollapsed}
+                onOpenMobileMenu={() => setIsMobileMenuOpen(true)}
+            />
 
             <main className={`${sidebarCollapsed ? 'md:ml-[72px]' : 'md:ml-64'} flex-grow p-4 md:p-8 max-w-7xl transition-all duration-300`}>
                 <div className="mb-8 px-2">

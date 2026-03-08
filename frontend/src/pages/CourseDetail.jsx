@@ -22,7 +22,7 @@ const ModuleAccordion = ({ module, index, navigate }) => {
                     </div>
                     <div>
                         <h3 className="text-lg font-black text-white tracking-tight">{module.title}</h3>
-                        <p className="text-[10px] uppercase tracking-widest font-black text-slate-500 mt-0.5">
+                        <p className="text-[10px] tracking-wider font-bold text-slate-500 mt-0.5">
                             {module.lessons.length} {module.lessons.length === 1 ? 'Lesson' : 'Lessons'} • {module.lessons.filter(l => l.completed).length} Complete
                         </p>
                     </div>
@@ -62,12 +62,14 @@ const ModuleAccordion = ({ module, index, navigate }) => {
                                     {lesson.completed ? <CheckCircle className="w-4 h-4" /> : lesson.locked ? <Lock className="w-3.5 h-3.5" /> : <BookOpen className="w-4 h-4" />}
                                 </div>
                                 <div>
-                                    <h4 className="text-sm font-bold text-white group-hover:text-brand-400 transition-colors uppercase tracking-tight">{lesson.title}</h4>
+                                    <h4 className="text-sm font-bold text-white group-hover:text-brand-400 transition-colors tracking-tight">{lesson.title}</h4>
                                     <div className="flex items-center gap-3 mt-0.5">
-                                        <span className="text-[9px] font-black text-slate-600 uppercase tracking-widest">{lesson.is_wellbeing ? 'Wellbeing' : 'Skill Development'}</span>
+                                        <span className="text-[9px] font-bold text-slate-600 tracking-wider">
+                                            {lesson.is_wellbeing ? 'Wellbeing' : 'Skill Development'}
+                                        </span>
                                         {lesson.grant_amount > 0 && (
-                                            <span className="flex items-center gap-1 text-[9px] font-black text-emerald-500 uppercase tracking-widest">
-                                                <DollarSign className="w-2.5 h-2.5" /> {lesson.grant_amount} cUSD
+                                            <span className="flex items-center gap-1 text-[9px] font-bold text-emerald-500 tracking-wider">
+                                                <DollarSign className="w-2.5 h-2.5" /> {lesson.grant_amount} cUSD Reward
                                             </span>
                                         )}
                                     </div>
@@ -91,12 +93,18 @@ export default function CourseDetail() {
     const { courseId } = useParams();
     const [modules, setModules] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const navigate = useNavigate();
 
     useEffect(() => {
         const fetchData = async () => {
+            const phone = localStorage.getItem('userPhone');
+            if (!localStorage.getItem('userAvatar')) {
+                navigate('/avatar-selection');
+                return;
+            }
             try {
-                const phone = localStorage.getItem('userPhone');
                 const participant = await getParticipant(phone);
                 const data = await getModules(courseId, participant?.id);
                 setModules(data);
@@ -119,10 +127,19 @@ export default function CourseDetail() {
     );
 
     return (
-        <div className="min-h-screen bg-[#0A0F1C] font-sans text-slate-200">
-            <Sidebar active="courses" />
+        <div className="min-h-screen bg-[#0A0F1C] font-sans text-slate-200 flex flex-col">
+            <Sidebar
+                active="courses"
+                onCollapseChange={setSidebarCollapsed}
+                isOpen={isMobileMenuOpen}
+                onClose={() => setIsMobileMenuOpen(false)}
+            />
+            <Topbar
+                sidebarCollapsed={sidebarCollapsed}
+                onOpenMobileMenu={() => setIsMobileMenuOpen(true)}
+            />
 
-            <main className="md:ml-64 min-h-screen relative pb-20">
+            <main className={`${sidebarCollapsed ? 'md:ml-[80px]' : 'md:ml-64'} flex-grow min-h-screen relative pb-20 transition-all duration-300`}>
                 {/* Header Background Glow */}
                 <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-brand-500/5 blur-[120px] rounded-full -translate-y-1/2 translate-x-1/2 pointer-events-none" />
 
@@ -146,7 +163,7 @@ export default function CourseDetail() {
                             <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">Chain-Verified Certification</span>
                         </div>
                         <h1 className="text-4xl md:text-5xl font-black text-white tracking-tighter mb-4 leading-none">
-                            Curriculum <span className="text-brand-500">Syllabus</span>
+                            Program <span className="text-brand-500">Syllabus</span>
                         </h1>
                         <p className="text-slate-400 text-sm max-w-xl leading-relaxed">
                             Master the core competencies of digital entrepreneurship and blockchain literacy through our structured, module-based learning experience.

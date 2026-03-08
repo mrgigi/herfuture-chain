@@ -15,6 +15,7 @@ import Verifier from './pages/Verifier';
 import AdminDashboard from './pages/AdminDashboard';
 import AdminLogin from './pages/AdminLogin';
 import ImpactDashboard from './pages/ImpactDashboard';
+import AvatarSelection from './pages/AvatarSelection';
 import AppFooter from './components/AppFooter';
 
 function App() {
@@ -38,6 +39,7 @@ function App() {
           <Route path="/lesson/:lessonId" element={<LessonPlayer />} />
           <Route path="/certificates" element={<Certificates />} />
           <Route path="/grants" element={<Grants />} />
+          <Route path="/avatar-selection" element={<AvatarSelection />} />
         </Routes>
       </div>
     </BrowserRouter>

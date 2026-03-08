@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../lib/api';
-import { Bell, Copy, Check, CalendarDays } from 'lucide-react';
+import { Bell, Copy, Check, CalendarDays, Menu } from 'lucide-react';
 
-export default function Topbar({ userName, modulesCompleted, totalModules, sidebarCollapsed }) {
+export default function Topbar({ userName, modulesCompleted, totalModules, sidebarCollapsed, onOpenMobileMenu }) {
     const navigate = useNavigate();
     const [showNotifications, setShowNotifications] = useState(false);
     const [showProfile, setShowProfile] = useState(false);
@@ -58,7 +58,13 @@ export default function Topbar({ userName, modulesCompleted, totalModules, sideb
     return (
         <div className={`${sidebarCollapsed ? 'md:ml-[72px]' : 'md:ml-64'} bg-slate-900/80 backdrop-blur-md border-b border-slate-800 sticky top-0 z-30 px-8 py-4 flex items-center justify-between transition-all duration-300`}>
             {/* Left: Welcome greeting + subtitle */}
-            <div>
+            <div className="flex items-center gap-4">
+                <button
+                    onClick={onOpenMobileMenu}
+                    className="md:hidden p-2 -ml-2 text-slate-400 hover:text-white transition-colors"
+                >
+                    <Menu className="w-6 h-6" />
+                </button>
                 <h1 className="text-xl font-bold text-white leading-tight">
                     Welcome, <span className="text-brand-400">{displayName}</span> 👋
                 </h1>
@@ -102,9 +108,11 @@ export default function Topbar({ userName, modulesCompleted, totalModules, sideb
                             setShowProfile(!showProfile);
                             setShowNotifications(false);
                         }}
-                        className="h-10 w-10 rounded-full bg-gradient-to-tr from-brand-500 to-indigo-600 flex items-center justify-center shadow-lg border-2 border-slate-800 cursor-pointer hover:scale-105 transition-transform overflow-hidden"
+                        className="h-10 w-10 rounded-full bg-slate-800 flex items-center justify-center shadow-lg border-2 border-slate-800 cursor-pointer hover:scale-105 transition-transform overflow-hidden"
                     >
-                        {user?.avatar_url ? (
+                        {localStorage.getItem('userAvatar') ? (
+                            <img src={localStorage.getItem('userAvatar')} alt="Profile" className="w-full h-full object-cover p-1" />
+                        ) : user?.avatar_url ? (
                             <img src={user.avatar_url} alt="Profile" className="w-full h-full object-cover" />
                         ) : (
                             <span className="font-semibold text-white">{initials}</span>
@@ -114,8 +122,10 @@ export default function Topbar({ userName, modulesCompleted, totalModules, sideb
                     {showProfile && (
                         <div className="absolute right-0 mt-3 w-72 glass-panel bg-slate-900 border border-white/5 shadow-2xl rounded-2xl p-5 animate-in fade-in slide-in-from-top-2">
                             <div className="flex flex-col items-center mb-6">
-                                <div className="h-16 w-16 mb-3 rounded-full bg-gradient-to-tr from-brand-500 to-indigo-600 flex items-center justify-center shadow-lg border-2 border-slate-800 overflow-hidden">
-                                    {user?.avatar_url ? (
+                                <div className="h-16 w-16 mb-3 rounded-full bg-slate-800 flex items-center justify-center shadow-lg border-2 border-slate-800 overflow-hidden">
+                                    {localStorage.getItem('userAvatar') ? (
+                                        <img src={localStorage.getItem('userAvatar')} alt="Profile" className="w-full h-full object-cover p-2" />
+                                    ) : user?.avatar_url ? (
                                         <img src={user.avatar_url} alt="Profile" className="w-full h-full object-cover" />
                                     ) : (
                                         <span className="text-xl font-semibold text-white">{initials}</span>

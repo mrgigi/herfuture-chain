@@ -64,7 +64,7 @@ export default function LoginSignup() {
                     const response = await createWallet(formData.firstName, formData.lastName, formData.phone);
                     console.log('Wallet created successfully:', response);
                     localStorage.setItem('userPhone', formData.phone);
-                    navigate('/dashboard');
+                    navigate('/avatar-selection');
                 } catch (err) {
                     setError(err.response?.data?.error || 'Failed to create decentralized identity. Please try again.');
                 }

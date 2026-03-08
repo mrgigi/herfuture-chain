@@ -12,6 +12,7 @@ export default function Dashboard() {
     const [error, setError] = useState(null);
     const [courses, setCourses] = useState([]);
     const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -20,6 +21,12 @@ export default function Dashboard() {
             if (!phone) {
                 setLoading(false);
                 setError('No user logged in');
+                return;
+            }
+
+            const avatar = localStorage.getItem('userAvatar');
+            if (!avatar) {
+                navigate('/avatar-selection');
                 return;
             }
 
@@ -59,10 +66,16 @@ export default function Dashboard() {
 
     return (
         <div className="min-h-screen bg-[#060912] font-sans text-slate-200 flex flex-col">
-            <Sidebar active="dashboard" onCollapseChange={setSidebarCollapsed} />
+            <Sidebar
+                active="dashboard"
+                onCollapseChange={setSidebarCollapsed}
+                isOpen={isMobileMenuOpen}
+                onClose={() => setIsMobileMenuOpen(false)}
+            />
             <Topbar
                 userName={name}
                 sidebarCollapsed={sidebarCollapsed}
+                onOpenMobileMenu={() => setIsMobileMenuOpen(true)}
             />
 
             <main className={`${sidebarCollapsed ? 'md:ml-[72px]' : 'md:ml-64'} flex-grow p-4 md:p-8 transition-all duration-300`}>
@@ -74,7 +87,7 @@ export default function Dashboard() {
                     )}
 
                     {/* Compact Luxury Stats Bar */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         {[
                             {
                                 label: 'Total Grants',
@@ -84,189 +97,142 @@ export default function Dashboard() {
                                 badgeColor: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
                             },
                             {
-                                label: 'Learning Progress',
-                                value: `${progress.percentage}%`,
-                                icon: <BookOpen className="w-4 h-4 text-fuchsia-400" />,
-                                badge: `${progress.completedCount}/${progress.totalModules} Units`,
-                                badgeColor: 'bg-fuchsia-500/10 text-fuchsia-400 border-fuchsia-500/20'
-                            },
-                            {
-                                label: 'Certificates',
-                                value: Math.floor(progress.completedCount / 4),
-                                icon: <Trophy className="w-4 h-4 text-magenta-400" />,
-                                badge: 'On-Chain',
-                                badgeColor: 'bg-magenta-500/10 text-magenta-400 border-magenta-500/20'
-                            },
-                            {
-                                label: 'Network',
-                                value: 'Protocol',
-                                icon: <Activity className="w-4 h-4 text-brand-400" />,
-                                badge: 'Mainnet',
+                                label: 'Upcoming Grant',
+                                value: `$150.00`,
+                                icon: <Trophy className="w-4 h-4 text-brand-400" />,
+                                badge: 'Next Milestone',
                                 badgeColor: 'bg-brand-500/10 text-brand-400 border-brand-500/20'
                             }
                         ].map((stat, i) => (
-                            <div key={i} className="bg-slate-900/40 backdrop-blur-xl border border-white/5 p-5 rounded-[28px] hover:border-white/10 transition-all group">
+                            <div key={i} className="bg-slate-900/40 backdrop-blur-xl border border-white/5 p-6 rounded-[32px] hover:border-white/10 transition-all group">
                                 <div className="flex items-center justify-between mb-3">
-                                    <div className="p-2 rounded-xl bg-white/5 border border-white/5 group-hover:scale-110 transition-transform">
+                                    <div className="p-2.5 rounded-xl bg-white/5 border border-white/5 group-hover:scale-110 transition-transform">
                                         {stat.icon}
                                     </div>
-                                    <span className={`text-[9px] font-black uppercase tracking-widest px-2 py-1 rounded-lg border ${stat.badgeColor}`}>
+                                    <span className={`text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded-lg border ${stat.badgeColor}`}>
                                         {stat.badge}
                                     </span>
                                 </div>
                                 <div className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 mb-1">{stat.label}</div>
-                                <div className="text-2xl font-black text-white tracking-tight">{stat.value}</div>
+                                <div className="text-3xl font-black text-white tracking-tight">{stat.value}</div>
                             </div>
                         ))}
                     </div>
 
-                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-                        {/* Main Learning Hub (Left 8 cols) */}
-                        <div className="lg:col-span-8 space-y-8">
-                            {/* Active Module Hero */}
-                            <div className="relative group overflow-hidden rounded-[32px] p-1 bg-gradient-to-tr from-fuchsia-500/20 to-magenta-500/20 border border-white/5">
-                                <div className="bg-[#0D121F]/90 backdrop-blur-3xl rounded-[30px] p-8 md:p-10 flex flex-col md:flex-row items-center gap-8 relative overflow-hidden">
-                                    <div className="absolute top-0 right-0 w-64 h-64 bg-fuchsia-500/5 blur-[80px] rounded-full -translate-y-1/2 translate-x-1/2 group-hover:bg-fuchsia-500/10 transition-colors pointer-events-none" />
+                    <div className="space-y-8">
+                        {/* Active Module Hero */}
+                        <div className="relative group overflow-hidden rounded-[40px] p-1 bg-gradient-to-tr from-fuchsia-500/20 to-magenta-500/20 border border-white/5">
+                            <div className="bg-[#0D121F]/90 backdrop-blur-3xl rounded-[38px] p-8 md:p-12 flex flex-col md:flex-row items-center gap-10 relative overflow-hidden">
+                                <div className="absolute top-0 right-0 w-96 h-96 bg-fuchsia-500/5 blur-[100px] rounded-full -translate-y-1/2 translate-x-1/2 group-hover:bg-fuchsia-500/10 transition-colors pointer-events-none" />
 
-                                    <div className="w-24 h-24 rounded-[28px] bg-gradient-to-br from-fuchsia-500 to-magenta-600 flex items-center justify-center text-4xl font-black text-white shadow-2xl shadow-fuchsia-500/40 flex-shrink-0 -rotate-3 group-hover:rotate-0 transition-all duration-500">
-                                        {progress.percentage}%
-                                    </div>
-
-                                    <div className="flex-1 text-center md:text-left">
-                                        <div className="flex items-center gap-3 mb-3 justify-center md:justify-start">
-                                            <span className="text-[10px] font-black uppercase tracking-widest text-fuchsia-400">Current Progress</span>
-                                            <div className="w-1 h-1 rounded-full bg-slate-700" />
-                                            <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">{progress.completedCount} Modules Mastered</span>
-                                        </div>
-                                        <h2 className="text-3xl font-black text-white mb-4 tracking-tighter leading-none">
-                                            Ready for your <span className="text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-magenta-400">next milestone?</span>
-                                        </h2>
-                                        <p className="text-slate-400 text-sm max-w-lg mb-8 leading-relaxed font-medium">
-                                            Continue your journey where you left off. Every module completed syncs direct grants to your Celo wallet.
-                                        </p>
-                                        <button
-                                            onClick={() => navigate('/courses')}
-                                            className="px-8 py-4 bg-brand-500 hover:bg-fuchsia-500 text-white rounded-2xl text-xs font-black uppercase tracking-widest transition-all shadow-xl shadow-brand-500/20 hover:shadow-fuchsia-500/30 hover:-translate-y-1 flex items-center gap-3 mx-auto md:mx-0"
-                                        >
-                                            {buttonText} <ArrowRight className="w-4 h-4" />
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Curriculum Grid (2-column dense) */}
-                            <div className="space-y-6">
-                                <div className="flex items-center justify-between px-2">
-                                    <h3 className="text-xs font-black text-white uppercase tracking-[0.3em] flex items-center gap-3">
-                                        <div className="w-2 h-2 rounded-full bg-fuchsia-500" />
-                                        Curriculum Path
-                                    </h3>
-                                    <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">
-                                        {courses.length} Tracks Available
-                                    </span>
+                                {/* Progress Circle */}
+                                <div className="w-32 h-32 rounded-[36px] bg-gradient-to-br from-fuchsia-500 to-magenta-600 flex items-center justify-center text-4xl font-black text-white shadow-2xl shadow-fuchsia-500/40 flex-shrink-0 -rotate-3 group-hover:rotate-0 transition-all duration-500">
+                                    {progress.percentage}%
                                 </div>
 
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                    {courses.map((course, idx) => {
-                                        const modulesPerTrack = Math.ceil(progress.totalModules / Math.max(1, courses.length));
-                                        const trackStartThreshold = idx * modulesPerTrack;
-                                        const isDone = progress.completedCount >= trackStartThreshold + modulesPerTrack;
-                                        const isActive = progress.completedCount >= trackStartThreshold && !isDone;
-
-                                        return (
-                                            <div
-                                                key={course.id}
-                                                onClick={() => (isActive || isDone) && navigate('/courses')}
-                                                className={`group p-6 rounded-[28px] border transition-all duration-300 relative overflow-hidden ${isActive
-                                                    ? 'bg-fuchsia-500/[0.03] border-fuchsia-500/30 shadow-2xl shadow-fuchsia-500/5 ring-1 ring-fuchsia-500/10'
-                                                    : isDone
-                                                        ? 'bg-slate-900 border-white/5 hover:border-white/10 grayscale-[0.5]'
-                                                        : 'bg-black/40 border-white/[0.02] opacity-40 grayscale pointer-events-none'
-                                                    } cursor-pointer`}
-                                            >
-                                                <div className="flex items-center gap-4 relative z-10">
-                                                    <div className={`w-12 h-12 rounded-2xl flex items-center justify-center font-black text-sm transition-all duration-500 group-hover:scale-110 ${isActive ? 'bg-fuchsia-500 text-white shadow-xl shadow-fuchsia-500/40' : isDone ? 'bg-emerald-500/20 text-emerald-400' : 'bg-slate-800 text-slate-500'
-                                                        }`}>
-                                                        {isDone ? <CheckCircle className="w-5 h-5" /> : (idx + 1)}
-                                                    </div>
-                                                    <div className="flex-1">
-                                                        <div className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1">Track {course.track_number}</div>
-                                                        <h4 className={`text-sm font-black uppercase tracking-tight ${isActive ? 'text-white' : 'text-slate-400'}`}>{course.title}</h4>
-                                                    </div>
-                                                    {isActive && <div className="w-1.5 h-1.5 rounded-full bg-fuchsia-500 animate-pulse" />}
-                                                </div>
-                                                {isActive && (
-                                                    <div className="mt-4 pt-4 border-t border-fuchsia-500/10 flex items-center justify-between">
-                                                        <span className="text-[9px] font-black text-fuchsia-400 uppercase tracking-widest">In Progress</span>
-                                                        <ArrowRight className="w-3 h-3 text-fuchsia-400" />
-                                                    </div>
-                                                )}
-                                            </div>
-                                        );
-                                    })}
+                                <div className="flex-1 text-center md:text-left">
+                                    <div className="flex items-center gap-3 mb-4 justify-center md:justify-start">
+                                        <span className="text-[11px] font-black uppercase tracking-widest text-fuchsia-400">Current Progress</span>
+                                        <div className="w-1.5 h-1.5 rounded-full bg-slate-700" />
+                                        <span className="text-[11px] font-black uppercase tracking-widest text-slate-500">{progress.completedCount} Modules Mastered</span>
+                                    </div>
+                                    <h2 className="text-4xl md:text-5xl font-black text-white mb-6 tracking-tighter leading-none">
+                                        Ready for your <br /> <span className="text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-magenta-400">next milestone?</span>
+                                    </h2>
+                                    <p className="text-slate-400 text-base max-w-xl mb-10 leading-relaxed font-medium">
+                                        Every module completed syncs direct grants to your Celo wallet.
+                                    </p>
+                                    <button
+                                        onClick={() => navigate('/courses')}
+                                        className="px-10 py-5 bg-brand-500 hover:bg-fuchsia-500 text-white rounded-2xl text-xs font-black uppercase tracking-widest transition-all shadow-2xl shadow-brand-500/30 hover:shadow-fuchsia-500/40 hover:-translate-y-1 flex items-center gap-4 mx-auto md:mx-0"
+                                    >
+                                        {buttonText} <ArrowRight className="w-5 h-5" />
+                                    </button>
                                 </div>
                             </div>
                         </div>
 
-                        {/* Secondary Context (Right 4 cols) */}
-                        <div className="lg:col-span-4 space-y-6">
-                            {/* Next Milestone Card */}
-                            <div className="bg-[#0D121F] border border-white/5 rounded-[32px] p-8 relative overflow-hidden group">
-                                <div className="absolute bottom-0 right-0 w-32 h-32 bg-emerald-500/5 blur-[50px] rounded-full translate-y-1/2 translate-x-1/2" />
+                        {/* Mobile/Small Screen Milestone Card */}
+                        <div className="lg:hidden bg-emerald-500/5 border border-emerald-500/10 rounded-[32px] p-8 text-center">
+                            <div className="text-[10px] font-black uppercase tracking-widest text-emerald-500/60 mb-2">Upcoming Reward</div>
+                            <div className="text-4xl font-black text-white mb-2">$150 <span className="text-xs text-emerald-400">cUSD</span></div>
+                            <p className="text-xs text-slate-500 mb-6">Complete Track 2 to trigger automated grant.</p>
+                            <button onClick={() => navigate('/grants')} className="text-[10px] font-black uppercase tracking-widest text-emerald-400 hover:text-white transition-colors">
+                                View Payout Ledger →
+                            </button>
+                        </div>
 
-                                <div className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-6">Next Reward Milestone</div>
-                                <div className="flex items-baseline gap-1 mb-2">
-                                    <span className="text-4xl font-black text-white tracking-tighter">$150</span>
-                                    <span className="text-xs font-black text-emerald-400 uppercase tracking-widest">cUSD</span>
-                                </div>
-                                <p className="text-xs text-slate-500 leading-relaxed mb-8">
-                                    Complete <span className="text-white font-bold">Track 2</span> to trigger this automated on-chain disbursement.
-                                </p>
-
-                                <button
-                                    onClick={() => navigate('/grants')}
-                                    className="w-full py-4 rounded-2xl bg-white/[0.03] border border-white/5 text-[10px] font-black uppercase tracking-widest text-white hover:bg-white/[0.06] hover:border-white/10 transition-all flex items-center justify-center gap-2 group/btn"
-                                >
-                                    <ExternalLink className="w-3.5 h-3.5 text-emerald-500" />
-                                    View Payout Ledger
-                                </button>
+                        {/* Curriculum Grid */}
+                        <div className="space-y-6">
+                            <div className="flex items-center justify-between px-2">
+                                <h3 className="text-xs font-black text-white uppercase tracking-[0.3em] flex items-center gap-3">
+                                    <div className="w-2 h-2 rounded-full bg-fuchsia-500" />
+                                    Your Curriculum Path
+                                </h3>
+                                <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">
+                                    {courses.length} Tracks Available
+                                </span>
                             </div>
 
-                            {/* Credentials & Support */}
-                            <div className="bg-slate-900 border border-slate-800/50 rounded-[32px] overflow-hidden">
-                                <div className="p-8 space-y-8">
-                                    <div>
-                                        <h3 className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-6 flex items-center gap-3">
-                                            <Trophy className="w-3.5 h-3.5 text-magenta-400" />
-                                            Skills Hub
-                                        </h3>
-                                        <div className="p-5 rounded-2xl bg-black/20 border border-white/5 flex items-center justify-between mb-4">
-                                            <span className="text-xs font-bold text-slate-400">Verifiable Credentials</span>
-                                            <span className="text-lg font-black text-fuchsia-400">{Math.floor(progress.completedCount / 4)}</span>
-                                        </div>
-                                        <button
-                                            onClick={() => navigate('/certificates')}
-                                            className="w-full py-4 rounded-2xl bg-fuchsia-500/10 border border-fuchsia-500/20 text-fuchsia-400 text-[10px] font-black uppercase tracking-widest hover:bg-fuchsia-500 hover:text-white transition-all shadow-lg shadow-fuchsia-500/5"
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                {courses.map((course, idx) => {
+                                    const modulesPerTrack = Math.ceil(progress.totalModules / Math.max(1, courses.length));
+                                    const trackStartThreshold = idx * modulesPerTrack;
+                                    const isDone = progress.completedCount >= trackStartThreshold + modulesPerTrack;
+                                    const isActive = progress.completedCount >= trackStartThreshold && !isDone;
+
+                                    return (
+                                        <div
+                                            key={course.id}
+                                            onClick={() => (isActive || isDone) && navigate('/courses')}
+                                            className={`group p-8 rounded-[40px] border transition-all duration-500 relative overflow-hidden ${isActive
+                                                ? 'bg-fuchsia-500/[0.04] border-fuchsia-500/30 shadow-2xl shadow-fuchsia-500/10 ring-1 ring-fuchsia-500/20 scale-[1.02]'
+                                                : isDone
+                                                    ? 'bg-slate-900/60 border-white/5 opacity-80'
+                                                    : 'bg-black/20 border-white/[0.02] opacity-40 grayscale pointer-events-none'
+                                                } cursor-pointer hover:-translate-y-1`}
                                         >
-                                            My Credentials
-                                        </button>
-                                    </div>
-
-                                    <div className="pt-8 border-t border-white/5">
-                                        <h3 className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-4">Support & Academy</h3>
-                                        <div className="space-y-2">
-                                            <button className="w-full p-4 rounded-xl bg-white/[0.02] hover:bg-white/[0.05] border border-transparent hover:border-white/5 transition-all text-left text-xs font-bold text-slate-400 flex items-center justify-between group">
-                                                Knowledge Base
-                                                <ChevronRight className="w-4 h-4 text-slate-600 group-hover:text-white transition-colors" />
-                                            </button>
-                                            <button className="w-full p-4 rounded-xl bg-white/[0.02] hover:bg-white/[0.05] border border-transparent hover:border-white/5 transition-all text-left text-xs font-bold text-slate-400 flex items-center justify-between group">
-                                                Community Forum
-                                                <ChevronRight className="w-4 h-4 text-slate-600 group-hover:text-white transition-colors" />
-                                            </button>
+                                            <div className="flex flex-col gap-6 relative z-10">
+                                                <div className={`w-14 h-14 rounded-2xl flex items-center justify-center font-black text-xl transition-all duration-500 group-hover:scale-110 ${isActive ? 'bg-gradient-to-br from-fuchsia-500 to-magenta-600 text-white shadow-xl shadow-fuchsia-500/40' : isDone ? 'bg-emerald-500/20 text-emerald-400' : 'bg-slate-800 text-slate-500'
+                                                    }`}>
+                                                    {isDone ? <CheckCircle className="w-6 h-6" /> : (idx + 1)}
+                                                </div>
+                                                <div>
+                                                    <div className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1.5">Track {course.track_number || (idx + 1)}</div>
+                                                    <h4 className={`text-lg font-black uppercase tracking-tight leading-tight ${isActive ? 'text-white' : 'text-slate-400'}`}>{course.title}</h4>
+                                                </div>
+                                                {isActive && (
+                                                    <div className="pt-6 border-t border-fuchsia-500/10 flex items-center justify-between">
+                                                        <span className="text-[10px] font-black text-fuchsia-400 uppercase tracking-widest animate-pulse">In Progress</span>
+                                                        <div className="w-8 h-8 rounded-full bg-fuchsia-500/10 flex items-center justify-center">
+                                                            <ArrowRight className="w-4 h-4 text-fuchsia-400" />
+                                                        </div>
+                                                    </div>
+                                                )}
+                                            </div>
                                         </div>
-                                    </div>
+                                    );
+                                })}
+                            </div>
+                        </div>
+
+                        {/* Simplified Skills Hub at bottom */}
+                        <div className="pt-12 border-t border-white/5 flex flex-col md:flex-row items-center justify-between gap-8">
+                            <div className="flex items-center gap-6">
+                                <div className="p-4 rounded-3xl bg-magenta-500/10 border border-magenta-500/20 flex items-center justify-center">
+                                    <Trophy className="w-8 h-8 text-magenta-400" />
+                                </div>
+                                <div>
+                                    <h3 className="text-xl font-black text-white tracking-tight mb-1">Your Skills Hub</h3>
+                                    <p className="text-sm text-slate-500 font-medium">{Math.floor(progress.completedCount / 4)} Verifiable Credentials Earned</p>
                                 </div>
                             </div>
+                            <button
+                                onClick={() => navigate('/certificates')}
+                                className="px-8 py-4 rounded-2xl bg-white/5 border border-white/10 text-white text-xs font-black uppercase tracking-widest hover:bg-white/10 transition-all"
+                            >
+                                View All Certificates
+                            </button>
                         </div>
                     </div>
                 </div>

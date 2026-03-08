@@ -1,17 +1,18 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom'; // HMR Refresh
 import {
     Users, BookOpen, DollarSign, Settings, Search, MoreHorizontal,
     GraduationCap, ArrowUpRight, ShieldCheck, Power, LayoutGrid, Activity,
     Edit3, ChevronRight, Save, X, PlusCircle, Home, Globe, LogOut,
-    HelpCircle, List, Loader2, Book, CheckCircle
+    HelpCircle, List, Loader2, Book, CheckCircle, Trash2, Sparkles,
+    Trophy, ArrowRight, ExternalLink
 } from 'lucide-react';
 import api, {
-    getCourses, getAdminParticipants, getSystemSettings,
+    getCourses, getModules, getAdminParticipants, getSystemSettings,
     updateSystemSetting, updateCourseStatus, updateCourseDetails,
     updateModule, updateLesson,
     createModule, deleteModule, createLesson, deleteLesson,
-    createCourse, generateQuizAI, getQuiz, saveQuiz
+    createCourse, deleteCourse, generateQuizAI, getQuiz, saveQuiz
 } from '../lib/api';
 
 const CurriculumInput = ({ value, onChange, onBlur, className, placeholder, isTextArea = false }) => {
@@ -68,6 +69,7 @@ export default function AdminDashboard() {
     const [quizData, setQuizData] = useState([]);
     const [isSavingQuiz, setIsSavingQuiz] = useState(false);
     const [toast, setToast] = useState(null);
+    const [showDeleteConfirm, setShowDeleteConfirm] = useState(null); // stores course object
 
     const showToast = (message, type = 'success') => {
         setToast({ message, type });
@@ -148,6 +150,22 @@ export default function AdminDashboard() {
             await updateLesson(lessonId, { [field]: value });
         } catch (err) {
             console.error("Auto-save lesson error:", err);
+        }
+    };
+
+    const handleDeleteTrack = async (courseId) => {
+        try {
+            await deleteCourse(courseId);
+            showToast("Track deleted");
+            setCourses(prev => prev.filter(c => c.id !== courseId));
+            setShowDeleteConfirm(null);
+            if (editingCourse && editingCourse.id === courseId) {
+                setActiveTab('Curriculum');
+                setEditingCourse(null);
+            }
+        } catch (err) {
+            console.error("Delete track error:", err);
+            showToast(err.response?.data?.error || "Delete failed", "error");
         }
     };
 
@@ -253,6 +271,17 @@ export default function AdminDashboard() {
         setSettings(prev => ({ ...prev, grant_disbursement_active: newVal }));
     };
 
+    const updateGlobalGrant = async (key, val) => {
+        try {
+            await updateSystemSetting(key, val);
+            setSettings(prev => ({ ...prev, [key]: val }));
+            showToast("Global grant updated");
+        } catch (err) {
+            console.error("Update global grant error:", err);
+            showToast("Update failed", "error");
+        }
+    };
+
     const toggleCourse = async (id, currentStatus) => {
         await updateCourseStatus(id, !currentStatus);
         setCourses(prev => prev.map(c => c.id === id ? { ...c, is_published: !currentStatus } : c));
@@ -315,7 +344,7 @@ export default function AdminDashboard() {
                 module_id: moduleId,
                 title: "New Lesson",
                 sequence_number: nextSeq,
-                grant_amount: 30,
+                grant_amount: settings.default_lesson_grant || 30,
                 video_url: ""
             });
             setCourseModules(courseModules.map(m =>
@@ -628,9 +657,18 @@ export default function AdminDashboard() {
                                     </div>
 
                                     <div className="flex items-center justify-between pt-6 border-t border-white/5">
-                                        <div className="flex items-center gap-2">
-                                            <div className={`w-1.5 h-1.5 rounded-full ${course.is_published ? 'bg-emerald-500 animate-pulse' : 'bg-slate-700'}`} />
-                                            <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">{course.is_published ? 'Published' : 'Draft'}</span>
+                                        <div className="flex items-center gap-4">
+                                            <button
+                                                onClick={() => setShowDeleteConfirm(course)}
+                                                className="p-2 text-slate-600 hover:text-red-400 hover:bg-red-500/10 rounded-xl transition-all"
+                                                title="Delete Track"
+                                            >
+                                                <Trash2 className="w-4 h-4" />
+                                            </button>
+                                            <div className="flex items-center gap-2">
+                                                <div className={`w-1.5 h-1.5 rounded-full ${course.is_published ? 'bg-emerald-500 animate-pulse' : 'bg-slate-700'}`} />
+                                                <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">{course.is_published ? 'Published' : 'Draft'}</span>
+                                            </div>
                                         </div>
                                         <button
                                             onClick={() => toggleCourse(course.id, course.is_published)}
@@ -642,6 +680,37 @@ export default function AdminDashboard() {
                                 </div>
                             ))}
                         </div>
+
+                        {/* Delete Confirmation Modal */}
+                        {showDeleteConfirm && (
+                            <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-300">
+                                <div className="glass-panel max-w-md w-full p-10 rounded-[40px] border border-white/10 shadow-2xl text-center space-y-6">
+                                    <div className="w-20 h-20 bg-red-500/20 rounded-full flex items-center justify-center mx-auto mb-2">
+                                        <Trash2 className="w-10 h-10 text-red-500" />
+                                    </div>
+                                    <div>
+                                        <h2 className="text-2xl font-black text-white italic">Confirm Deletion.</h2>
+                                        <p className="text-slate-400 text-sm mt-3 leading-relaxed">
+                                            Are you sure you want to permanently delete <span className="text-white font-bold">"{showDeleteConfirm.title}"</span>? This action will erase all modules and lessons within this track.
+                                        </p>
+                                    </div>
+                                    <div className="flex flex-col gap-3 pt-4">
+                                        <button
+                                            onClick={() => handleDeleteTrack(showDeleteConfirm.id)}
+                                            className="w-full py-4 bg-red-600 hover:bg-red-500 text-white font-black text-[10px] uppercase tracking-[0.2em] rounded-2xl transition-all"
+                                        >
+                                            Permanently Erase
+                                        </button>
+                                        <button
+                                            onClick={() => setShowDeleteConfirm(null)}
+                                            className="w-full py-4 bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white font-black text-[10px] uppercase tracking-[0.2em] rounded-2xl transition-all"
+                                        >
+                                            Keep Track
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
                     </div>
                 )}
 
@@ -686,7 +755,7 @@ export default function AdminDashboard() {
                                     <div className="p-6 rounded-3xl bg-white/5 border border-white/5">
                                         <div className="flex justify-between items-center mb-4">
                                             <span className="text-sm font-bold text-white">Base Lesson Grant</span>
-                                            <span className="text-sm font-black text-brand-400">$30.00</span>
+                                            <span className="text-sm font-black text-brand-400">${settings.default_lesson_grant || 30}.00</span>
                                         </div>
                                         <div className="w-full h-1.5 bg-slate-900 rounded-full">
                                             <div className="w-[30%] h-full bg-brand-500 rounded-full" />
@@ -696,7 +765,7 @@ export default function AdminDashboard() {
                                     <div className="p-6 rounded-3xl bg-white/5 border border-white/5">
                                         <div className="flex justify-between items-center mb-4">
                                             <span className="text-sm font-bold text-white">Graduation Bonus</span>
-                                            <span className="text-sm font-black text-amber-400">$100.00</span>
+                                            <span className="text-sm font-black text-amber-400">${settings.default_graduation_grant || 150}.00</span>
                                         </div>
                                         <p className="text-[10px] text-slate-500 leading-relaxed italic">Dispersed upon completion of the final track 3 milestone.</p>
                                     </div>
@@ -728,6 +797,33 @@ export default function AdminDashboard() {
                                     >
                                         <div className={`absolute top-1.5 w-5 h-5 rounded-full transition-all duration-300 bg-white shadow-lg ${settings.grant_disbursement_active ? 'right-1.5' : 'left-1.5 bg-slate-400'}`} />
                                     </button>
+                                </div>
+
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div className="p-6 rounded-3xl bg-white/5 border border-white/5 hover:border-brand-500/20 transition-all">
+                                        <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-3 block pl-1">Default Lesson Grant ($)</label>
+                                        <div className="flex items-center gap-4">
+                                            <input
+                                                type="number"
+                                                value={settings.default_lesson_grant || 30}
+                                                onChange={(e) => setSettings({ ...settings, default_lesson_grant: parseInt(e.target.value) })}
+                                                onBlur={(e) => updateGlobalGrant('default_lesson_grant', parseInt(e.target.value))}
+                                                className="bg-[#060914] border border-white/5 rounded-2xl py-3 px-4 text-sm text-white focus:outline-none focus:border-brand-500/50 w-full"
+                                            />
+                                        </div>
+                                    </div>
+                                    <div className="p-6 rounded-3xl bg-white/5 border border-white/5 hover:border-brand-500/20 transition-all">
+                                        <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-3 block pl-1">Graduation Bonus ($)</label>
+                                        <div className="flex items-center gap-4">
+                                            <input
+                                                type="number"
+                                                value={settings.default_graduation_grant || 150}
+                                                onChange={(e) => setSettings({ ...settings, default_graduation_grant: parseInt(e.target.value) })}
+                                                onBlur={(e) => updateGlobalGrant('default_graduation_grant', parseInt(e.target.value))}
+                                                className="bg-[#060914] border border-white/5 rounded-2xl py-3 px-4 text-sm text-white focus:outline-none focus:border-brand-500/50 w-full"
+                                            />
+                                        </div>
+                                    </div>
                                 </div>
 
                                 <div className="space-y-4">
@@ -845,9 +941,9 @@ export default function AdminDashboard() {
                                         </div>
                                         <button
                                             onClick={saveCourse}
-                                            className="w-full bg-brand-600 hover:bg-brand-500 text-white font-black py-3 rounded-2xl text-[10px] uppercase tracking-widest transition-all mt-4 flex items-center justify-center gap-2"
+                                            className="w-full bg-brand-600 hover:bg-brand-500 text-white font-black py-4 rounded-2xl text-[10px] uppercase tracking-widest transition-all mt-4 flex items-center justify-center gap-2"
                                         >
-                                            <Save className="w-3 h-3" />
+                                            <Save className="w-4 h-4" />
                                             Update Metadata
                                         </button>
                                     </div>

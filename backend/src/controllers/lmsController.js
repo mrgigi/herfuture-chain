@@ -106,7 +106,16 @@ async function getLessonQuiz(req, res) {
             .eq('lesson_id', lessonId);
 
         if (error) throw error;
-        res.json(data);
+
+        // Flatten data if it exists in a 'data' column (backwards compatibility)
+        const refined = (data || []).map(q => {
+            if (q.data && typeof q.data === 'object') {
+                return { ...q, ...q.data };
+            }
+            return q;
+        });
+
+        res.json(refined);
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
@@ -505,6 +514,18 @@ async function deleteModule(req, res) {
 async function createLesson(req, res) {
     try {
         const { course_id, module_id, title, sequence_number, grant_amount, video_url, content } = req.body;
+
+        // Fetch default grant from settings if not provided
+        let finalGrant = grant_amount;
+        if (finalGrant === undefined || finalGrant === null) {
+            const { data: settings } = await supabase
+                .from('system_settings')
+                .select('value')
+                .eq('key', 'default_lesson_grant')
+                .single();
+            finalGrant = settings?.value || 30;
+        }
+
         const { data, error } = await supabase
             .from('lessons')
             .insert([
@@ -513,7 +534,7 @@ async function createLesson(req, res) {
                     module_id,
                     title,
                     sequence_number,
-                    grant_amount: grant_amount || 0,
+                    grant_amount: finalGrant,
                     video_url: video_url || '',
                     content: content || ''
                 }

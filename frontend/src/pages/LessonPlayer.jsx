@@ -16,6 +16,10 @@ export default function LessonPlayer() {
 
     useEffect(() => {
         const fetchData = async () => {
+            if (!localStorage.getItem('userAvatar')) {
+                navigate('/avatar-selection');
+                return;
+            }
             setLoading(true);
             try {
                 const [lessonData, quizData] = await Promise.all([
@@ -63,9 +67,9 @@ export default function LessonPlayer() {
                     <div className="w-20 h-20 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-8 animate-bounce">
                         <Award className="w-10 h-10 text-green-400" />
                     </div>
-                    <h2 className="text-3xl font-bold text-white mb-4">You've Earned It! 🎊</h2>
-                    <p className="text-slate-400 mb-8">
-                        You successfully passed the lesson. A micro-grant is being released to your wallet on the <span className="text-white">secure</span> blockchain.
+                    <h2 className="text-3xl font-bold text-white mb-4">Well Done! 🎊</h2>
+                    <p className="text-slate-400 mb-8 leading-relaxed">
+                        You successfully passed the lesson check. Your reward is being processed and will be available in your wallet shortly.
                     </p>
                     <button
                         onClick={() => navigate('/dashboard')}
@@ -118,8 +122,8 @@ export default function LessonPlayer() {
                     <ChevronLeft className="w-5 h-5" />
                     <span className="text-sm font-medium">Exit Academy</span>
                 </button>
-                <div className="text-xs font-black text-white/40 uppercase tracking-[0.4em]">
-                    Module {lesson.track_label}
+                <div className="text-[10px] font-bold text-white/30 uppercase tracking-[0.2em]">
+                    Module: {lesson.title}
                 </div>
                 <div className="w-24"></div> {/* Spacer */}
             </header>
@@ -170,9 +174,9 @@ export default function LessonPlayer() {
                                     <button
                                         onClick={handleQuizSubmit}
                                         disabled={!selectedAnswer || loading}
-                                        className="w-full py-5 rounded-2xl bg-brand-500 hover:bg-brand-400 text-white font-black uppercase tracking-widest text-xs mt-10 shadow-xl shadow-brand-500/20 transition-all disabled:opacity-50"
+                                        className="w-full py-5 rounded-2xl bg-brand-500 hover:bg-brand-400 text-white font-bold uppercase tracking-wider text-xs mt-10 shadow-xl shadow-brand-500/20 transition-all disabled:opacity-50"
                                     >
-                                        {loading ? 'Processing Blockchain Grant...' : 'Submit & Release Grant'}
+                                        {loading ? 'Verifying...' : 'Submit Answer'}
                                     </button>
                                     <button
                                         onClick={() => setShowQuiz(false)}
@@ -200,16 +204,16 @@ export default function LessonPlayer() {
                 <div className="w-full lg:w-[400px] border-l border-white/5 bg-[#0D121F] flex flex-col">
                     <div className="flex border-b border-white/5">
                         <button
-                            onClick={() => setActiveTab('video')}
-                            className={`flex-1 py-4 text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'video' ? 'text-brand-400 bg-brand-500/5 border-b-2 border-brand-500' : 'text-slate-500 hover:text-slate-300'}`}
+                            onClick={setActiveTab && (() => setActiveTab('video'))}
+                            className={`flex-1 py-4 text-[10px] font-bold uppercase tracking-wider transition-all ${activeTab === 'video' ? 'text-brand-400 bg-brand-500/5 border-b-2 border-brand-500' : 'text-slate-600 hover:text-slate-300'}`}
                         >
-                            Module Info
+                            Module Overview
                         </button>
                         <button
-                            onClick={() => setActiveTab('outcomes')}
-                            className={`flex-1 py-4 text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'outcomes' ? 'text-brand-400 bg-brand-500/5 border-b-2 border-brand-500' : 'text-slate-500 hover:text-slate-300'}`}
+                            onClick={setActiveTab && (() => setActiveTab('outcomes'))}
+                            className={`flex-1 py-4 text-[10px] font-bold uppercase tracking-wider transition-all ${activeTab === 'outcomes' ? 'text-brand-400 bg-brand-500/5 border-b-2 border-brand-500' : 'text-slate-600 hover:text-slate-300'}`}
                         >
-                            Learning Outcomes
+                            Learning Goals
                         </button>
                     </div>
 
