@@ -111,11 +111,16 @@ export default function HomeGate() {
                 </div>
 
                 {/* Partner Slider */}
-                <div className="w-full max-w-7xl overflow-hidden py-12 border-t border-white/5">
+                <div className="w-full max-w-7xl overflow-hidden py-12 border-t border-white/5 relative">
                     <p className="text-center text-[10px] font-black uppercase tracking-[0.4em] text-slate-600 mb-10">TRUSTED BY OUR GLOBAL PARTNERS</p>
-                    <div className="flex gap-12 items-center justify-center animate-infinite-scroll">
+
+                    {/* Gradient fade on edges for smooth scrolling effect */}
+                    <div className="absolute left-0 top-0 bottom-0 w-8 md:w-32 bg-gradient-to-r from-[#060914] to-transparent z-10 pointer-events-none" />
+                    <div className="absolute right-0 top-0 bottom-0 w-8 md:w-32 bg-gradient-to-l from-[#060914] to-transparent z-10 pointer-events-none" />
+
+                    <div className="flex gap-8 md:gap-12 items-center w-max animate-infinite-scroll pl-4 md:pl-0">
                         {[...partners, ...partners].map((partner, i) => (
-                            <div key={i} className="flex-shrink-0 text-lg font-bold text-slate-500 hover:text-white transition-colors cursor-default px-8 whitespace-nowrap">
+                            <div key={i} className="flex-shrink-0 text-sm md:text-lg font-bold text-slate-500 hover:text-white transition-colors cursor-default md:px-8 whitespace-nowrap">
                                 {partner}
                             </div>
                         ))}
