@@ -319,14 +319,21 @@ export default function LessonPlayer() {
                             <div className="animate-in fade-in slide-in-from-right-4 duration-500">
                                 <h3 className="text-sm font-black text-white/30 uppercase tracking-[0.2em] mb-6">Competencies To Master</h3>
                                 <div className="space-y-4">
-                                    {(lesson.learning_outcomes || []).map((outcome, i) => (
+                                    {Array.isArray(lesson.learning_outcomes) ? lesson.learning_outcomes.map((outcome, i) => (
                                         <div key={i} className="flex gap-4 p-4 rounded-2xl bg-white/5 border border-white/5 items-start">
                                             <div className="mt-1">
                                                 <CheckCircle className="w-4 h-4 text-brand-400" />
                                             </div>
                                             <p className="text-sm text-slate-300 font-medium leading-relaxed">{outcome}</p>
                                         </div>
-                                    ))}
+                                    )) : (lesson.learning_outcomes && typeof lesson.learning_outcomes === 'string') ? (
+                                        <div className="flex gap-4 p-4 rounded-2xl bg-white/5 border border-white/5 items-start">
+                                            <div className="mt-1">
+                                                <CheckCircle className="w-4 h-4 text-brand-400" />
+                                            </div>
+                                            <p className="text-sm text-slate-300 font-medium leading-relaxed">{lesson.learning_outcomes}</p>
+                                        </div>
+                                    ) : null}
                                 </div>
                             </div>
                         )}

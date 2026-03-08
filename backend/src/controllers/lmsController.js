@@ -719,7 +719,10 @@ async function generateQuiz(req, res) {
         if (!title && !learning_outcome && !content) {
             return res.status(400).json({ error: 'Missing data for quiz generation' });
         }
-        const prompt = `You are an instructional designer. Create a short 5-question multiple-choice quiz (4 options each) for the following lesson.\n\nLesson Title: ${title || 'N/A'}\nLearning Outcome: ${learning_outcome || 'N/A'}\nLesson Content (summary): ${content || 'N/A'}\n\nReturn the result as a JSON array with objects: { "question": string, "options": [string, string, string, string], "answer": string }`;
+
+        // Testing Phase: Requesting exactly 3 questions per lesson
+        const prompt = `You are an instructional designer. Create exactly 3 multiple-choice questions (4 options each) for the following lesson.\n\nLesson Title: ${title || 'N/A'}\nLearning Outcome: ${learning_outcome || 'N/A'}\nLesson Content (summary): ${content || 'N/A'}\n\nReturn the result as a JSON array containing exactly 3 objects: [{ "question": string, "options": [string, string, string, string], "answer": string }]`;
+
         const openaiKey = process.env.OPENAI_API_KEY;
         if (!openaiKey) {
             return res.status(500).json({ error: 'OpenAI API key not configured' });
