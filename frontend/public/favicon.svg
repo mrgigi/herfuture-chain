@@ -1,0 +1,12 @@
+<svg width="32" height="32" viewBox="0 0 240 240" xmlns="http://www.w3.org/2000/svg">
+  <!-- Top Left Shape -->
+  <path d="M120 0 C60 0 0 60 0 120 L120 120 Z" fill="#3E4C7A"/>
+  <!-- Bottom Left Shape -->
+  <path d="M0 120 C0 180 60 240 120 240 L120 120 Z" fill="#2E8B82"/>
+  <!-- Top Right Shape -->
+  <path d="M120 0 C180 0 240 60 240 120 L120 120 Z" fill="#1FA89B"/>
+  <!-- Bottom Right Shape -->
+  <path d="M120 120 L240 120 C240 180 180 240 120 240 Z" fill="#6BAF92"/>
+  <!-- Center Diamond -->
+  <rect x="100" y="100" width="40" height="40" fill="#F4A623" transform="rotate(45 120 120)"/>
+</svg>
