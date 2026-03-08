@@ -348,14 +348,19 @@ async function getAllParticipantsWithProgress(req, res) {
 async function updateCourseStatus(req, res) {
     try {
         const { courseId, isPublished } = req.body;
+        console.log(`[LMS] SETTING COURSE ${courseId} PUBLISHED: ${isPublished}`);
         const { error } = await supabase
             .from('courses')
             .update({ is_published: isPublished })
             .eq('id', courseId);
 
-        if (error) throw error;
+        if (error) {
+            console.error(`[LMS] Update Course Status Error:`, error);
+            throw error;
+        }
         res.json({ success: true });
     } catch (error) {
+        console.error(`[LMS] Update Course Status Exception:`, error);
         res.status(500).json({ error: error.message });
     }
 }

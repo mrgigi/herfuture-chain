@@ -313,8 +313,14 @@ export default function AdminDashboard() {
     };
 
     const toggleCourse = async (id, currentStatus) => {
-        await updateCourseStatus(id, !currentStatus);
-        queryClient.setQueryData(['admin-courses'], prev => prev.map(c => c.id === id ? { ...c, is_published: !currentStatus } : c));
+        try {
+            await updateCourseStatus(id, !currentStatus);
+            queryClient.setQueryData(['admin-courses'], prev => prev?.map(c => c.id === id ? { ...c, is_published: !currentStatus } : c));
+            showToast(`Learning Path ${!currentStatus ? 'Published' : 'set to Draft'}`, "success");
+        } catch (err) {
+            console.error("Toggle course error:", err);
+            showToast("Failed to update status", "error");
+        }
     };
 
     const filteredStudents = students ? students.filter(s => {
