@@ -44,16 +44,20 @@ export default function LessonPlayer() {
             }
             setLoading(true);
             try {
-                const [lessonData, quizData] = await Promise.all([
-                    getLesson(lessonId),
-                    getQuiz(lessonId)
-                ]);
+                // Fetch lesson first, as it's critical
+                const lessonData = await getLesson(lessonId);
                 setLesson(lessonData);
-                // Backend returns [{data: [...quiz questions]}]
-                // So quizData[0].data contains the actual quiz array
-                const quizArray = quizData?.[0]?.data;
-                if (quizArray && quizArray.length > 0) {
-                    setQuiz(quizArray[0]);
+
+                // Fetch quiz separately so a 404/failure here doesn't crash the lesson view
+                try {
+                    const quizData = await getQuiz(lessonId);
+                    const quizArray = quizData?.[0]?.data;
+                    if (quizArray && quizArray.length > 0) {
+                        setQuiz(quizArray[0]);
+                    }
+                } catch (quizErr) {
+                    console.log("No quiz found or failed to load:", quizErr.message);
+                    setQuiz(null);
                 }
             } catch (err) {
                 console.error("Failed to fetch lesson data:", err);
