@@ -35,16 +35,18 @@ export default function LoginSignup() {
         setError('');
 
         // Validate Nigerian number: must be 10 digits after stripping leading 0
-        if (formData.localPhone.length !== 10) {
-            setError('Enter your 10-digit Nigerian mobile number (e.g. 8012345678).');
+        // Strip leading 0 again at submit time as a safety net
+        const cleanPhone = formData.localPhone.replace(/^0/, '').slice(0, 10);
+        if (cleanPhone !== formData.localPhone) {
+            setFormData(prev => ({ ...prev, localPhone: cleanPhone }));
+        }
+        if (cleanPhone.length !== 10) {
+            setError('Enter a valid 10-digit Nigerian mobile number.');
             return;
         }
-        // Validate known Nigerian network prefixes
-        const validPrefixes = ['070', '071', '080', '081', '090', '091', '0703', '0706', '0803', '0806', '0810', '0813', '0814', '0816', '0903', '0906'];
-        const withLeadingZero = '0' + formData.localPhone;
-        const hasValidPrefix = validPrefixes.some(p => withLeadingZero.startsWith(p));
-        if (!hasValidPrefix) {
-            setError('Please enter a valid Nigerian phone number (MTN, Airtel, Glo, 9mobile).');
+        // First digit must be 7 or 8 (e.g. 070x, 080x, 081x)
+        if (!['7', '8'].includes(cleanPhone[0])) {
+            setError('Nigerian numbers must start with 7 or 8 (e.g. 08012345678).');
             return;
         }
 
@@ -255,13 +257,13 @@ export default function LoginSignup() {
                                                     value={formData.localPhone}
                                                     onChange={handleInputChange}
                                                     inputMode="numeric"
-                                                    maxLength={10}
+                                                    maxLength={11}
                                                     className="interface-input block w-full rounded-r-2xl rounded-l-none"
                                                     placeholder="8012345678"
                                                 />
                                             </div>
                                             <p className="text-[9px] text-slate-500 mt-2 px-1 leading-relaxed">
-                                                Enter your 10-digit local number — we'll add +234 automatically.
+                                                Your phone is your unique ID on HerFuture Chain — no password needed.
                                             </p>
                                         </div>
                                     </>
