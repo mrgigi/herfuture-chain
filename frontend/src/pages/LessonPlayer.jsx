@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ChevronLeft, CheckCircle, XCircle, Award, ArrowRight, HelpCircle, Zap } from 'lucide-react';
+import { ChevronLeft, CheckCircle, XCircle, Award, ArrowRight, HelpCircle, Zap, ExternalLink } from 'lucide-react';
 import { getQuiz, submitLessonProgress, getParticipant, getLesson } from '../lib/api';
 import confetti from 'canvas-confetti';
 import YoutubePlayer from '../components/YoutubePlayer';
