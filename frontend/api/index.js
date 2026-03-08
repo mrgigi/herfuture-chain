@@ -665,19 +665,52 @@ Rules:
 Format:
 [{"question": "...", "options": ["A", "B", "C", "D"], "answer": "A"}]`;
 
-        const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiKey}`;
+        const modelsToTry = [
+            'gemini-1.5-flash',
+            'gemini-1.5-flash-latest',
+            'gemini-pro'
+        ];
 
-        const response = await fetch(geminiUrl, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                contents: [{ parts: [{ text: prompt }] }],
-                generationConfig: {
-                    temperature: 0.7,
-                    maxOutputTokens: 1200
+        let response;
+        let lastError = '';
+        let success = false;
+
+        for (const model of modelsToTry) {
+            console.log(`[Vercel API] Attempting AI generation with model: ${model}`);
+            const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${geminiKey}`;
+
+            try {
+                const res = await fetch(geminiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [{ parts: [{ text: prompt }] }],
+                        generationConfig: {
+                            temperature: 0.7,
+                            maxOutputTokens: 1200
+                        }
+                    })
+                });
+
+                if (res.ok) {
+                    response = res;
+                    success = true;
+                    console.log(`[Vercel API] Successfully generated quiz using model: ${model}`);
+                    break;
+                } else {
+                    const errBody = await res.json().catch(() => ({}));
+                    lastError = errBody.error?.message || res.statusText;
+                    console.warn(`[Vercel API] Model ${model} failed with ${res.status}: ${lastError}`);
                 }
-            })
-        });
+            } catch (fetchErr) {
+                lastError = fetchErr.message;
+                console.warn(`[Vercel API] Fetch error for model ${model}: ${fetchErr.message}`);
+            }
+        }
+
+        if (!success) {
+            return res.status(502).json({ error: `AI Generation failed after trying multiple models. Last error: ${lastError}` });
+        }
 
         if (!response.ok) {
             const errBody = await response.json().catch(() => ({}));
