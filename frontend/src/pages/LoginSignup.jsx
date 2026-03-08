@@ -93,7 +93,7 @@ export default function LoginSignup() {
         try {
             if (isLogin) {
                 try {
-                    await api.get(`/participant/${fullPhone}`);
+                    await api.get(`/participant/${encodeURIComponent(fullPhone)}`);
                     localStorage.setItem('userPhone', fullPhone);
                     if (!localStorage.getItem('userAvatar')) {
                         navigate('/avatar-selection');

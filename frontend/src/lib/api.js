@@ -29,7 +29,7 @@ export const verifyCredential = async (credentialId) => {
 
 export const getParticipant = async (phone) => {
     try {
-        const response = await api.get(`/participant/${phone}`);
+        const response = await api.get(`/participant/${encodeURIComponent(phone)}`);
         return response.data;
     } catch (error) {
         console.error('Error fetching participant:', error);
