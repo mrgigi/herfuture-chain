@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { ChevronLeft, CheckCircle, XCircle, Award, ArrowRight, HelpCircle, Zap } from 'lucide-react';
 import { getQuiz, submitLessonProgress, getParticipant, getLesson } from '../lib/api';
 import confetti from 'canvas-confetti';
+import YoutubePlayer from '../components/YoutubePlayer';
 
 const PASS_THRESHOLD = 2; // Min correct out of total questions to pass
 
@@ -257,14 +258,8 @@ export default function LessonPlayer() {
                 {/* Main Content: Video or Quiz */}
                 <div className="flex-1 bg-black flex flex-col items-center justify-center relative">
                     {!showQuiz ? (
-                        <div className="w-full h-full relative">
-                            <iframe
-                                className="absolute inset-0 w-full h-full"
-                                src={`${lesson.video_url}?autoplay=1&rel=0`}
-                                title={lesson.title}
-                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                                allowFullScreen
-                            />
+                        <div className="w-full">
+                            <YoutubePlayer url={lesson.video_url} />
                         </div>
                     ) : (
                         // ── Step-by-Step Quiz ──
