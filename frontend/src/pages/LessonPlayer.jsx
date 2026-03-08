@@ -101,20 +101,24 @@ export default function LessonPlayer() {
 
     const handleNextQuestion = async () => {
         const nextIndex = currentQuestionIndex + 1;
-        const finalScore = questionResult === 'correct' ? score : score; // already updated
 
         if (nextIndex >= totalQuestions) {
-            // Quiz is done — calculate final pass/fail
+            // Quiz is done — compute the TRUE final score.
+            // `score` state may not yet reflect the last answer (React batches updates),
+            // so we explicitly add 1 if the last answer was correct.
+            const actualFinalScore = score + (questionResult === 'correct' ? 1 : 0);
+
             setQuizFinished(true);
 
-            const passed = score >= PASS_THRESHOLD;
+            const passed = actualFinalScore >= PASS_THRESHOLD;
             if (passed) {
                 setLoading(true);
                 try {
                     const phone = localStorage.getItem('userPhone');
                     const participant = await getParticipant(phone);
-                    await submitLessonProgress(participant.id, lessonId, Math.round((score / totalQuestions) * 100));
+                    await submitLessonProgress(participant.id, lessonId, Math.round((actualFinalScore / totalQuestions) * 100));
                     triggerCelebration();
+                    setScore(actualFinalScore); // ensure displayed score is correct
                     setLessonCompleted(true);
                 } catch (err) {
                     console.error("Failed to submit progress:", err);

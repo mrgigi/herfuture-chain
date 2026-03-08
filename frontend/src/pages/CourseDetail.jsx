@@ -7,8 +7,9 @@ import { getModules, getParticipant } from '../lib/api';
 import { useCurrency } from '../hooks/useCurrency';
 
 const ModuleAccordion = ({ module, index, navigate, formatNaira, toNaira }) => {
-    const [isOpen, setIsOpen] = useState(index === 0); // Open first module by default
     const lessons = module?.lessons || [];
+    const completedCount = lessons.filter(l => l.completed).length;
+    const [isOpen, setIsOpen] = useState(index === 0 || completedCount > 0);
     const hasMultipleLessons = lessons.length > 1;
 
     return (
@@ -25,7 +26,7 @@ const ModuleAccordion = ({ module, index, navigate, formatNaira, toNaira }) => {
                     <div>
                         <h3 className="text-lg font-black text-white tracking-tight">{module.title || 'Untitled Lesson'}</h3>
                         <p className="text-[10px] tracking-wider font-bold text-slate-500 mt-0.5">
-                            {lessons.length} {lessons.length === 1 ? 'Lesson' : 'Lessons'} • {lessons.filter(l => l.completed).length} Complete
+                            {lessons.length} {lessons.length === 1 ? 'Lesson' : 'Lessons'} • {completedCount} Done
                         </p>
                     </div>
                 </div>
@@ -66,9 +67,11 @@ const ModuleAccordion = ({ module, index, navigate, formatNaira, toNaira }) => {
                                 <div>
                                     <h4 className="text-sm font-bold text-white group-hover:text-brand-400 transition-colors tracking-tight">{lesson.title}</h4>
                                     <div className="flex items-center gap-3 mt-0.5">
-                                        <span className="text-[9px] font-bold text-slate-600 tracking-wider">
-                                            {lesson.is_wellbeing ? 'Wellbeing' : 'Skill Development'}
-                                        </span>
+                                        {lesson.completed && (
+                                            <span className="flex items-center gap-1 text-[9px] font-bold text-emerald-400 tracking-wider">
+                                                <CheckCircle className="w-2.5 h-2.5" /> Done
+                                            </span>
+                                        )}
                                         {lesson.grant_amount > 0 && (
                                             <span className="flex items-center gap-1 text-[9px] font-bold text-emerald-500 tracking-wider whitespace-nowrap">
                                                 {formatNaira(toNaira(lesson.grant_amount))}

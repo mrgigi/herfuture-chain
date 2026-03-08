@@ -13,22 +13,27 @@ export default function Dashboard() {
     const phone = localStorage.getItem('userPhone');
 
     // Queries
-    const { data: participant, isLoading: participantLoading } = useQuery({
+    const { data: participant, isLoading: participantLoading, isFetching: participantFetching } = useQuery({
         queryKey: ['participant', phone],
         queryFn: () => getParticipant(phone),
-        enabled: !!phone
+        enabled: !!phone,
+        staleTime: 30_000,
+        refetchOnMount: true,
     });
 
     const { data: progress = { percentage: 0, completedCount: 0, totalModules: 16 }, isLoading: progressLoading } = useQuery({
         queryKey: ['progress-overview', participant?.id],
         queryFn: () => getProgressOverview(participant.id),
-        enabled: !!participant?.id
+        enabled: !!participant?.id,
+        staleTime: 15_000,
+        refetchOnMount: true,
     });
 
     const { data: coursesData = [], isLoading: coursesLoading } = useQuery({
         queryKey: ['courses'],
         queryFn: getCourses,
-        select: (data) => Array.isArray(data) ? data.filter(c => c.is_published) : []
+        select: (data) => Array.isArray(data) ? data.filter(c => c.is_published) : [],
+        staleTime: 60_000,
     });
 
     useEffect(() => {
@@ -41,7 +46,11 @@ export default function Dashboard() {
     const error = !phone ? 'No user logged in' : null;
     const courses = coursesData;
 
-    if (loading) return <LoadingScreen message="Personalizing Your Dashboard..." />;
+    // Only show full loading screen if we have NO data at all (first ever load)
+    // On subsequent navigations (returning from a lesson), show cached data immediately
+    const hasNoData = !participant && !coursesData.length;
+    if (participantLoading && hasNoData) return <LoadingScreen message="Personalizing Your Dashboard..." />;
+
 
     const name = participant?.first_name || "Learner";
     const totalGrantsReceived = progress.totalEarned ?? (progress.completedCount * 30);
@@ -131,7 +140,7 @@ export default function Dashboard() {
                                     Complete lessons and quizzes to earn digital awards and unlock direct-to-wallet rewards.
                                 </p>
                                 <button
-                                    onClick={() => navigate('/courses')}
+                                    onClick={() => activePath ? navigate(`/courses/${activePath.courseId}`) : navigate('/courses')}
                                     className="px-10 py-5 bg-brand-500 hover:bg-fuchsia-500 text-white rounded-2xl text-xs font-black uppercase tracking-widest transition-all active:scale-95 shadow-2xl shadow-brand-500/30 hover:shadow-fuchsia-500/40 hover:-translate-y-1 flex items-center gap-4 mx-auto md:mx-0"
                                 >
                                     {buttonText} <ArrowRight className="w-5 h-5" />
