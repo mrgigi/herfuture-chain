@@ -448,51 +448,56 @@ async function deleteCourse(req, res) {
     try {
         const { courseId } = req.params;
 
-        // Safety Check: Are there any students who have progress in this course?
-        // Check both potential table names for resilience
-        const { count: count1, error: pError1 } = await supabase
-            .from('student_progress')
-            .select('*', { count: 'exact', head: true })
-            .eq('course_id', courseId);
-
-        const { count: count2, error: pError2 } = await supabase
-            .from('participant_progress')
-            .select('*', { count: 'exact', head: true })
-            .eq('course_id', courseId);
-
-        if (pError1 && !pError1.message.includes('not find')) throw pError1;
-
-        const totalProgressCount = (count1 || 0) + (count2 || 0);
-
-        if (totalProgressCount > 0) {
-            return res.status(403).json({ error: "Cannot delete a track that has active students. Please de-publish it instead." });
-        }
-
-        // 1. Delete all quizzes associated with lessons in this course
-        const { data: lessons } = await supabase
+        // 1. Fetch all lessons and modules associated with this course
+        const { data: lessons, error: lFetchError } = await supabase
             .from('lessons')
             .select('id')
             .eq('course_id', courseId);
 
-        if (lessons && lessons.length > 0) {
-            const lessonIds = lessons.map(l => l.id);
+        if (lFetchError) throw lFetchError;
+
+        const { data: modules, error: mFetchError } = await supabase
+            .from('modules')
+            .select('id')
+            .eq('course_id', courseId);
+
+        if (mFetchError && !mFetchError.message.includes('not find')) throw mFetchError;
+
+        const lessonIds = lessons?.map(l => l.id) || [];
+        const moduleIds = modules?.map(m => m.id) || [];
+
+        console.log(`Deleting Course ${courseId}: Found ${lessonIds.length} lessons and ${moduleIds.length} modules.`);
+
+        // 2. Delete progress records for these lessons
+        if (lessonIds.length > 0) {
+            // Delete from potential tables (student_progress, participant_progress)
+            await supabase.from('student_progress').delete().in('lesson_id', lessonIds);
+
+            // Check if participant_progress exists before trying to delete (optional safety)
+            const { error: pError } = await supabase.from('participant_progress').delete().in('lesson_id', lessonIds);
+            if (pError && !pError.message.includes('not find')) throw pError;
+
+            // 3. Delete quizzes for these lessons
             await supabase.from('quizzes').delete().in('lesson_id', lessonIds);
         }
 
-        // 2. Delete all lessons in this course
+        // 4. Delete the lessons themselves
         await supabase.from('lessons').delete().eq('course_id', courseId);
 
-        // 3. Delete all modules in this course
-        await supabase.from('modules').delete().eq('course_id', courseId);
+        // 5. Delete the modules
+        if (moduleIds.length > 0) {
+            await supabase.from('modules').delete().eq('course_id', courseId);
+        }
 
-        // 4. Finally delete the course
+        // 6. Finally delete the course
         const { error } = await supabase
             .from('courses')
             .delete()
             .eq('id', courseId);
 
         if (error) throw error;
-        res.json({ success: true });
+
+        res.json({ success: true, message: "Course and all related data purged successfully." });
     } catch (error) {
         console.error("deleteCourse Error:", error);
         res.status(500).json({ error: error.message });
