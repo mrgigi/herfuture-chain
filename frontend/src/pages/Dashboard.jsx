@@ -145,15 +145,7 @@ export default function Dashboard() {
                             </div>
                         </div>
 
-                        {/* Mobile/Small Screen Milestone Card */}
-                        <div className="lg:hidden bg-emerald-500/5 border border-emerald-500/10 rounded-[32px] p-8 text-center">
-                            <div className="text-[10px] font-black uppercase tracking-widest text-emerald-500/60 mb-2">Upcoming Reward</div>
-                            <div className="text-4xl font-black text-white mb-2">$150 <span className="text-xs text-emerald-400">cUSD</span></div>
-                            <p className="text-xs text-slate-500 mb-6">Complete Level 2 to trigger automated reward.</p>
-                            <button onClick={() => navigate('/grants')} className="text-[10px] font-black uppercase tracking-widest text-emerald-400 hover:text-white transition-colors">
-                                View Payout History →
-                            </button>
-                        </div>
+
 
                         {/* Learning Journey Grid */}
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pb-12">

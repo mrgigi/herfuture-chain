@@ -156,9 +156,7 @@ export default function CourseDetail() {
                         <h1 className="text-4xl md:text-5xl font-black text-white tracking-tighter mb-4 leading-none">
                             Program <span className="text-brand-500">Syllabus</span>
                         </h1>
-                        <p className="text-slate-400 text-sm max-w-xl leading-relaxed">
-                            Master the core competencies of digital entrepreneurship and blockchain literacy through our structured, lesson-based learning experience.
-                        </p>
+
                     </div>
 
                     {/* Modules Grid */}

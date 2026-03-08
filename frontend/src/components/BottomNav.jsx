@@ -1,5 +1,5 @@
 import { useNavigate, useLocation } from 'react-router-dom';
-import { LayoutDashboard, BookOpen, BarChart3, User, Award } from 'lucide-react';
+import { LayoutDashboard, BookOpen, Award } from 'lucide-react';
 
 export default function BottomNav() {
     const navigate = useNavigate();
@@ -9,9 +9,7 @@ export default function BottomNav() {
     const navItems = [
         { name: 'Home', path: '/dashboard', icon: LayoutDashboard },
         { name: 'Academy', path: '/courses', icon: BookOpen },
-        { name: 'Impact', path: '/impact', icon: BarChart3 },
         { name: 'Wallet', path: '/grants', icon: Award },
-        { name: 'Profile', path: '/avatar-selection', icon: User },
     ];
 
     return (
