@@ -35,7 +35,9 @@ export default function Dashboard() {
     });
 
     useEffect(() => {
-        if (!localStorage.getItem('userAvatar')) {
+        if (!localStorage.getItem('userPhone')) {
+            navigate('/login');
+        } else if (!localStorage.getItem('userAvatar')) {
             navigate('/avatar-selection');
         }
     }, [navigate]);
@@ -46,7 +48,7 @@ export default function Dashboard() {
 
     if (loading) return <LoadingScreen message="Personalizing Your Dashboard..." />;
 
-    const name = participant?.first_name || "{First Name}";
+    const name = participant?.first_name || "Student";
     const totalGrantsReceived = progress.completedCount * 30;
     const buttonText = progress.completedCount === 0 ? "Get Started" : "Resume Learning";
 

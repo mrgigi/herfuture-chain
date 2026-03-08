@@ -7,6 +7,20 @@ const api = axios.create({
     },
 });
 
+api.interceptors.response.use(
+    (response) => response,
+    (error) => {
+        if (error.response && error.response.status === 404 && error.config.url.startsWith('/participant/')) {
+            localStorage.removeItem('userPhone');
+            localStorage.removeItem('userAvatar');
+            if (window.location.pathname !== '/signup' && window.location.pathname !== '/' && window.location.pathname !== '/gate') {
+                window.location.href = '/signup';
+            }
+        }
+        return Promise.reject(error);
+    }
+);
+
 export const createWallet = async (firstName, lastName, phone) => {
     try {
         const response = await api.post('/create-wallet', { first_name: firstName, last_name: lastName, phone });

@@ -103,7 +103,7 @@ export default function CourseDetail() {
         queryFn: async () => {
             const phone = localStorage.getItem('userPhone');
             const participant = await getParticipant(phone);
-            return await getModules(courseId, participant?.id);
+            return await getModules(id, participant?.id);
         }
     });
 
