@@ -3,10 +3,10 @@ import { useNavigate } from 'react-router-dom';
 import { Check, ArrowRight } from 'lucide-react';
 
 const AVATARS = [
-    { id: 'avatar1', url: 'https://api.dicebear.com/7.x/big-smile/svg?seed=Amina&backgroundColor=b6e3f4,c0aede,d1d4f9,ffdfbf&backgroundType=gradientLinear' },
-    { id: 'avatar2', url: 'https://api.dicebear.com/7.x/big-smile/svg?seed=Kezia&backgroundColor=ffd5dc,c0aede,d1d4f9,b6e3f4&backgroundType=gradientLinear' },
-    { id: 'avatar3', url: 'https://api.dicebear.com/7.x/big-smile/svg?seed=Nala&backgroundColor=c0aede,b6e3f4,d1d4f9,ffdfbf&backgroundType=gradientLinear' },
-    { id: 'avatar4', url: 'https://api.dicebear.com/7.x/big-smile/svg?seed=Zara&backgroundColor=d1d4f9,ffd5dc,c0aede,b6e3f4&backgroundType=gradientLinear' }
+    { id: 'avatar1', url: 'https://api.dicebear.com/7.x/lorelei/svg?seed=Amina&backgroundColor=ffd5dc' },
+    { id: 'avatar2', url: 'https://api.dicebear.com/7.x/lorelei/svg?seed=Kezia&backgroundColor=c0aede' },
+    { id: 'avatar3', url: 'https://api.dicebear.com/7.x/lorelei/svg?seed=Nala&backgroundColor=b6e3f4' },
+    { id: 'avatar4', url: 'https://api.dicebear.com/7.x/lorelei/svg?seed=Zara&backgroundColor=d1d4f9' }
 ];
 
 export default function AvatarSelection() {
