@@ -8,20 +8,58 @@ export default function LoginSignup() {
     const [step, setStep] = useState('phone'); // 'phone' or 'otp'
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
-    const [formData, setFormData] = useState({ firstName: '', lastName: '', phone: '', otp: '000000' });
+    const [formData, setFormData] = useState({ firstName: '', lastName: '', localPhone: '', otp: '000000' });
     const navigate = useNavigate();
+
+    // Always store phone as +234XXXXXXXXXX
+    const fullPhone = '+234' + formData.localPhone.replace(/^0/, '');
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
-        setFormData(prev => ({ ...prev, [name]: value }));
+        if (name === 'localPhone') {
+            // Strip everything except digits, remove leading 0 automatically
+            const digits = value.replace(/\D/g, '').replace(/^0/, '');
+            // Cap at 10 digits (e.g. 8012345678)
+            setFormData(prev => ({ ...prev, localPhone: digits.slice(0, 10) }));
+        } else if (name === 'firstName' || name === 'lastName') {
+            // Only allow letters and spaces
+            const cleaned = value.replace(/[^a-zA-Z\s]/g, '');
+            setFormData(prev => ({ ...prev, [name]: cleaned }));
+        } else {
+            setFormData(prev => ({ ...prev, [name]: value }));
+        }
     };
 
     const handlePhoneSubmit = async (e) => {
         e.preventDefault();
-        setLoading(true);
         setError('');
 
-        // Simulate sending OTP
+        // Validate Nigerian number: must be 10 digits after stripping leading 0
+        if (formData.localPhone.length !== 10) {
+            setError('Enter your 10-digit Nigerian mobile number (e.g. 8012345678).');
+            return;
+        }
+        // Validate known Nigerian network prefixes
+        const validPrefixes = ['070', '071', '080', '081', '090', '091', '0703', '0706', '0803', '0806', '0810', '0813', '0814', '0816', '0903', '0906'];
+        const withLeadingZero = '0' + formData.localPhone;
+        const hasValidPrefix = validPrefixes.some(p => withLeadingZero.startsWith(p));
+        if (!hasValidPrefix) {
+            setError('Please enter a valid Nigerian phone number (MTN, Airtel, Glo, 9mobile).');
+            return;
+        }
+
+        if (!isLogin) {
+            if (!formData.firstName.trim() || formData.firstName.trim().length < 2) {
+                setError('Please enter a valid first name (at least 2 characters).');
+                return;
+            }
+            if (!formData.lastName.trim() || formData.lastName.trim().length < 2) {
+                setError('Please enter a valid last name (at least 2 characters).');
+                return;
+            }
+        }
+
+        setLoading(true);
         setTimeout(() => {
             setLoading(false);
             setStep('otp');
@@ -52,11 +90,8 @@ export default function LoginSignup() {
         try {
             if (isLogin) {
                 try {
-                    const response = await api.get(`/participant/${formData.phone}`);
-                    localStorage.setItem('userPhone', formData.phone);
-
-                    // Check if avatar exists in localStorage (or would be fetched/set by dashboard)
-                    // For now, if it's NOT in localStorage, force selection for better UX
+                    await api.get(`/participant/${fullPhone}`);
+                    localStorage.setItem('userPhone', fullPhone);
                     if (!localStorage.getItem('userAvatar')) {
                         navigate('/avatar-selection');
                     } else {
@@ -67,10 +102,8 @@ export default function LoginSignup() {
                 }
             } else {
                 try {
-                    const response = await createWallet(formData.firstName, formData.lastName, formData.phone);
-                    console.log('Wallet created successfully:', response);
-                    localStorage.setItem('userPhone', formData.phone);
-                    // New signups ALWAYS go to avatar selection
+                    await createWallet(formData.firstName.trim(), formData.lastName.trim(), fullPhone);
+                    localStorage.setItem('userPhone', fullPhone);
                     navigate('/avatar-selection');
                 } catch (err) {
                     setError(err.response?.data?.error || 'Failed to create decentralized identity. Please try again.');
@@ -210,22 +243,25 @@ export default function LoginSignup() {
 
                                         <div className="space-y-1.5">
                                             <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Phone Number</label>
-                                            <div className="relative group">
-                                                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-600 group-focus-within:text-brand-400 transition-colors">
-                                                    <Phone className="h-4 w-4" />
+                                            <div className="relative group flex items-center gap-0">
+                                                {/* Country Code Prefix */}
+                                                <div className="flex items-center gap-2 px-3.5 h-[46px] bg-white/5 border border-white/10 rounded-l-2xl border-r-0 text-xs font-black text-white tracking-wider flex-shrink-0">
+                                                    🇳🇬 +234
                                                 </div>
                                                 <input
                                                     type="tel"
                                                     required
-                                                    name="phone"
-                                                    value={formData.phone}
+                                                    name="localPhone"
+                                                    value={formData.localPhone}
                                                     onChange={handleInputChange}
-                                                    className="interface-input pl-10 block w-full rounded-2xl"
-                                                    placeholder="+234 801 234 5678"
+                                                    inputMode="numeric"
+                                                    maxLength={10}
+                                                    className="interface-input block w-full rounded-r-2xl rounded-l-none"
+                                                    placeholder="8012345678"
                                                 />
                                             </div>
-                                            <p className="text-[9px] text-slate-500 mt-2 px-1 leading-relaxed italic">
-                                                * This maps your mobile identity to a secure blockchain vault.
+                                            <p className="text-[9px] text-slate-500 mt-2 px-1 leading-relaxed">
+                                                Enter your 10-digit local number — we'll add +234 automatically.
                                             </p>
                                         </div>
                                     </>
