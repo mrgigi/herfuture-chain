@@ -334,17 +334,18 @@ app.get('/api/progress-overview/:participantId', async (req, res) => {
             .reduce((acc, l) => acc + (l.grant_amount || 0), 0);
 
         // Find Upcoming Reward
-        // Sort lessons by track_number then sequence_number to find the "next" one
+        // Sort lessons by track_number (from course) then sequence_number to find the "next" one
         const sortedLessons = lessons.map(l => {
             const course = courses?.find(c => c.id === l.course_id);
             return { ...l, track_number: course?.track_number || 999 };
         }).sort((a, b) => {
             if (a.track_number !== b.track_number) return a.track_number - b.track_number;
-            return a.sequence_number - b.sequence_number;
+            return (a.sequence_number || 0) - (b.sequence_number || 0);
         });
 
+        // The "next" lesson is the first one in the sorted list that the user HAS NOT completed
         const nextLesson = sortedLessons.find(l => !completedLessonIds.has(l.id));
-        const upcomingReward = nextLesson ? (nextLesson.grant_amount || 0) : 0;
+        const upcomingReward = nextLesson ? (Number(nextLesson.grant_amount) || 0) : 0;
 
         // Calculate progress per course
         const perCourseProgress = courses?.map(course => {

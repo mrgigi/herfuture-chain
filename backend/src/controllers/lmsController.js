@@ -285,20 +285,67 @@ async function getProgressOverview(req, res) {
     try {
         const { participantId } = req.params;
 
-        const { data: progress } = await supabase
+        // 1. Fetch student progress
+        const { data: progress, error: pErr } = await supabase
             .from('student_progress')
-            .select('*')
+            .select('lesson_id, status')
             .eq('participant_id', participantId)
             .eq('status', 'completed');
 
-        const { count: totalModules } = await supabase
+        if (pErr) throw pErr;
+
+        // 2. Fetch all lessons and their grant amounts
+        const { data: lessons, error: lErr } = await supabase
             .from('lessons')
-            .select('*', { count: 'exact', head: true });
+            .select('id, grant_amount, track_label, module_id, course_id, sequence_number')
+            .order('sequence_number', { ascending: true });
+
+        if (lErr) throw lErr;
+
+        // 3. Fetch all courses for track info
+        const { data: courses } = await supabase.from('courses').select('id, title, track_number');
+
+        const completedLessonIds = new Set(progress?.map(p => p.lesson_id) || []);
+
+        // Calculate Total Earned
+        const totalEarned = lessons
+            .filter(l => completedLessonIds.has(l.id))
+            .reduce((acc, l) => acc + (l.grant_amount || 0), 0);
+
+        // Find Upcoming Reward
+        // Sort lessons by track_number (from course) then sequence_number to find the "next" one
+        const sortedLessons = lessons.map(l => {
+            const course = courses?.find(c => c.id === l.course_id);
+            return { ...l, track_number: course?.track_number || 999 };
+        }).sort((a, b) => {
+            if (a.track_number !== b.track_number) return a.track_number - b.track_number;
+            return (a.sequence_number || 0) - (b.sequence_number || 0);
+        });
+
+        // The "next" lesson is the first one in the sorted list that the user HAS NOT completed
+        const nextLesson = sortedLessons.find(l => !completedLessonIds.has(l.id));
+        const upcomingReward = nextLesson ? (Number(nextLesson.grant_amount) || 0) : 0;
+
+        // Calculate progress per course
+        const perCourseProgress = courses?.map(course => {
+            const courseLessons = lessons.filter(l => l.course_id === course.id);
+            const courseCompleted = courseLessons.filter(l => completedLessonIds.has(l.id));
+            return {
+                courseId: course.id,
+                title: course.title,
+                completed: courseCompleted.length,
+                total: courseLessons.length,
+                percentage: courseLessons.length ? Math.round((courseCompleted.length / courseLessons.length) * 100) : 0
+            };
+        }) || [];
 
         res.json({
             completedCount: progress?.length || 0,
-            totalModules: totalModules || 16,
-            percentage: totalModules ? Math.round((progress?.length / totalModules) * 100) : 0
+            totalModules: lessons?.length || 0,
+            percentage: lessons?.length ? Math.round((progress?.length / lessons.length) * 100) : 0,
+            totalEarned,
+            upcomingReward,
+            perCourseProgress
         });
     } catch (error) {
         console.error("getProgressOverview error:", error);
