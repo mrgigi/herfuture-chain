@@ -109,12 +109,17 @@ export default function LoginSignup() {
                     localStorage.setItem('userPhone', fullPhone);
                     navigate('/avatar-selection');
                 } catch (err) {
-                    const msg = err.response?.data?.error || 'Failed to create account. Please try again.';
-                    setError(msg);
-                    // If already registered, auto-switch to login tab for convenience
+                    // If already registered, show a friendly nudge and auto-switch
                     if (err.response?.status === 409) {
-                        setIsLogin(true);
-                        setStep('phone');
+                        setError("👋 This number is already in our system! Switching you to Log In...");
+                        setTimeout(() => {
+                            setIsLogin(true);
+                            setStep('phone');
+                            setError('');
+                        }, 2500);
+                    } else {
+                        const msg = err.response?.data?.error || 'Failed to create account. Please try again.';
+                        setError(msg);
                     }
                 }
             }

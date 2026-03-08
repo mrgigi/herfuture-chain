@@ -65,7 +65,7 @@ export default function Topbar({ userName, modulesCompleted, totalModules, sideb
                 >
                     <Menu className="w-6 h-6" />
                 </button>
-                <h1 className="text-xl font-bold text-white leading-tight">
+                <h1 className="text-base md:text-lg font-bold text-white leading-tight truncate max-w-[180px] xs:max-w-[240px] sm:max-w-md">
                     Welcome, <span className="text-brand-400">{displayName}</span> 👋
                 </h1>
             </div>

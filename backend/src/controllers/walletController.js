@@ -16,6 +16,19 @@ async function createWallet(req, res) {
 
         console.log(`🛠️ Creating wallet for: ${first_name} ${last_name} (${phone})`);
 
+        // 1b. CRITICAL: Check if participant already exists to prevent duplicates
+        console.log(`🔍 Checking if ${phone} already exists...`);
+        const { data: existing } = await supabase
+            .from('participants')
+            .select('id')
+            .eq('phone', phone)
+            .limit(1);
+
+        if (existing && existing.length > 0) {
+            console.warn(`⚠️ User with phone ${phone} already exists. Blocking duplicate creation.`);
+            return res.status(409).json({ error: "This phone number is already registered. Please log in instead." });
+        }
+
         // 1. Generate random wallet using ethers.js
         const wallet = ethers.Wallet.createRandom();
         const address = wallet.address;
@@ -91,11 +104,14 @@ async function getParticipant(req, res) {
             .from('participants')
             .select('id, first_name, last_name, phone, wallet_address, did, created_at')
             .eq('phone', phone)
-            .single();
+            .order('created_at', { ascending: false })
+            .limit(1);
 
-        if (error || !data) {
+        if (error || !data || data.length === 0) {
             return res.status(404).json({ error: "Participant not found" });
         }
+
+        return res.status(200).json(data[0]);
 
         return res.status(200).json(data);
     } catch (err) {
