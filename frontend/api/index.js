@@ -236,7 +236,18 @@ app.post('/api/complete-lesson', async (req, res) => {
                         await tx1.wait();
                         const tx2 = await grantDisbursementContract.releaseGrant(p.wallet_address);
                         const rec = await tx2.wait();
-                        await supabase.from('grants').insert([{ participant_id: participantId, milestone, tx_hash: rec.hash, amount: lesson.grant_amount }]);
+
+                        // Prevent duplicate grant rows — only insert if first time
+                        const { data: existing } = await supabase
+                            .from('grants')
+                            .select('id')
+                            .eq('participant_id', participantId)
+                            .eq('milestone', milestone)
+                            .limit(1);
+
+                        if (!existing || existing.length === 0) {
+                            await supabase.from('grants').insert([{ participant_id: participantId, milestone, tx_hash: rec.hash, amount: lesson.grant_amount }]);
+                        }
                     } catch (bcErr) {
                         console.error("[Vercel API] Blockchain Grant Error:", bcErr.message);
                     }

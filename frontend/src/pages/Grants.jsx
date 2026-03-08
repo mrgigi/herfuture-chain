@@ -7,7 +7,8 @@ import { useCurrency } from '../hooks/useCurrency';
 export default function Grants() {
     const { toNaira, formatNaira, formatCUSD } = useCurrency();
     const [grants, setGrants] = useState([]);
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(true);       // Full-page spinner on first load
+    const [isRefreshing, setIsRefreshing] = useState(false); // Silent background refresh
     const [error, setError] = useState(null);
     const navigate = useNavigate();
 
@@ -25,7 +26,7 @@ export default function Grants() {
                 const participant = await getParticipant(phone);
                 if (participant && participant.id) {
                     const data = await getGrants(participant.id);
-                    setGrants(Array.isArray(data) ? data : []);
+                    setGrants(data);
                 } else {
                     setError('Participant not found.');
                 }
@@ -38,6 +39,18 @@ export default function Grants() {
         };
 
         fetchGrants();
+
+        // Silently refetch when window regains focus (e.g. navigating back from lesson)
+        // Uses isRefreshing so the existing grant list stays visible during refresh
+        const handleVisibilityChange = () => {
+            if (document.visibilityState === 'visible') {
+                setIsRefreshing(true);
+                fetchGrants().finally(() => setIsRefreshing(false));
+            }
+        };
+
+        document.addEventListener('visibilitychange', handleVisibilityChange);
+        return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
     }, []);
 
     if (loading) return (
@@ -48,9 +61,14 @@ export default function Grants() {
 
     return (
         <div className="p-4 md:p-8 pb-32">
-            <div className="mb-8 px-2">
-                <h2 className="text-2xl font-bold text-white mb-2 tracking-tight">My Reward History</h2>
-                <p className="text-slate-400">Track all the rewards you've earned while learning and growing your future.</p>
+            <div className="mb-8 px-2 flex items-center justify-between">
+                <div>
+                    <h2 className="text-2xl font-bold text-white mb-2 tracking-tight">My Reward History</h2>
+                    <p className="text-slate-400">Track all the rewards you've earned while learning and growing your future.</p>
+                </div>
+                {isRefreshing && (
+                    <div className="h-4 w-4 border-2 border-brand-500/30 border-t-brand-500 rounded-full animate-spin" />
+                )}
             </div>
 
             {error && (

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ChevronLeft, CheckCircle, XCircle, Award, ArrowRight, HelpCircle, Zap } from 'lucide-react';
 import { getQuiz, submitLessonProgress, getParticipant, getLesson } from '../lib/api';
@@ -24,6 +24,7 @@ export default function LessonPlayer() {
     const [selectedAnswer, setSelectedAnswer] = useState(null);
     const [questionResult, setQuestionResult] = useState(null); // 'correct' | 'incorrect' | null
     const [score, setScore] = useState(0);
+    const scoreRef = useRef(0); // Sync ref so handleNextQuestion always reads the real score
     const [quizFinished, setQuizFinished] = useState(false);
     const [lessonCompleted, setLessonCompleted] = useState(false);
 
@@ -95,7 +96,8 @@ export default function LessonPlayer() {
         const isCorrect = selectedAnswer === (currentQuestion.answer || currentQuestion.correct_answer);
         setQuestionResult(isCorrect ? 'correct' : 'incorrect');
         if (isCorrect) {
-            setScore(prev => prev + 1);
+            scoreRef.current += 1; // Update ref immediately (no batching delay)
+            setScore(scoreRef.current);
         }
     };
 
@@ -103,22 +105,19 @@ export default function LessonPlayer() {
         const nextIndex = currentQuestionIndex + 1;
 
         if (nextIndex >= totalQuestions) {
-            // Quiz is done — compute the TRUE final score.
-            // `score` state may not yet reflect the last answer (React batches updates),
-            // so we explicitly add 1 if the last answer was correct.
-            const actualFinalScore = score + (questionResult === 'correct' ? 1 : 0);
-
+            // Use the ref — always in sync, never stale
+            const finalScore = scoreRef.current;
+            setScore(finalScore);
             setQuizFinished(true);
 
-            const passed = actualFinalScore >= PASS_THRESHOLD;
+            const passed = finalScore >= PASS_THRESHOLD;
             if (passed) {
                 setLoading(true);
                 try {
                     const phone = localStorage.getItem('userPhone');
                     const participant = await getParticipant(phone);
-                    await submitLessonProgress(participant.id, lessonId, Math.round((actualFinalScore / totalQuestions) * 100));
+                    await submitLessonProgress(participant.id, lessonId, Math.round((finalScore / totalQuestions) * 100));
                     triggerCelebration();
-                    setScore(actualFinalScore); // ensure displayed score is correct
                     setLessonCompleted(true);
                 } catch (err) {
                     console.error("Failed to submit progress:", err);
@@ -183,8 +182,8 @@ export default function LessonPlayer() {
                     >
                         Return to Dashboard <ArrowRight className="w-5 h-5 group-hover:translate-x-2 transition-transform" />
                     </button>
-                    <p className="mt-8 text-[10px] font-black uppercase tracking-widest text-slate-600 italic">
-                        Proof-of-Learn Verified • Transaction Processing
+                    <p className="mt-8 text-[10px] font-black uppercase tracking-widest text-slate-600">
+                        ✅ Verified by HerFuture Chain
                     </p>
                 </div>
             </div>
@@ -433,19 +432,6 @@ export default function LessonPlayer() {
                         )}
                     </div>
 
-                    {/* Network Status */}
-                    <div className="p-4 border-t border-white/5 bg-black/20">
-                        <div className="flex items-center justify-between text-[9px] font-black uppercase tracking-widest text-slate-600">
-                            <div className="flex items-center gap-2">
-                                <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                                <span className="text-white">Secure Network</span> Connected
-                            </div>
-                            <div className="flex items-center gap-2">
-                                <Award className="w-3 h-3" />
-                                Proof-of-Learn
-                            </div>
-                        </div>
-                    </div>
                 </div>
             </div>
         </div>

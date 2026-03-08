@@ -106,7 +106,9 @@ export default function CourseDetail() {
             const phone = localStorage.getItem('userPhone');
             const participant = await getParticipant(phone);
             return await getModules(courseId, participant?.id);
-        }
+        },
+        staleTime: 0,         // Always consider stale so it refetches on return
+        refetchOnMount: true, // Refetch every time the student comes back
     });
 
     useEffect(() => {

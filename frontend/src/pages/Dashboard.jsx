@@ -134,7 +134,10 @@ export default function Dashboard() {
                                     </span>
                                 </div>
                                 <h2 className="text-4xl md:text-5xl font-black text-white mb-6 tracking-tighter leading-none">
-                                    Start your <br /> <span className="text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-magenta-400 italic">first lesson.</span>
+                                    {progress.completedCount === 0
+                                        ? (<>Start your <br /> <span className="text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-magenta-400 italic">first lesson.</span></>)
+                                        : (<>Keep <br /> <span className="text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-magenta-400 italic">growing. 🔥</span></>)
+                                    }
                                 </h2>
                                 <p className="text-slate-400 text-base max-w-xl mb-10 leading-relaxed font-medium">
                                     Complete lessons and quizzes to earn digital awards and unlock direct-to-wallet rewards.
