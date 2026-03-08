@@ -103,7 +103,13 @@ export default function LoginSignup() {
                     localStorage.setItem('userPhone', fullPhone);
                     navigate('/avatar-selection');
                 } catch (err) {
-                    setError(err.response?.data?.error || 'Failed to create decentralized identity. Please try again.');
+                    const msg = err.response?.data?.error || 'Failed to create account. Please try again.';
+                    setError(msg);
+                    // If already registered, auto-switch to login tab for convenience
+                    if (err.response?.status === 409) {
+                        setIsLogin(true);
+                        setStep('phone');
+                    }
                 }
             }
         } finally {

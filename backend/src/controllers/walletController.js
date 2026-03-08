@@ -42,7 +42,13 @@ async function createWallet(req, res) {
         if (error) {
             console.error("❌ Supabase insert error:", error);
             if (error.code === '23505') {
-                return res.status(409).json({ error: "Participant with this phone number already exists" });
+                // Could be phone or email unique constraint
+                const isEmailConflict = error.message?.includes('email');
+                if (isEmailConflict) {
+                    // Email column has a stale unique constraint — this phone maps to an existing record
+                    return res.status(409).json({ error: "This phone number is already registered. Please log in instead." });
+                }
+                return res.status(409).json({ error: "This phone number is already registered. Please log in instead." });
             }
             throw new Error(`Failed to insert into Supabase: ${error.message}`);
         }
