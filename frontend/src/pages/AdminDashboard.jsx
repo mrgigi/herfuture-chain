@@ -1566,20 +1566,23 @@ export default function AdminDashboard() {
                                             <div className="bg-white/[0.02] rounded-[40px] border border-white/5 p-10 transition-all hover:bg-white/[0.04] hover:border-brand-500/20">
                                                 <div className="flex justify-between items-start mb-8">
                                                     <div className="flex items-center gap-4">
-                                                        <div className="flex flex-col gap-1">
+                                                        <div className="flex flex-col bg-white/5 rounded-xl border border-white/10 overflow-hidden">
                                                             <button
                                                                 onClick={() => moveQuestion(idx, 'up')}
                                                                 disabled={idx === 0}
-                                                                className="p-1 hover:bg-white/10 rounded-md text-slate-500 hover:text-white disabled:opacity-20"
+                                                                title="Move Up"
+                                                                className="p-2 hover:bg-brand-500/20 text-slate-400 hover:text-brand-400 disabled:opacity-10 transition-all active:scale-90"
                                                             >
-                                                                <ChevronUp className="w-3 h-3" />
+                                                                <ChevronUp className="w-5 h-5" />
                                                             </button>
+                                                            <div className="h-[1px] bg-white/10 w-full" />
                                                             <button
                                                                 onClick={() => moveQuestion(idx, 'down')}
                                                                 disabled={idx === quizData.length - 1}
-                                                                className="p-1 hover:bg-white/10 rounded-md text-slate-500 hover:text-white disabled:opacity-20"
+                                                                title="Move Down"
+                                                                className="p-2 hover:bg-brand-500/20 text-slate-400 hover:text-brand-400 disabled:opacity-10 transition-all active:scale-90"
                                                             >
-                                                                <ChevronDown className="w-3 h-3" />
+                                                                <ChevronDown className="w-5 h-5" />
                                                             </button>
                                                         </div>
                                                         <div className="w-10 h-10 rounded-xl bg-brand-500/10 flex items-center justify-center text-brand-400 text-xs font-black border border-brand-500/10">
