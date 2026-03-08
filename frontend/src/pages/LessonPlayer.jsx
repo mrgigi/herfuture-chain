@@ -6,7 +6,7 @@ import confetti from 'canvas-confetti';
 import YoutubePlayer from '../components/YoutubePlayer';
 import { useCurrency } from '../hooks/useCurrency';
 
-const PASS_THRESHOLD = 2; // Min correct out of total questions to pass
+// Pass = 100% correct — works for any number of questions
 
 export default function LessonPlayer() {
     const { lessonId } = useParams();
@@ -110,7 +110,8 @@ export default function LessonPlayer() {
             setScore(finalScore);
             setQuizFinished(true);
 
-            const passed = finalScore >= PASS_THRESHOLD;
+            // Must score 100% to pass — scales to any number of questions
+            const passed = finalScore === totalQuestions;
             if (passed) {
                 setLoading(true);
                 try {
@@ -192,29 +193,38 @@ export default function LessonPlayer() {
 
     // ─── Quiz Finished, Did Not Pass Screen ──────────────────────────────────
     if (quizFinished && !lessonCompleted) {
+        // Tier the message based on how many they got right
+        const isZero = score === 0;
+        const emoji = isZero ? '😅' : '💪';
+        const headline = isZero ? "Don't Give Up!" : 'Almost There!';
+        const subtext = isZero
+            ? "You didn't get any right this time — that's okay! Re-watch the video carefully and try again."
+            : `You got ${score}/${totalQuestions} correct — so close! Review the parts you missed and give it another shot.`;
+
+        const handleRetry = () => {
+            scoreRef.current = 0; // reset the ref
+            setScore(0);
+            setShowQuiz(false);
+            setCurrentQuestionIndex(0);
+            setSelectedAnswer(null);
+            setQuestionResult(null);
+            setQuizFinished(false);
+        };
+
         return (
             <div className="min-h-screen bg-[#0A0F1C] flex items-center justify-center p-6 relative overflow-hidden">
-                <div className="max-w-xl w-full glass-panel p-12 rounded-[48px] border border-white/10 relative z-10 text-center">
-                    <div className="w-24 h-24 bg-red-500/10 rounded-3xl flex items-center justify-center mx-auto mb-8">
-                        <XCircle className="w-12 h-12 text-red-400" />
+                <div className="max-w-sm w-full glass-panel p-10 rounded-[40px] border border-white/10 relative z-10 text-center">
+                    <div className={`w-20 h-20 ${isZero ? 'bg-slate-800/60' : 'bg-amber-500/10'} rounded-3xl flex items-center justify-center mx-auto mb-6 text-4xl`}>
+                        {emoji}
                     </div>
-                    <h2 className="text-3xl font-black text-white mb-4">Almost There! 💪</h2>
-                    <p className="text-slate-400 mb-6">
-                        You got <span className="text-white font-bold">{score}/{totalQuestions}</span> correct. You need at least <span className="text-brand-400 font-bold">{PASS_THRESHOLD}/{totalQuestions}</span> to unlock your reward.
-                    </p>
-                    <p className="text-slate-500 text-sm mb-10">Re-watch the lesson video to review the key concepts, then try again.</p>
+                    <h2 className="text-2xl font-black text-white mb-3">{headline}</h2>
+                    <p className="text-slate-400 text-sm mb-3 leading-relaxed">{subtext}</p>
+                    <p className="text-slate-600 text-xs mb-8">You need <span className="text-brand-400 font-bold">all {totalQuestions} correct</span> to earn your reward.</p>
                     <button
-                        onClick={() => {
-                            setShowQuiz(false);
-                            setCurrentQuestionIndex(0);
-                            setSelectedAnswer(null);
-                            setQuestionResult(null);
-                            setScore(0);
-                            setQuizFinished(false);
-                        }}
-                        className="w-full py-5 bg-brand-500 hover:bg-brand-400 text-white rounded-[24px] font-black uppercase tracking-widest text-sm transition-all"
+                        onClick={handleRetry}
+                        className={`w-full py-4 ${isZero ? 'bg-slate-700 hover:bg-slate-600' : 'bg-brand-500 hover:bg-brand-400'} text-white rounded-2xl font-black uppercase tracking-widest text-sm transition-all`}
                     >
-                        Re-watch & Try Again
+                        {isZero ? 'Try Again' : 'Re-watch & Try Again'}
                     </button>
                 </div>
             </div>
