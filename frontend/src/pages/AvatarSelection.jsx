@@ -3,9 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import { Check, ArrowRight } from 'lucide-react';
 
 const AVATARS = [
-    { id: 'avatar1', url: 'https://api.dicebear.com/7.x/shapes/svg?seed=Aria&backgroundColor=b6e3f4,c0aede,d1d4f9', name: 'Profile A' },
-    { id: 'avatar2', url: 'https://api.dicebear.com/7.x/shapes/svg?seed=Zoe&backgroundColor=b6e3f4,c0aede,d1d4f9', name: 'Profile B' },
-    { id: 'avatar3', url: 'https://api.dicebear.com/7.x/shapes/svg?seed=Maya&backgroundColor=b6e3f4,c0aede,d1d4f9', name: 'Profile C' }
+    { id: 'avatar1', url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Aaliyah&top=longHair&hairColor=2c1b18&skinColor=614335&clothing=graphicShirt', name: 'Zainab' },
+    { id: 'avatar2', url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Nala&top=shaggy&hairColor=2c1b18&skinColor=ae5d32&clothing=hoodie', name: 'Ifueko' },
+    { id: 'avatar3', url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Zuri&top=turban&hairColor=2c1b18&skinColor=ffdbb4&clothing=overall', name: 'Fatimat' }
 ];
 
 export default function AvatarSelection() {
