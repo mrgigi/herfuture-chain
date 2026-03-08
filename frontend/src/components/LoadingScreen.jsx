@@ -1,61 +1,61 @@
 import React from 'react';
+import { Sparkles, Heart, Star } from 'lucide-react';
 
-const LoadingScreen = ({ message = "Synchronizing Curriculum..." }) => {
+const LoadingScreen = ({ message = "Preparing Your Journey..." }) => {
     return (
-        <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-[#060912]">
-            {/* Background Effects */}
-            <div className="absolute inset-0 overflow-hidden pointer-events-none">
-                <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-brand-500/10 rounded-full blur-[120px] animate-pulse" />
-                <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-fuchsia-500/10 rounded-full blur-[120px] animate-pulse delay-700" />
+        <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-[#060912] overflow-hidden">
+            {/* Magical Background Effects */}
+            <div className="absolute inset-0 pointer-events-none">
+                <div className="absolute top-1/4 left-1/4 w-[500px] h-[500px] bg-brand-500/20 rounded-full blur-[120px] animate-pulse" />
+                <div className="absolute bottom-1/4 right-1/4 w-[500px] h-[500px] bg-fuchsia-500/20 rounded-full blur-[120px] animate-pulse delay-1000" />
+
+                {/* Floating "Magic" Particles */}
+                {[...Array(12)].map((_, i) => (
+                    <div
+                        key={i}
+                        className="absolute w-1 h-1 bg-white rounded-full animate-float"
+                        style={{
+                            top: `${Math.random() * 100}%`,
+                            left: `${Math.random() * 100}%`,
+                            animationDelay: `${Math.random() * 5}s`,
+                            opacity: Math.random() * 0.5 + 0.2
+                        }}
+                    />
+                ))}
             </div>
 
             {/* Main Content */}
-            <div className="relative flex flex-col items-center">
-                {/* Animated Svg Logo/Icon Container */}
-                <div className="relative w-24 h-24 mb-12">
-                    {/* Pulsing ring */}
-                    <div className="absolute inset-0 rounded-full border-2 border-brand-500/20 animate-[ping_3s_linear_infinite]" />
-                    <div className="absolute -inset-4 rounded-full border border-fuchsia-500/10 animate-[ping_2s_linear_infinite]" />
+            <div className="relative flex flex-col items-center scale-110">
+                {/* Animated Icon Container */}
+                <div className="relative w-32 h-32 mb-12 flex items-center justify-center">
+                    {/* Pulsing Aura */}
+                    <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-brand-500/20 via-fuchsia-500/20 to-brand-400/20 blur-2xl animate-pulse" />
 
-                    {/* Center Logo/Spinner */}
-                    <div className="absolute inset-0 flex items-center justify-center">
-                        <svg className="w-16 h-16 animate-[spin_2s_linear_infinite]" viewBox="0 0 100 100">
-                            <defs>
-                                <linearGradient id="loader-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                                    <stop offset="0%" stopColor="#3b82f6" />
-                                    <stop offset="100%" stopColor="#d946ef" />
-                                </linearGradient>
-                            </defs>
-                            <circle
-                                cx="50"
-                                cy="50"
-                                r="45"
-                                fill="none"
-                                stroke="url(#loader-gradient)"
-                                strokeWidth="8"
-                                strokeDasharray="180 100"
-                                strokeLinecap="round"
-                            />
-                        </svg>
+                    {/* Floating Icons */}
+                    <div className="relative flex items-center justify-center">
+                        <Heart className="w-16 h-16 text-fuchsia-400 fill-fuchsia-400/20 animate-bounce transition-all duration-1000" />
+                        <Sparkles className="absolute -top-4 -right-4 w-8 h-8 text-brand-400 animate-pulse" />
+                        <Star className="absolute -bottom-2 -left-4 w-6 h-6 text-brand-300 animate-spin-slow" />
                     </div>
 
-                    {/* Central static icon or logo mark */}
-                    <div className="absolute inset-0 flex items-center justify-center">
-                        <div className="w-3 h-3 bg-white rounded-full shadow-[0_0_15px_rgba(255,255,255,0.8)]" />
+                    {/* Orbiting Sparkles */}
+                    <div className="absolute inset-0 animate-spin-slow">
+                        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-2 h-2 bg-white rounded-full shadow-[0_0_15px_#fff]" />
                     </div>
                 </div>
 
-                {/* Text Details */}
-                <div className="text-center space-y-3">
-                    <h3 className="text-xl font-black text-white italic tracking-tight uppercase animate-in fade-in slide-in-from-bottom-2 duration-700">
+                {/* Inspirational Text */}
+                <div className="text-center space-y-4 px-6">
+                    <h3 className="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-brand-300 via-white to-fuchsia-300 tracking-tight uppercase animate-in fade-in slide-in-from-bottom-4 duration-1000">
                         {message}
                     </h3>
-                    <div className="flex items-center justify-center gap-2">
-                        <div className="h-1 w-12 bg-white/5 rounded-full overflow-hidden">
-                            <div className="h-full bg-gradient-to-r from-brand-500 to-fuchsia-500 w-full animate-[loading-bar_1.5s_ease-in-out_infinite]" />
+
+                    <div className="flex flex-col items-center gap-3">
+                        <div className="h-1.5 w-40 bg-white/5 rounded-full overflow-hidden border border-white/5">
+                            <div className="h-full bg-gradient-to-r from-brand-400 via-fuchsia-400 to-brand-400 w-full animate-loading-slide" />
                         </div>
-                        <span className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-600">
-                            On-Chain Bridge Active
+                        <span className="text-[10px] font-black uppercase tracking-[0.4em] text-brand-400/60 flex items-center gap-2">
+                            <Sparkles className="w-3 h-3" /> Generating Your Future <Sparkles className="w-3 h-3" />
                         </span>
                     </div>
                 </div>
@@ -63,11 +63,29 @@ const LoadingScreen = ({ message = "Synchronizing Curriculum..." }) => {
 
             <style dangerouslySetInnerHTML={{
                 __html: `
-        @keyframes loading-bar {
-          0% { transform: translateX(-100%); }
-          100% { transform: translateX(100%); }
-        }
-      `}} />
+                @keyframes loading-slide {
+                  0% { transform: translateX(-100%); }
+                  50% { transform: translateX(0); }
+                  100% { transform: translateX(100%); }
+                }
+                @keyframes float {
+                  0%, 100% { transform: translateY(0) scale(1); }
+                  50% { transform: translateY(-40px) scale(1.5); }
+                }
+                .animate-spin-slow {
+                  animation: spin 8s linear infinite;
+                }
+                @keyframes spin {
+                  from { transform: rotate(0deg); }
+                  to { transform: rotate(360deg); }
+                }
+                .animate-loading-slide {
+                  animation: loading-slide 2.5s ease-in-out infinite;
+                }
+                .animate-float {
+                  animation: float 10s ease-in-out infinite;
+                }
+              `}} />
         </div>
     );
 };
