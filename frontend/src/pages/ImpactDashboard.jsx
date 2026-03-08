@@ -3,9 +3,11 @@ import { ShieldCheck, Heart, ExternalLink, ArrowDownRight, Globe, TrendingUp, Aw
 import { useNavigate } from 'react-router-dom';
 import BottomNav from '../components/BottomNav';
 import api from '../lib/api';
+import { useCurrency } from '../hooks/useCurrency';
 
 export default function ImpactDashboard() {
     const navigate = useNavigate();
+    const { toNaira, formatNaira } = useCurrency();
     const [stats, setStats] = useState({
         totalImpact: 0,
         grantsDistributed: 0,

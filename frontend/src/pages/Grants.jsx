@@ -2,8 +2,10 @@ import { useState, useEffect } from 'react';
 import { DollarSign, ExternalLink, Calendar, CheckCircle, Wallet } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { getParticipant, getGrants } from '../lib/api';
+import { useCurrency } from '../hooks/useCurrency';
 
 export default function Grants() {
+    const { toNaira, formatNaira, formatCUSD } = useCurrency();
     const [grants, setGrants] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);

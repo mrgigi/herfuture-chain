@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
     Users, BookOpen, DollarSign, Settings, Search, MoreHorizontal,
@@ -58,7 +58,19 @@ const CurriculumInput = ({ value, onChange, onBlur, className, placeholder, isTe
 export default function AdminDashboard() {
     const navigate = useNavigate();
     const [searchTerm, setSearchTerm] = useState('');
-    const [activeTab, setActiveTab] = useState('Overview');
+    const [searchParams, setSearchParams] = useSearchParams();
+    const activeTab = searchParams.get('tab') || 'Overview';
+    const courseIdFromUrl = searchParams.get('courseId');
+
+    const setActiveTab = (tab) => {
+        const newParams = new URLSearchParams(searchParams);
+        newParams.set('tab', tab);
+        if (tab !== 'CurriculumEditor') {
+            newParams.delete('courseId');
+        }
+        setSearchParams(newParams);
+    };
+
     const [editingCourse, setEditingCourse] = useState(null); // Drill-down state
     const [courseModules, setCourseModules] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -125,15 +137,45 @@ export default function AdminDashboard() {
         }
     }, [authorized, isLoading]);
 
+    // State hydration from URL
+    useEffect(() => {
+        const hydrateState = async () => {
+            if (activeTab === 'CurriculumEditor' && courseIdFromUrl && !editingCourse && courses.length > 0) {
+                const course = courses.find(c => c.id === courseIdFromUrl);
+                if (course) {
+                    setLoading(true);
+                    try {
+                        const mods = await getModules(course.id);
+                        setEditingCourse(course);
+                        setCourseModules(mods);
+                    } catch (err) {
+                        console.error("Hydration error:", err);
+                        setActiveTab('Curriculum');
+                    } finally {
+                        setLoading(false);
+                    }
+                } else {
+                    setActiveTab('Curriculum');
+                }
+            }
+        };
+        hydrateState();
+    }, [activeTab, courseIdFromUrl, editingCourse, courses]);
+
     const handleCourseClick = async (course) => {
         setLoading(true);
         try {
             const mods = await getModules(course.id);
             setEditingCourse(course);
             setCourseModules(mods);
-            setActiveTab('CurriculumEditor');
+
+            const newParams = new URLSearchParams(searchParams);
+            newParams.set('tab', 'CurriculumEditor');
+            newParams.set('courseId', course.id);
+            setSearchParams(newParams);
         } catch (err) {
             console.error("Fetch modules error:", err);
+            showToast("Failed to load course modules", "error");
         } finally {
             setLoading(false);
         }
@@ -1331,16 +1373,16 @@ export default function AdminDashboard() {
                                                                                     {(mod.lessons || []).map((lesson, li) => (
                                                                                         <Draggable key={lesson.id} draggableId={lesson.id} index={li}>
                                                                                             {(lDraggableProvided, lSnapshot) => (
-                                                                                                 <div
-                                                                                                     ref={lDraggableProvided.innerRef}
-                                                                                                     {...lDraggableProvided.draggableProps}
-                                                                                                     style={{
-                                                                                                         ...lDraggableProvided.draggableProps.style,
-                                                                                                         width: lSnapshot.isDragging ? "100.5%" : "auto",
-                                                                                                         zIndex: 9999
-                                                                                                     }}
-                                                                                                     className={`p-6 rounded-[28px] border transition-all duration-300 group ${lSnapshot.isDragging ? "bg-[#151D2F] border-brand-500/40 shadow-2xl scale-[1.03] backdrop-blur-md" : "bg-white/5 border-white/5 hover:border-brand-500/30"} space-y-4`}
-                                                                                                 >
+                                                                                                <div
+                                                                                                    ref={lDraggableProvided.innerRef}
+                                                                                                    {...lDraggableProvided.draggableProps}
+                                                                                                    style={{
+                                                                                                        ...lDraggableProvided.draggableProps.style,
+                                                                                                        width: lSnapshot.isDragging ? "100.5%" : "auto",
+                                                                                                        zIndex: 9999
+                                                                                                    }}
+                                                                                                    className={`p-6 rounded-[28px] border transition-all duration-300 group ${lSnapshot.isDragging ? "bg-[#151D2F] border-brand-500/40 shadow-2xl scale-[1.03] backdrop-blur-md" : "bg-white/5 border-white/5 hover:border-brand-500/30"} space-y-4`}
+                                                                                                >
                                                                                                     <div className="flex items-center justify-between">
                                                                                                         <div className="flex items-center gap-4 flex-1">
                                                                                                             <div {...lDraggableProvided.dragHandleProps} className="p-1 hover:bg-white/5 rounded-lg cursor-grab active:cursor-grabbing text-slate-700 hover:text-slate-500 transition-all">

@@ -4,9 +4,11 @@ import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import LoadingScreen from '../components/LoadingScreen';
 import { getParticipant, getProgressOverview, getCourses } from '../lib/api';
+import { useCurrency } from '../hooks/useCurrency';
 
 export default function Dashboard() {
     const navigate = useNavigate();
+    const { toNaira, formatNaira, formatCUSD } = useCurrency();
 
     const phone = localStorage.getItem('userPhone');
 

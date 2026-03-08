@@ -31,7 +31,7 @@ export default function HomeGate() {
                         onClick={() => navigate('/impact')}
                         className="text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 hover:text-white transition-all active:scale-95 text-right w-full"
                     >
-                        Impact & Audit
+                        Impact <br /> & Audit
                     </button>
                     <button
                         onClick={() => navigate('/admin')}
