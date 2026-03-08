@@ -164,13 +164,13 @@ export default function Dashboard() {
                                 return (
                                     <div
                                         key={course.id}
-                                        onClick={() => (isActive || isDone) && navigate('/courses')}
-                                        className={`group p-8 rounded-[40px] border transition-all duration-500 relative overflow-hidden ${isActive
+                                        onClick={() => navigate(`/courses/${course.id}`)}
+                                        className={`group p-8 rounded-[40px] border transition-all duration-500 relative overflow-hidden cursor-pointer hover:-translate-y-1 ${isActive
                                             ? 'bg-fuchsia-500/[0.04] border-fuchsia-500/30 shadow-2xl shadow-fuchsia-500/10 ring-1 ring-fuchsia-500/20 scale-[1.02] active:scale-100'
                                             : isDone
                                                 ? 'bg-slate-900/60 border-white/5 opacity-80 active:scale-[0.98]'
-                                                : 'bg-black/20 border-white/[0.02] opacity-40 grayscale pointer-events-none'
-                                            } cursor-pointer hover:-translate-y-1`}
+                                                : 'bg-black/20 border-white/[0.04] opacity-60 hover:opacity-80'
+                                            }`}
                                     >
                                         <div className="flex flex-col gap-6 relative z-10">
                                             <div className={`w-14 h-14 rounded-2xl flex items-center justify-center font-black text-xl transition-all duration-500 group-hover:scale-110 ${isActive ? 'bg-gradient-to-br from-fuchsia-500 to-magenta-600 text-white shadow-xl shadow-fuchsia-500/40' : isDone ? 'bg-emerald-500/20 text-emerald-400' : 'bg-slate-800 text-slate-500'
@@ -181,14 +181,14 @@ export default function Dashboard() {
                                                 <div className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1.5">Track {course.track_number || (idx + 1)}</div>
                                                 <h4 className={`text-lg font-black uppercase tracking-tight leading-tight ${isActive ? 'text-white' : 'text-slate-400'}`}>{course.title}</h4>
                                             </div>
-                                            {isActive && (
-                                                <div className="pt-6 border-t border-fuchsia-500/10 flex items-center justify-between">
-                                                    <span className="text-[10px] font-black text-fuchsia-400 uppercase tracking-widest animate-pulse">In Progress</span>
-                                                    <div className="w-8 h-8 rounded-full bg-fuchsia-500/10 flex items-center justify-center">
-                                                        <ArrowRight className="w-4 h-4 text-fuchsia-400" />
-                                                    </div>
+                                            <div className="pt-6 border-t border-white/5 flex items-center justify-between">
+                                                <span className={`text-[10px] font-black uppercase tracking-widest ${isActive ? 'text-fuchsia-400 animate-pulse' : isDone ? 'text-emerald-400' : 'text-slate-600'}`}>
+                                                    {isActive ? 'In Progress' : isDone ? 'Completed' : 'View Track'}
+                                                </span>
+                                                <div className={`w-8 h-8 rounded-full flex items-center justify-center ${isActive ? 'bg-fuchsia-500/10' : 'bg-white/5'}`}>
+                                                    <ArrowRight className={`w-4 h-4 ${isActive ? 'text-fuchsia-400' : 'text-slate-500 group-hover:text-white transition-colors'}`} />
                                                 </div>
-                                            )}
+                                            </div>
                                         </div>
                                     </div>
                                 );
