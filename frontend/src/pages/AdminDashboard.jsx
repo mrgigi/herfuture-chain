@@ -335,7 +335,8 @@ export default function AdminDashboard() {
             handleCourseClick(newCourse);
         } catch (err) {
             console.error("Add path error:", err);
-            showToast("Failed to initialize path", "error");
+            const errMsg = err.response?.data?.error || err.message || "Failed to initialize path";
+            showToast(errMsg, "error");
         }
     };
 
@@ -389,7 +390,8 @@ export default function AdminDashboard() {
             showToast("New lesson integrated", "success");
         } catch (err) {
             console.error("Add lesson error:", err);
-            showToast("Failed to add lesson", "error");
+            const errMsg = err.response?.data?.error || err.message || "Failed to add lesson";
+            showToast(errMsg, "error");
         } finally {
             setIsAddingLesson(false);
         }
@@ -1163,7 +1165,7 @@ export default function AdminDashboard() {
                                                             setCourseModules(newMods);
                                                             saveModuleTitle(mod.id, val);
                                                         }}
-                                                        className="bg-transparent border-none text-white font-black focus:outline-none text-sm p-0 min-w-[200px]"
+                                                        className="bg-transparent border-none text-white font-black focus:outline-none text-sm p-0 w-full"
                                                     />
                                                 </div>
                                                 <div className="flex items-center gap-4">
@@ -1184,7 +1186,7 @@ export default function AdminDashboard() {
                                                                 <CurriculumInput
                                                                     value={lesson.title}
                                                                     onBlur={(val) => saveLessonValue(lesson.id, 'title', val)}
-                                                                    className="bg-transparent border-none text-sm font-bold text-white focus:outline-none flex-1 p-0 italic"
+                                                                    className="bg-transparent border-none text-sm font-bold text-white focus:outline-none w-full p-0 italic"
                                                                 />
                                                             </div>
                                                             <div className="flex items-center gap-4">

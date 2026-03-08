@@ -497,60 +497,48 @@ async function createCourse(req, res) {
 async function deleteCourse(req, res) {
     try {
         const { courseId } = req.params;
+        console.log(`[LMS] PURGING COURSE: ${courseId}`);
 
-        // 1. Fetch all lessons and modules associated with this course
-        const { data: lessons, error: lFetchError } = await supabase
-            .from('lessons')
-            .select('id')
-            .eq('course_id', courseId);
+        // 1. Get all modules
+        const { data: modules, error: mErr } = await supabase.from('modules').select('id').eq('course_id', courseId);
+        if (mErr) {
+            console.warn(`[LMS] Error fetching modules for course ${courseId}:`, mErr.message);
+        }
+        const moduleIds = (modules || []).map(m => m.id);
 
-        if (lFetchError) throw lFetchError;
+        // 2. Get all lessons
+        const { data: lessons, error: lErr } = await supabase.from('lessons').select('id').eq('course_id', courseId);
+        if (lErr) {
+            console.warn(`[LMS] Error fetching lessons for course ${courseId}:`, lErr.message);
+        }
+        const lessonIds = (lessons || []).map(l => l.id);
 
-        const { data: modules, error: mFetchError } = await supabase
-            .from('modules')
-            .select('id')
-            .eq('course_id', courseId);
-
-        if (mFetchError && !mFetchError.message?.includes('not find')) throw mFetchError;
-
-        const lessonIds = lessons?.map(l => l.id) || [];
-        const moduleIds = modules?.map(m => m.id) || [];
-
-        console.log(`Deleting Course ${courseId}: Found ${lessonIds.length} lessons and ${moduleIds.length} modules.`);
-
-        // 2. Cascade delete records tied to lessons
         if (lessonIds.length > 0) {
-            // Delete student progress
-            const { error: spErr } = await supabase.from('student_progress').delete().in('lesson_id', lessonIds);
-            if (spErr && !spErr.message.includes('not find')) console.warn('Delete student_progress failed:', spErr.message);
-
-            // Delete lesson completions (if applicable)
-            const { error: lcErr } = await supabase.from('lesson_completions').delete().in('lesson_id', lessonIds);
-            if (lcErr && !lcErr.message.includes('not find')) console.warn('Delete lesson_completions failed:', lcErr.message);
-
-            // Delete quizzes for these lessons
+            console.log(`[LMS] Purging ${lessonIds.length} lessons and progress...`);
+            // Cleanup all lesson-related data across all potential progress/tracking tables
+            await supabase.from('student_progress').delete().in('lesson_id', lessonIds);
+            await supabase.from('lesson_completions').delete().in('lesson_id', lessonIds);
             await supabase.from('quizzes').delete().in('lesson_id', lessonIds);
-
-            // Delete the lessons themselves
-            await supabase.from('lessons').delete().in('id', lessonIds);
+            const { error: lessonsDeleteErr } = await supabase.from('lessons').delete().in('id', lessonIds);
+            if (lessonsDeleteErr) console.error(`[LMS] Failed to delete lessons rows:`, lessonsDeleteErr.message);
         }
 
-        // 3. Delete the modules
         if (moduleIds.length > 0) {
-            await supabase.from('modules').delete().in('id', moduleIds);
+            console.log(`[LMS] Purging ${moduleIds.length} modules...`);
+            const { error: modulesDeleteErr } = await supabase.from('modules').delete().in('id', moduleIds);
+            if (modulesDeleteErr) console.error(`[LMS] Failed to delete modules rows:`, modulesDeleteErr.message);
         }
 
-        // 4. Finally delete the course
-        const { error } = await supabase
-            .from('courses')
-            .delete()
-            .eq('id', courseId);
-
-        if (error) throw error;
+        // 3. Delete the course
+        const { error } = await supabase.from('courses').delete().eq('id', courseId);
+        if (error) {
+            console.error(`[LMS] Final Course deletion failed:`, error.message);
+            throw error;
+        }
 
         res.json({ success: true, message: "Course and all related data purged successfully." });
     } catch (error) {
-        console.error("deleteCourse Error:", error);
+        console.error("[LMS] deleteCourse Global Error:", error);
         res.status(500).json({ error: error.message });
     }
 }
@@ -582,43 +570,25 @@ async function createModule(req, res) {
 async function deleteModule(req, res) {
     try {
         const { moduleId } = req.params;
+        console.log(`[LMS] DELETING MODULE: ${moduleId}`);
 
-        // 1. Fetch lessons
-        const { data: lessons, error: lFetchError } = await supabase
-            .from('lessons')
-            .select('id')
-            .eq('module_id', moduleId);
-
-        if (lFetchError) throw lFetchError;
-
-        const lessonIds = lessons.map(l => l.id);
+        const { data: lessons } = await supabase.from('lessons').select('id').eq('module_id', moduleId);
+        const lessonIds = (lessons || []).map(l => l.id);
 
         if (lessonIds.length > 0) {
-            // Delete student progress
-            const { error: spError } = await supabase.from('student_progress').delete().in('lesson_id', lessonIds);
-            if (spError && !spError.message.includes('not find')) console.warn('Delete student_progress failed:', spError.message);
-
-            // Delete quizzes
+            console.log(`[LMS] Cleaning up ${lessonIds.length} lessons...`);
+            await supabase.from('student_progress').delete().in('lesson_id', lessonIds);
+            await supabase.from('lesson_completions').delete().in('lesson_id', lessonIds);
             await supabase.from('quizzes').delete().in('lesson_id', lessonIds);
-
-            // Delete the lessons
-            const { error: lError } = await supabase
-                .from('lessons')
-                .delete()
-                .eq('module_id', moduleId);
-
-            if (lError) throw lError;
+            await supabase.from('lessons').delete().eq('module_id', moduleId);
         }
 
-        // 2. Delete the module itself
-        const { error } = await supabase
-            .from('modules')
-            .delete()
-            .eq('id', moduleId);
+        const { error } = await supabase.from('modules').delete().eq('id', moduleId);
         if (error) throw error;
 
         res.json({ success: true });
     } catch (error) {
+        console.error("[LMS] deleteModule Error:", error);
         res.status(500).json({ error: error.message });
     }
 }
@@ -668,23 +638,18 @@ async function createLesson(req, res) {
 async function deleteLesson(req, res) {
     try {
         const { lessonId } = req.params;
+        console.log(`[LMS] DELETING LESSON: ${lessonId}`);
 
-        // 1. Delete student progress
-        const { error: pError } = await supabase.from('student_progress').delete().eq('lesson_id', lessonId);
-        if (pError && !pError.message.includes('not find')) console.warn('Delete student_progress failed:', pError.message);
-
-        // 2. Delete quizzes
+        await supabase.from('student_progress').delete().eq('lesson_id', lessonId);
+        await supabase.from('lesson_completions').delete().eq('lesson_id', lessonId);
         await supabase.from('quizzes').delete().eq('lesson_id', lessonId);
 
-        // 3. Delete the lesson itself
-        const { error } = await supabase
-            .from('lessons')
-            .delete()
-            .eq('id', lessonId);
+        const { error } = await supabase.from('lessons').delete().eq('id', lessonId);
         if (error) throw error;
 
         res.json({ success: true });
     } catch (error) {
+        console.error("[LMS] deleteLesson Error:", error);
         res.status(500).json({ error: error.message });
     }
 }
