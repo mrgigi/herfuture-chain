@@ -36,9 +36,7 @@ export default function Dashboard() {
 
     useEffect(() => {
         if (!localStorage.getItem('userPhone')) {
-            navigate('/login');
-        } else if (!localStorage.getItem('userAvatar')) {
-            navigate('/avatar-selection');
+            navigate('/signup');
         }
     }, [navigate]);
 

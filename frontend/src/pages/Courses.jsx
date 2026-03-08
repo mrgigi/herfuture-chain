@@ -20,10 +20,12 @@ export default function Courses() {
     });
 
     useEffect(() => {
-        if (!localStorage.getItem('userAvatar')) {
-            navigate('/avatar-selection');
+        // Guard: redirect to signup if not logged in
+        if (!localStorage.getItem('userPhone')) {
+            navigate('/signup');
         }
     }, [navigate]);
+
 
     const loading = queryLoading;
 

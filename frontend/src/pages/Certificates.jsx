@@ -22,10 +22,6 @@ export default function Certificates() {
                 return;
             }
 
-            if (!localStorage.getItem('userAvatar')) {
-                navigate('/avatar-selection');
-                return;
-            }
 
             try {
                 const participant = await getParticipant(phone);

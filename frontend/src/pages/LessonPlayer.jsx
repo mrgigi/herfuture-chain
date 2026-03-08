@@ -37,8 +37,9 @@ export default function LessonPlayer() {
 
     useEffect(() => {
         const fetchData = async () => {
-            if (!localStorage.getItem('userAvatar')) {
-                navigate('/avatar-selection');
+            // Guard: must be logged in (have a phone number), not just have an avatar
+            if (!localStorage.getItem('userPhone')) {
+                navigate('/signup');
                 return;
             }
             setLoading(true);
@@ -48,8 +49,11 @@ export default function LessonPlayer() {
                     getQuiz(lessonId)
                 ]);
                 setLesson(lessonData);
-                if (quizData && quizData.length > 0) {
-                    setQuiz(quizData[0]);
+                // Backend returns [{data: [...quiz questions]}]
+                // So quizData[0].data contains the actual quiz array
+                const quizArray = quizData?.[0]?.data;
+                if (quizArray && quizArray.length > 0) {
+                    setQuiz(quizArray[0]);
                 }
             } catch (err) {
                 console.error("Failed to fetch lesson data:", err);

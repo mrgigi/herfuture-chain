@@ -108,8 +108,9 @@ export default function CourseDetail() {
     });
 
     useEffect(() => {
-        if (!localStorage.getItem('userAvatar')) {
-            navigate('/avatar-selection');
+        // Guard: redirect to signup if not logged in (no phone number stored)
+        if (!localStorage.getItem('userPhone')) {
+            navigate('/signup');
         }
     }, [navigate]);
 
