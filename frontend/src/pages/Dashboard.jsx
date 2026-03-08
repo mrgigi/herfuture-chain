@@ -3,6 +3,8 @@ import { Wallet, BookOpen, ArrowRight, CheckCircle, ExternalLink, Trophy, Activi
 import { useNavigate } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
 import Topbar from '../components/Topbar';
+import LoadingScreen from '../components/LoadingScreen';
+import BottomNav from '../components/BottomNav';
 import { getParticipant, getProgressOverview, getCourses } from '../lib/api';
 
 export default function Dashboard() {
@@ -54,11 +56,7 @@ export default function Dashboard() {
         fetchDashboardData();
     }, []);
 
-    if (loading) return (
-        <div className="min-h-screen bg-slate-950 flex items-center justify-center">
-            <div className="h-12 w-12 border-4 border-brand-500/30 border-t-brand-500 rounded-full animate-spin" />
-        </div>
-    );
+    if (loading) return <LoadingScreen message="Personalizing Your Dashboard..." />;
 
     const name = participant?.first_name || "Student";
     const totalGrantsReceived = progress.completedCount * 30;
@@ -149,7 +147,7 @@ export default function Dashboard() {
                                     </p>
                                     <button
                                         onClick={() => navigate('/courses')}
-                                        className="px-10 py-5 bg-brand-500 hover:bg-fuchsia-500 text-white rounded-2xl text-xs font-black uppercase tracking-widest transition-all shadow-2xl shadow-brand-500/30 hover:shadow-fuchsia-500/40 hover:-translate-y-1 flex items-center gap-4 mx-auto md:mx-0"
+                                        className="px-10 py-5 bg-brand-500 hover:bg-fuchsia-500 text-white rounded-2xl text-xs font-black uppercase tracking-widest transition-all active:scale-95 shadow-2xl shadow-brand-500/30 hover:shadow-fuchsia-500/40 hover:-translate-y-1 flex items-center gap-4 mx-auto md:mx-0"
                                     >
                                         {buttonText} <ArrowRight className="w-5 h-5" />
                                     </button>
@@ -180,9 +178,9 @@ export default function Dashboard() {
                                         key={course.id}
                                         onClick={() => (isActive || isDone) && navigate('/courses')}
                                         className={`group p-8 rounded-[40px] border transition-all duration-500 relative overflow-hidden ${isActive
-                                            ? 'bg-fuchsia-500/[0.04] border-fuchsia-500/30 shadow-2xl shadow-fuchsia-500/10 ring-1 ring-fuchsia-500/20 scale-[1.02]'
+                                            ? 'bg-fuchsia-500/[0.04] border-fuchsia-500/30 shadow-2xl shadow-fuchsia-500/10 ring-1 ring-fuchsia-500/20 scale-[1.02] active:scale-100'
                                             : isDone
-                                                ? 'bg-slate-900/60 border-white/5 opacity-80'
+                                                ? 'bg-slate-900/60 border-white/5 opacity-80 active:scale-[0.98]'
                                                 : 'bg-black/20 border-white/[0.02] opacity-40 grayscale pointer-events-none'
                                             } cursor-pointer hover:-translate-y-1`}
                                     >
@@ -222,7 +220,7 @@ export default function Dashboard() {
                             </div>
                             <button
                                 onClick={() => navigate('/certificates')}
-                                className="px-8 py-4 rounded-2xl bg-white/5 border border-white/10 text-white text-xs font-black uppercase tracking-widest hover:bg-white/10 transition-all"
+                                className="px-8 py-4 rounded-2xl bg-white/5 border border-white/10 text-white text-xs font-black uppercase tracking-widest hover:bg-white/10 transition-all active:scale-95"
                             >
                                 View All Certificates
                             </button>
@@ -230,6 +228,7 @@ export default function Dashboard() {
                     </div>
                 </div>
             </main>
+            <BottomNav />
         </div>
     );
 }

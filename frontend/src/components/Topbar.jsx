@@ -50,7 +50,7 @@ export default function Topbar({ userName, modulesCompleted, totalModules, sideb
         ? new Date(user.created_at).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' }).replace(/\//g, '/')
         : null;
 
-    const initials = user ? `${user.first_name?.[0] || ''}${user.last_name?.[0] || ''}`.toUpperCase() : '??';
+    const initials = user ? `${user.first_name?.[0] || 'S'}${user.last_name?.[0] || ''}`.toUpperCase() : '??';
     const displayName = userName || user?.first_name || 'Student';
     const completed = modulesCompleted ?? 0;
     const total = totalModules ?? 16;

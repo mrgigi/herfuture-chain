@@ -3,11 +3,13 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { PlayCircle, CheckCircle, ChevronLeft, Lock, ChevronDown, ChevronUp, BookOpen, Sparkles, DollarSign, HelpCircle } from 'lucide-react';
 import Sidebar from '../components/Sidebar';
 import Topbar from '../components/Topbar';
+import LoadingScreen from '../components/LoadingScreen';
 import { getModules, getParticipant } from '../lib/api';
 
 const ModuleAccordion = ({ module, index, navigate }) => {
     const [isOpen, setIsOpen] = useState(index === 0); // Open first module by default
-    const hasMultipleLessons = module.lessons.length > 1;
+    const lessons = module?.lessons || [];
+    const hasMultipleLessons = lessons.length > 1;
 
     return (
         <div className="glass-panel rounded-[32px] border border-white/5 overflow-hidden mb-6 transition-all hover:border-brand-500/20 shadow-2xl shadow-black/20">
@@ -21,9 +23,9 @@ const ModuleAccordion = ({ module, index, navigate }) => {
                         {index + 1}
                     </div>
                     <div>
-                        <h3 className="text-lg font-black text-white tracking-tight">{module.title}</h3>
+                        <h3 className="text-lg font-black text-white tracking-tight">{module.title || 'Untitled Module'}</h3>
                         <p className="text-[10px] tracking-wider font-bold text-slate-500 mt-0.5">
-                            {module.lessons.length} {module.lessons.length === 1 ? 'Lesson' : 'Lessons'} • {module.lessons.filter(l => l.completed).length} Complete
+                            {lessons.length} {lessons.length === 1 ? 'Lesson' : 'Lessons'} • {lessons.filter(l => l.completed).length} Complete
                         </p>
                     </div>
                 </div>
@@ -32,24 +34,24 @@ const ModuleAccordion = ({ module, index, navigate }) => {
                     <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center text-slate-400">
                         {isOpen ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
                     </div>
-                ) : (
+                ) : lessons[0] ? (
                     <button
                         onClick={(e) => {
                             e.stopPropagation();
-                            if (!module.lessons[0].locked) navigate(`/lesson/${module.lessons[0].id}`);
+                            if (!lessons[0].locked) navigate(`/lesson/${lessons[0].id}`);
                         }}
-                        className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2 ${module.lessons[0].locked ? 'bg-slate-800 text-slate-500 cursor-not-allowed' : 'bg-brand-500 text-white hover:bg-brand-400 shadow-lg shadow-brand-500/20'}`}
+                        className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2 ${lessons[0].locked ? 'bg-slate-800 text-slate-500 cursor-not-allowed' : 'bg-brand-500 text-white hover:bg-brand-400 shadow-lg shadow-brand-500/20'}`}
                     >
-                        {module.lessons[0].completed ? <CheckCircle className="w-3 h-3" /> : <PlayCircle className="w-3 h-3" />}
-                        {module.lessons[0].completed ? 'Review' : 'Start'}
+                        {lessons[0].completed ? <CheckCircle className="w-3 h-3" /> : <PlayCircle className="w-3 h-3" />}
+                        {lessons[0].completed ? 'Review' : 'Start'}
                     </button>
-                )}
+                ) : null}
             </div>
 
             {/* Lessons List (Accordion Content) */}
             {isOpen && hasMultipleLessons && (
                 <div className="px-6 pb-6 pt-2 space-y-3 animate-in fade-in slide-in-from-top-2 duration-300">
-                    {module.lessons.map((lesson) => (
+                    {lessons.map((lesson) => (
                         <div
                             key={lesson.id}
                             onClick={() => !lesson.locked && navigate(`/lesson/${lesson.id}`)}
@@ -117,14 +119,7 @@ export default function CourseDetail() {
         fetchData();
     }, [courseId]);
 
-    if (loading) return (
-        <div className="min-h-screen bg-[#0A0F1C] flex items-center justify-center">
-            <div className="flex flex-col items-center gap-4">
-                <div className="h-12 w-12 border-4 border-brand-500/10 border-t-brand-500 rounded-full animate-spin shadow-[0_0_20px_rgba(59,130,246,0.3)]" />
-                <span className="text-[10px] font-black uppercase tracking-widest text-brand-500/60 animate-pulse">Designing Curriculum Experience...</span>
-            </div>
-        </div>
-    );
+    if (loading) return <LoadingScreen message="Designing Curriculum Experience..." />;
 
     return (
         <div className="min-h-screen bg-[#0A0F1C] font-sans text-slate-200 flex flex-col">
@@ -139,7 +134,7 @@ export default function CourseDetail() {
                 onOpenMobileMenu={() => setIsMobileMenuOpen(true)}
             />
 
-            <main className={`${sidebarCollapsed ? 'md:ml-[80px]' : 'md:ml-64'} flex-grow min-h-screen relative pb-20 transition-all duration-300`}>
+            <main className={`${sidebarCollapsed ? 'md:ml-[80px]' : 'md:ml-64'} flex-grow min-h-screen relative pb-32 transition-all duration-300`}>
                 {/* Header Background Glow */}
                 <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-brand-500/5 blur-[120px] rounded-full -translate-y-1/2 translate-x-1/2 pointer-events-none" />
 
@@ -193,6 +188,7 @@ export default function CourseDetail() {
                     </div>
                 </div>
             </main>
+            <BottomNav />
         </div>
     );
 }

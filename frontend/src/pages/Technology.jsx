@@ -50,11 +50,55 @@ export default function Technology() {
                 <div className="flex items-center gap-4">
                     <button
                         onClick={() => setIsPartnerModalOpen(true)}
-                        className="hidden sm:block px-6 py-2 rounded-xl bg-indigo-500 hover:bg-indigo-400 text-white text-[10px] font-black uppercase tracking-widest transition-all shadow-[0_0_20px_rgba(79,70,229,0.3)]"
+                        className="hidden sm:block px-6 py-2 rounded-xl bg-indigo-500 hover:bg-indigo-400 text-white text-[10px] font-black uppercase tracking-widest transition-all active:scale-95 shadow-[0_0_20px_rgba(79,70,229,0.3)]"
                     >
                         PARTNER WITH US
                     </button>
+
+                    {/* Mobile Menu Toggle */}
+                    <button
+                        className="md:hidden p-2 text-white hover:bg-white/5 rounded-lg transition-all active:scale-95"
+                        onClick={() => setIsMenuOpen(!isMenuOpen)}
+                    >
+                        {isMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+                    </button>
                 </div>
+
+                {/* Mobile Menu Overlay */}
+                {isMenuOpen && (
+                    <div className="fixed inset-0 bg-[#060914] z-[999] p-8 md:hidden animate-in fade-in slide-in-from-top-4 duration-300 flex flex-col items-center justify-center">
+                        <button
+                            onClick={() => setIsMenuOpen(false)}
+                            className="absolute top-8 right-8 p-3 text-white/50 hover:text-white transition-all active:scale-95"
+                        >
+                            <X className="w-8 h-8" />
+                        </button>
+
+                        <div className="flex flex-col gap-8 text-center w-full max-w-xs">
+                            {[
+                                { label: 'Ecosystem', href: '#ecosystem' },
+                                { label: 'Protocol', href: '#infrastructure' },
+                                { label: 'Partnership', href: '#partnership' },
+                                { label: 'Donate', href: '#donate' }
+                            ].map((item, i) => (
+                                <a
+                                    key={i}
+                                    href={item.href}
+                                    onClick={() => setIsMenuOpen(false)}
+                                    className="text-2xl font-black text-white uppercase tracking-[0.2em] hover:text-indigo-400 transition-all active:scale-95 py-2"
+                                >
+                                    {item.label}
+                                </a>
+                            ))}
+                            <button
+                                onClick={() => { setIsPartnerModalOpen(true); setIsMenuOpen(false); }}
+                                className="w-full mt-6 px-12 py-5 rounded-2xl bg-indigo-600 text-white font-black text-xs uppercase tracking-[0.4em] shadow-2xl shadow-indigo-600/20 active:scale-95 transition-all"
+                            >
+                                PARTNER NOW →
+                            </button>
+                        </div>
+                    </div>
+                )}
             </nav>
 
             {/* Hero Section */}
@@ -225,11 +269,11 @@ export default function Technology() {
                         </h3>
                         <div className="space-y-4 mb-8">
                             {[10, 50, 100, 500].map((amt) => (
-                                <button key={amt} className="w-full py-4 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 text-white font-black transition-all">
+                                <button key={amt} className="w-full py-4 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 text-white font-black transition-all active:scale-95">
                                     DONATE ${amt}
                                 </button>
                             ))}
-                            <button className="w-full py-4 rounded-2xl bg-emerald-500 text-[#060914] font-black uppercase tracking-widest text-xs">Custom Amount</button>
+                            <button className="w-full py-4 rounded-2xl bg-emerald-500 text-[#060914] font-black uppercase tracking-widest text-xs active:scale-95 transition-all">Custom Amount</button>
                         </div>
                         <p className="text-slate-500 text-[10px] text-center uppercase tracking-widest">Payments processed via CUSO / Credit Card</p>
                     </div>
@@ -267,15 +311,15 @@ export default function Technology() {
                                     </div>
                                     <div className="text-left">
                                         <div className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-0.5">Ecosystem Contact</div>
-                                        <div className="text-sm font-bold text-white selection:bg-indigo-500/50">partnership@herfuturechain.org</div>
+                                        <div className="text-sm font-bold text-white selection:bg-indigo-500/50">herfuturechain@gmail.com</div>
                                     </div>
                                 </div>
                                 <button
                                     onClick={() => {
-                                        navigator.clipboard.writeText('partnership@herfuturechain.org');
+                                        navigator.clipboard.writeText('herfuturechain@gmail.com');
                                         alert('Email copied to clipboard!');
                                     }}
-                                    className="p-3 text-slate-500 hover:text-indigo-400 hover:bg-indigo-500/10 rounded-xl transition-all"
+                                    className="p-3 text-slate-500 hover:text-indigo-400 hover:bg-indigo-500/10 rounded-xl transition-all active:scale-95"
                                 >
                                     <Copy className="w-4 h-4" />
                                 </button>
@@ -283,8 +327,8 @@ export default function Technology() {
                         </div>
 
                         <button
-                            onClick={() => window.location.href = 'mailto:partnership@herfuturechain.org'}
-                            className="w-full py-5 mt-8 rounded-2xl bg-indigo-500 hover:bg-indigo-400 text-white font-black text-xs uppercase tracking-widest transition-all shadow-[0_0_20px_rgba(79,70,229,0.3)]"
+                            onClick={() => window.location.href = 'mailto:herfuturechain@gmail.com'}
+                            className="w-full py-5 mt-8 rounded-2xl bg-indigo-500 hover:bg-indigo-400 text-white font-black text-xs uppercase tracking-widest transition-all active:scale-95 shadow-[0_0_20px_rgba(79,70,229,0.3)]"
                         >
                             Start Conversation
                         </button>

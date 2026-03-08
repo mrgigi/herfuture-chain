@@ -122,9 +122,8 @@ export default function Students() {
                         GET STARTED
                     </button>
 
-                    {/* Mobile Menu Toggle */}
                     <button
-                        className="md:hidden p-2 text-white hover:bg-white/5 rounded-lg transition-colors"
+                        className="md:hidden p-2 text-white hover:bg-white/5 rounded-lg transition-all active:scale-95"
                         onClick={() => setIsMenuOpen(!isMenuOpen)}
                     >
                         {isMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
@@ -133,15 +132,15 @@ export default function Students() {
 
                 {/* Mobile Menu Overlay */}
                 {isMenuOpen && (
-                    <div className="fixed inset-0 bg-[#060914]/98 backdrop-blur-2xl z-[100] p-8 md:hidden animate-in fade-in zoom-in-95 duration-300 flex flex-col items-center justify-center">
+                    <div className="fixed inset-0 bg-[#060914] z-[999] p-8 md:hidden animate-in fade-in slide-in-from-top-4 duration-300 flex flex-col items-center justify-center">
                         <button
                             onClick={() => setIsMenuOpen(false)}
-                            className="absolute top-8 right-8 p-3 text-white/50 hover:text-white transition-colors"
+                            className="absolute top-8 right-8 p-3 text-white/50 hover:text-white transition-all active:scale-95"
                         >
                             <X className="w-8 h-8" />
                         </button>
 
-                        <div className="flex flex-col gap-10 text-center">
+                        <div className="flex flex-col gap-8 text-center w-full max-w-xs">
                             {[
                                 { label: 'The Problem', href: '#problem' },
                                 { label: 'Our Solution', href: '#solution' },
@@ -152,14 +151,14 @@ export default function Students() {
                                     key={i}
                                     href={item.href}
                                     onClick={() => setIsMenuOpen(false)}
-                                    className="text-3xl font-black text-white uppercase tracking-[0.2em] hover:text-brand-400 transition-colors"
+                                    className="text-2xl font-black text-white uppercase tracking-[0.2em] hover:text-brand-400 transition-all active:scale-95 py-2"
                                 >
                                     {item.label}
                                 </a>
                             ))}
                             <button
                                 onClick={() => { navigate('/signup'); setIsMenuOpen(false); }}
-                                className="w-full mt-8 px-12 py-5 rounded-2xl bg-brand-600 text-white font-black text-xs uppercase tracking-[0.4em] shadow-2xl shadow-brand-600/20"
+                                className="w-full mt-6 px-12 py-5 rounded-2xl bg-brand-600 text-white font-black text-xs uppercase tracking-[0.4em] shadow-2xl shadow-brand-600/20 active:scale-95 transition-all"
                             >
                                 START LEARNING →
                             </button>
@@ -200,7 +199,7 @@ export default function Students() {
                     <div className="flex flex-col sm:flex-row gap-4 justify-center items-center animate-in fade-in slide-in-from-bottom-8 duration-1000">
                         <button
                             onClick={() => navigate('/signup')}
-                            className="group px-12 py-5 rounded-2xl bg-white text-[#060914] font-black text-xs uppercase tracking-widest flex items-center gap-3 hover:bg-brand-500 hover:text-white transition-all shadow-2xl shadow-brand-500/20"
+                            className="group px-12 py-5 rounded-2xl bg-white text-[#060914] font-black text-xs uppercase tracking-widest flex items-center gap-3 hover:bg-brand-500 hover:text-white transition-all active:scale-95 shadow-2xl shadow-brand-500/20"
                         >
                             Start Learning <ArrowRight className="w-4 h-4 group-hover:translate-x-2 transition-transform" />
                         </button>
@@ -480,7 +479,7 @@ export default function Students() {
                 <div className="flex justify-center">
                     <button
                         onClick={() => navigate('/signup')}
-                        className="px-12 py-6 rounded-3xl bg-brand-500 text-white font-black uppercase tracking-widest text-xs shadow-2xl shadow-brand-500/30"
+                        className="px-12 py-6 rounded-3xl bg-brand-500 text-white font-black uppercase tracking-widest text-xs shadow-2xl shadow-brand-500/30 active:scale-95 transition-all"
                     >
                         Apply as a Learner
                     </button>
@@ -518,15 +517,15 @@ export default function Students() {
                                     </div>
                                     <div className="text-left">
                                         <div className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-0.5">Contact Email</div>
-                                        <div className="text-sm font-bold text-white selection:bg-brand-500/50">hello@herfuturechain.org</div>
+                                        <div className="text-sm font-bold text-white selection:bg-brand-500/50">herfuturechain@gmail.com</div>
                                     </div>
                                 </div>
                                 <button
                                     onClick={() => {
-                                        navigator.clipboard.writeText('hello@herfuturechain.org');
+                                        navigator.clipboard.writeText('herfuturechain@gmail.com');
                                         alert('Email copied to clipboard!');
                                     }}
-                                    className="p-3 text-slate-500 hover:text-brand-400 hover:bg-brand-500/10 rounded-xl transition-all"
+                                    className="p-3 text-slate-500 hover:text-brand-400 hover:bg-brand-500/10 rounded-xl transition-all active:scale-95"
                                 >
                                     <Copy className="w-4 h-4" />
                                 </button>
@@ -534,8 +533,8 @@ export default function Students() {
                         </div>
 
                         <button
-                            onClick={() => window.location.href = 'mailto:hello@herfuturechain.org'}
-                            className="w-full py-5 mt-8 rounded-2xl bg-brand-500 hover:bg-brand-400 text-white font-black text-xs uppercase tracking-widest transition-all shadow-[0_0_20px_rgba(59,130,246,0.3)]"
+                            onClick={() => window.location.href = 'mailto:herfuturechain@gmail.com'}
+                            className="w-full py-5 mt-8 rounded-2xl bg-brand-500 hover:bg-brand-400 text-white font-black text-xs uppercase tracking-widest transition-all active:scale-95 shadow-[0_0_20px_rgba(59,130,246,0.3)]"
                         >
                             Send Email Now
                         </button>

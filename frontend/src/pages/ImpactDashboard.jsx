@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { ShieldCheck, Heart, ExternalLink, ArrowDownRight, Globe, TrendingUp, Award, BarChart3, Info, DollarSign } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import BottomNav from '../components/BottomNav';
 import api from '../lib/api';
 
 export default function ImpactDashboard() {
@@ -72,7 +73,7 @@ export default function ImpactDashboard() {
     };
 
     return (
-        <div className="min-h-screen bg-[#0A0F1C] text-slate-100 font-sans pb-20">
+        <div className="min-h-screen bg-[#0A0F1C] text-slate-100 font-sans pb-32">
             {/* Nav */}
             <nav className="px-6 md:px-10 flex justify-between items-center border-b border-white/5 bg-[#0A0F1C] sticky top-0 z-50 h-16">
                 <div className="flex items-center gap-2 cursor-pointer h-full py-3" onClick={() => navigate('/')}>
@@ -219,6 +220,7 @@ export default function ImpactDashboard() {
                     </div>
                 </div>
             </div>
+            <BottomNav />
         </div>
     );
 }

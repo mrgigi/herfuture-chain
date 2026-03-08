@@ -63,11 +63,12 @@ async function getCourseModules(req, res) {
         // 4. Combine into nested structure
         const result = modules.map(mod => ({
             ...mod,
-            lessons: lessonsByModule[mod.id] || []
+            lessons: (lessonsByModule[mod.id] || []).sort((a, b) => (a.sequence_number || 0) - (b.sequence_number || 0))
         }));
 
         res.json(result);
     } catch (error) {
+        console.error("getCourseModules Error:", error);
         res.status(500).json({ error: error.message });
     }
 }
@@ -247,6 +248,8 @@ async function getAllParticipantsWithProgress(req, res) {
                 last_name,
                 phone,
                 wallet_address,
+                did,
+                created_at,
                 student_progress(lesson_id, status)
             `)
             .range(start, end);
@@ -446,23 +449,52 @@ async function deleteCourse(req, res) {
         const { courseId } = req.params;
 
         // Safety Check: Are there any students who have progress in this course?
-        const { count, error: pError } = await supabase
+        // Check both potential table names for resilience
+        const { count: count1, error: pError1 } = await supabase
+            .from('student_progress')
+            .select('*', { count: 'exact', head: true })
+            .eq('course_id', courseId);
+
+        const { count: count2, error: pError2 } = await supabase
             .from('participant_progress')
             .select('*', { count: 'exact', head: true })
             .eq('course_id', courseId);
 
-        if (pError) throw pError;
-        if (count > 0) {
+        if (pError1 && !pError1.message.includes('not find')) throw pError1;
+
+        const totalProgressCount = (count1 || 0) + (count2 || 0);
+
+        if (totalProgressCount > 0) {
             return res.status(403).json({ error: "Cannot delete a track that has active students. Please de-publish it instead." });
         }
 
+        // 1. Delete all quizzes associated with lessons in this course
+        const { data: lessons } = await supabase
+            .from('lessons')
+            .select('id')
+            .eq('course_id', courseId);
+
+        if (lessons && lessons.length > 0) {
+            const lessonIds = lessons.map(l => l.id);
+            await supabase.from('quizzes').delete().in('lesson_id', lessonIds);
+        }
+
+        // 2. Delete all lessons in this course
+        await supabase.from('lessons').delete().eq('course_id', courseId);
+
+        // 3. Delete all modules in this course
+        await supabase.from('modules').delete().eq('course_id', courseId);
+
+        // 4. Finally delete the course
         const { error } = await supabase
             .from('courses')
             .delete()
             .eq('id', courseId);
+
         if (error) throw error;
         res.json({ success: true });
     } catch (error) {
+        console.error("deleteCourse Error:", error);
         res.status(500).json({ error: error.message });
     }
 }

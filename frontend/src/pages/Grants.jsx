@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { DollarSign, ExternalLink, Calendar, CheckCircle, Wallet } from 'lucide-react';
 import Sidebar from '../components/Sidebar';
 import Topbar from '../components/Topbar';
+import BottomNav from '../components/BottomNav';
 import { useNavigate } from 'react-router-dom';
 import { getParticipant, getGrants } from '../lib/api';
 
@@ -65,7 +66,7 @@ export default function Grants() {
                 onOpenMobileMenu={() => setIsMobileMenuOpen(true)}
             />
 
-            <main className={`${sidebarCollapsed ? 'md:ml-[72px]' : 'md:ml-64'} flex-grow p-4 md:p-8 max-w-7xl transition-all duration-300`}>
+            <main className={`${sidebarCollapsed ? 'md:ml-[72px]' : 'md:ml-64'} flex-grow p-4 md:p-8 pb-32 transition-all duration-300`}>
                 <div className="mb-8 px-2">
                     <h2 className="text-2xl font-bold text-white mb-2 tracking-tight">My Grant History</h2>
                     <p className="text-slate-400">Track all the grant money you've earned while learning and growing your future.</p>
@@ -116,7 +117,7 @@ export default function Grants() {
                                         href={`https://celoscan.io/tx/${grant.tx_hash}`}
                                         target="_blank"
                                         rel="noreferrer"
-                                        className="flex items-center gap-2 text-[10px] font-black px-4 py-2 rounded-xl bg-slate-950 text-slate-300 hover:bg-brand-500 hover:text-white transition-all border border-slate-800 hover:border-brand-500 uppercase tracking-widest"
+                                        className="flex items-center gap-2 text-[10px] font-black px-4 py-2 rounded-xl bg-slate-950 text-slate-300 hover:bg-brand-500 hover:text-white transition-all active:scale-95 border border-slate-800 hover:border-brand-500 uppercase tracking-widest"
                                     >
                                         <span className="hidden sm:inline">Check Record</span>
                                         <ExternalLink className="w-3 h-3" />
@@ -144,6 +145,7 @@ export default function Grants() {
                     </div>
                 </div>
             </main>
+            <BottomNav />
         </div>
     );
 }

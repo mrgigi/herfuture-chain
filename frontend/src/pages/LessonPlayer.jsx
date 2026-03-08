@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ChevronLeft, CheckCircle, Award, ArrowRight, BookOpen, PlayCircle, HelpCircle } from 'lucide-react';
+import { ChevronLeft, CheckCircle, Award, ArrowRight, BookOpen, PlayCircle, HelpCircle, Zap } from 'lucide-react';
 import { getQuiz, submitLessonProgress, getParticipant, getLesson } from '../lib/api';
+import confetti from 'canvas-confetti';
 
 export default function LessonPlayer() {
     const { lessonId } = useParams();
@@ -13,6 +14,26 @@ export default function LessonPlayer() {
     const [completed, setCompleted] = useState(false);
     const [loading, setLoading] = useState(false);
     const [activeTab, setActiveTab] = useState('video'); // 'video' or 'outcomes'
+
+    const triggerCelebration = () => {
+        const duration = 3 * 1000;
+        const animationEnd = Date.now() + duration;
+        const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 0 };
+
+        const randomInRange = (min, max) => Math.random() * (max - min) + min;
+
+        const interval = setInterval(function () {
+            const timeLeft = animationEnd - Date.now();
+
+            if (timeLeft <= 0) {
+                return clearInterval(interval);
+            }
+
+            const particleCount = 50 * (timeLeft / duration);
+            confetti({ ...defaults, particleCount, origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 } });
+            confetti({ ...defaults, particleCount, origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 } });
+        }, 250);
+    };
 
     useEffect(() => {
         const fetchData = async () => {
@@ -49,6 +70,7 @@ export default function LessonPlayer() {
 
             if (selectedAnswer === quiz.correct_answer) {
                 await submitLessonProgress(participant.id, lessonId, 100);
+                triggerCelebration();
                 setCompleted(true);
             } else {
                 alert("Almost! Try reviewing the video and try again.");
@@ -66,6 +88,7 @@ export default function LessonPlayer() {
             const phone = localStorage.getItem('userPhone');
             const participant = await getParticipant(phone);
             await submitLessonProgress(participant.id, lessonId, 100);
+            triggerCelebration();
             setCompleted(true);
         } catch (err) {
             console.error("Failed to claim grant:", err);
@@ -76,21 +99,42 @@ export default function LessonPlayer() {
 
     if (completed) {
         return (
-            <div className="min-h-screen bg-[#0A0F1C] flex items-center justify-center p-6 text-center">
-                <div className="max-w-md w-full glass-panel p-10 rounded-3xl">
-                    <div className="w-20 h-20 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-8 animate-bounce">
-                        <Award className="w-10 h-10 text-green-400" />
+            <div className="min-h-screen bg-[#0A0F1C] flex items-center justify-center p-6 relative overflow-hidden">
+                {/* Background animations */}
+                <div className="absolute top-0 left-0 w-full h-full pointer-events-none">
+                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-brand-500/10 blur-[120px] rounded-full animate-pulse" />
+                </div>
+
+                <div className="max-w-xl w-full glass-panel p-12 rounded-[48px] border border-white/10 relative z-10 text-center shadow-2xl shadow-brand-500/10">
+                    <div className="relative mb-10">
+                        <div className="w-24 h-24 bg-gradient-to-br from-brand-400 to-magenta-600 rounded-3xl flex items-center justify-center mx-auto shadow-2xl shadow-brand-500/40 relative z-10 animate-bounce">
+                            <Award className="w-12 h-12 text-white" />
+                        </div>
+                        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-32 bg-brand-500/20 blur-2xl rounded-full" />
                     </div>
-                    <h2 className="text-3xl font-bold text-white mb-4">Well Done! 🎊</h2>
-                    <p className="text-slate-400 mb-8 leading-relaxed">
-                        You successfully passed the lesson check. Your reward is being processed and will be available in your wallet shortly.
+
+                    <h2 className="text-4xl font-black text-white mb-4 tracking-tighter">MISSION MASTERED! 🎉</h2>
+                    <p className="text-slate-400 mb-10 leading-relaxed text-lg font-medium">
+                        You've unlocked a new milestone in your journey. Your reward has been triggered and is moving to your wallet.
                     </p>
+
+                    <div className="p-8 rounded-[32px] bg-white/5 border border-white/10 mb-10 group hover:border-brand-500/30 transition-all duration-500">
+                        <div className="text-[10px] font-black text-brand-400 uppercase tracking-[0.3em] mb-3">On-Chain Grant Disbursed</div>
+                        <div className="text-5xl font-black text-white group-hover:scale-110 transition-transform duration-500">
+                            {lesson?.grant_amount || 30} <span className="text-xl text-brand-500/60 uppercase">cUSD</span>
+                        </div>
+                    </div>
+
                     <button
                         onClick={() => navigate('/dashboard')}
-                        className="px-8 py-4 bg-brand-500 hover:bg-brand-400 text-white rounded-2xl font-bold transition-all flex items-center justify-center gap-2 mx-auto"
+                        className="w-full py-6 bg-white hover:bg-brand-500 text-black hover:text-white rounded-[24px] font-black uppercase tracking-widest text-sm transition-all duration-500 shadow-xl hover:shadow-brand-500/40 flex items-center justify-center gap-3 group"
                     >
-                        Go to Dashboard <ArrowRight className="w-5 h-5" />
+                        Return to Dashboard <ArrowRight className="w-5 h-5 group-hover:translate-x-2 transition-transform" />
                     </button>
+
+                    <p className="mt-8 text-[10px] font-black uppercase tracking-widest text-slate-600 italic">
+                        Proof-of-Learn Verified • Transaction Processing
+                    </p>
                 </div>
             </div>
         );
@@ -159,10 +203,24 @@ export default function LessonPlayer() {
                         <div className="w-full max-w-xl p-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
                             <div className="text-center mb-10">
                                 <div className="w-16 h-16 bg-brand-500/10 rounded-2xl flex items-center justify-center mx-auto mb-6">
-                                    <HelpCircle className="w-8 h-8 text-brand-400" />
+                                    <Zap className="w-8 h-8 text-brand-400 animate-pulse" />
                                 </div>
-                                <h2 className="text-3xl font-bold text-white mb-2">Knowledge Check</h2>
-                                <p className="text-slate-500 text-sm">Pass the quiz to unlock your micro-grant.</p>
+                                <h2 className="text-3xl font-black text-white mb-2 tracking-tight">KNOWLEDGE CHECK</h2>
+                                <p className="text-slate-500 text-sm font-medium">Pass the check to unlock your <span className="text-brand-400 font-bold">{lesson?.grant_amount || 150} cUSD</span> reward.</p>
+                            </div>
+
+                            {/* Heartbeat Progress Bar */}
+                            <div className="max-w-xs mx-auto mb-12">
+                                <div className="flex justify-between items-center mb-2 px-1">
+                                    <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Progress</span>
+                                    <span className="text-[9px] font-black text-brand-400 uppercase tracking-widest">Mastery in reach</span>
+                                </div>
+                                <div className="h-2 w-full bg-white/5 rounded-full overflow-hidden border border-white/5 p-[1px]">
+                                    <div
+                                        className="h-full bg-gradient-to-r from-brand-500 to-magenta-600 rounded-full transition-all duration-1000 animate-pulse shadow-[0_0_10px_rgba(244,114,182,0.5)]"
+                                        style={{ width: '60%' }}
+                                    />
+                                </div>
                             </div>
 
                             {quiz ? (

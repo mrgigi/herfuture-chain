@@ -3,7 +3,6 @@ import { User, Cpu, ArrowRight, Heart, Handshake, Globe, Menu, X } from 'lucide-
 import { useState } from 'react';
 
 export default function HomeGate() {
-    const [isMenuOpen, setIsMenuOpen] = useState(false);
     const navigate = useNavigate();
 
     const partners = [
@@ -26,69 +25,24 @@ export default function HomeGate() {
                     <img src="/images/logo.svg" alt="HerFuture Chain Logo" className="h-full w-auto" />
                 </div>
 
-                {/* Desktop Menu */}
-                <div className="hidden md:flex items-center gap-6">
+                {/* Navigation Menu */}
+                <div className="flex items-center gap-4 md:gap-8">
                     <button
                         onClick={() => navigate('/impact')}
-                        className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 hover:text-white transition-colors"
+                        className="text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 hover:text-white transition-all active:scale-95"
                     >
                         Impact & Audit
                     </button>
                     <button
                         onClick={() => navigate('/admin')}
-                        className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 hover:text-white transition-colors"
+                        className="text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 hover:text-white transition-all active:scale-95"
                     >
                         Management Hub
                     </button>
                 </div>
 
-                {/* Mobile Menu Toggle */}
-                <button
-                    className="md:hidden p-2 text-white hover:bg-white/5 rounded-lg transition-colors"
-                    onClick={() => setIsMenuOpen(!isMenuOpen)}
-                >
-                    {isMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-                </button>
+                {/* Mobile Menu Toggle - Simplified/Removed as per request for visibility */}
 
-                {/* Mobile Menu Overlay */}
-                {isMenuOpen && (
-                    <div className="fixed inset-0 top-0 bg-[#060914] z-[100] p-8 md:hidden animate-in fade-in slide-in-from-top-4 duration-300 flex flex-col items-center justify-center gap-12 text-center">
-                        <button
-                            onClick={() => setIsMenuOpen(false)}
-                            className="absolute top-8 right-8 p-2 text-slate-400 hover:text-white"
-                        >
-                            <X className="w-8 h-8" />
-                        </button>
-
-                        <div
-                            className="h-16 mb-8 cursor-pointer"
-                            onClick={() => { navigate('/'); setIsMenuOpen(false); }}
-                        >
-                            <img src="/images/logo.svg" alt="Logo" className="h-full w-auto mx-auto" />
-                        </div>
-
-                        <div className="flex flex-col gap-10">
-                            <button
-                                onClick={() => { navigate('/impact'); setIsMenuOpen(false); }}
-                                className="text-2xl font-black text-white uppercase tracking-widest"
-                            >
-                                Impact & Audit
-                            </button>
-                            <button
-                                onClick={() => { navigate('/admin'); setIsMenuOpen(false); }}
-                                className="text-2xl font-black text-white uppercase tracking-widest"
-                            >
-                                Management Hub
-                            </button>
-                            <button
-                                onClick={() => { navigate('/students'); setIsMenuOpen(false); }}
-                                className="text-2xl font-black text-brand-400 uppercase tracking-widest mt-8"
-                            >
-                                GATEWAY →
-                            </button>
-                        </div>
-                    </div>
-                )}
             </nav>
 
             <div className="flex-grow flex flex-col items-center justify-center px-6 py-12 relative z-10">
@@ -102,7 +56,7 @@ export default function HomeGate() {
                     {/* Student Pathway */}
                     <div
                         onClick={() => navigate('/students')}
-                        className="group relative glass-panel rounded-[48px] border border-white/5 hover:border-brand-500/30 transition-all duration-700 cursor-pointer overflow-hidden flex flex-col h-[500px]"
+                        className="group relative glass-panel rounded-[48px] border border-white/5 hover:border-brand-500/30 transition-all duration-700 cursor-pointer overflow-hidden flex flex-col h-[500px] active:scale-[0.98]"
                     >
                         <img
                             src="/images/student_gate.png"
@@ -130,7 +84,7 @@ export default function HomeGate() {
                     {/* Ecosystem Pathway */}
                     <div
                         onClick={() => navigate('/tech')}
-                        className="group relative glass-panel rounded-[48px] border border-white/5 hover:border-indigo-500/30 transition-all duration-700 cursor-pointer overflow-hidden flex flex-col h-[500px]"
+                        className="group relative glass-panel rounded-[48px] border border-white/5 hover:border-indigo-500/30 transition-all duration-700 cursor-pointer overflow-hidden flex flex-col h-[500px] active:scale-[0.98]"
                     >
                         <img
                             src="/images/tech_gate.png"
@@ -182,7 +136,12 @@ export default function HomeGate() {
                     100% { transform: translateX(-50%); }
                 }
                 .animate-infinite-scroll {
-                    animation: scroll 30s linear infinite;
+                    animation: scroll 20s linear infinite;
+                }
+                @media (max-width: 768px) {
+                    .animate-infinite-scroll {
+                        animation: scroll 12s linear infinite;
+                    }
                 }
                 .animate-infinite-scroll:hover {
                     animation-play-state: paused;

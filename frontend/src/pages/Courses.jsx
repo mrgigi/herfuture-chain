@@ -3,6 +3,8 @@ import { BookOpen, ArrowRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
 import Topbar from '../components/Topbar';
+import LoadingScreen from '../components/LoadingScreen';
+import BottomNav from '../components/BottomNav';
 import { getCourses } from '../lib/api';
 
 export default function Courses() {
@@ -30,11 +32,7 @@ export default function Courses() {
         fetchCourses();
     }, []);
 
-    if (loading) return (
-        <div className="min-h-screen bg-slate-950 flex items-center justify-center">
-            <div className="h-12 w-12 border-4 border-brand-500/30 border-t-brand-500 rounded-full animate-spin" />
-        </div>
-    );
+    if (loading) return <LoadingScreen message="Curating HerFuture Academy..." />;
 
     return (
         <div className="min-h-screen bg-[#060912] font-sans text-slate-200 flex flex-col">
@@ -49,7 +47,7 @@ export default function Courses() {
                 onOpenMobileMenu={() => setIsMobileMenuOpen(true)}
             />
 
-            <main className={`${sidebarCollapsed ? 'md:ml-[72px]' : 'md:ml-64'} flex-grow p-4 md:p-8 max-w-7xl transition-all duration-300`}>
+            <main className={`${sidebarCollapsed ? 'md:ml-[72px]' : 'md:ml-64'} flex-grow p-4 md:p-8 pb-32 transition-all duration-300`}>
                 <div className="mb-10 text-center md:text-left">
                     <h2 className="text-3xl font-bold text-white mb-2">HerFuture Academy</h2>
                     <p className="text-slate-400">Master the basics of blockchain and earn as you learn.</p>
@@ -59,7 +57,7 @@ export default function Courses() {
                     {courses.map((course) => (
                         <div
                             key={course.id}
-                            className="bg-slate-900 border border-slate-800 rounded-[32px] overflow-hidden group flex flex-col cursor-pointer transition-all duration-300 hover:translate-y-[-4px] hover:border-brand-500/30"
+                            className="bg-slate-900 border border-slate-800 rounded-[32px] overflow-hidden group flex flex-col cursor-pointer transition-all duration-300 hover:translate-y-[-4px] active:scale-95 hover:border-brand-500/30"
                             onClick={() => navigate(`/courses/${course.id}`)}
                         >
                             <div className="h-48 overflow-hidden relative">
@@ -96,6 +94,7 @@ export default function Courses() {
                     ))}
                 </div>
             </main>
+            <BottomNav />
         </div>
     );
 }

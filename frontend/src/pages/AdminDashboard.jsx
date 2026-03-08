@@ -7,6 +7,7 @@ import {
     HelpCircle, List, Loader2, Book, CheckCircle, Trash2, Sparkles,
     Trophy, ArrowRight, ExternalLink, Menu, AlertCircle
 } from 'lucide-react';
+import LoadingScreen from '../components/LoadingScreen';
 import api, {
     getCourses, getModules, getAdminParticipants, getSystemSettings,
     updateSystemSetting, updateCourseStatus, updateCourseDetails,
@@ -71,6 +72,7 @@ export default function AdminDashboard() {
     const [toast, setToast] = useState(null);
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(null); // stores course object
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+    const [selectedStudent, setSelectedStudent] = useState(null);
 
     const showToast = (message, type = 'success') => {
         setToast({ message, type });
@@ -382,6 +384,7 @@ export default function AdminDashboard() {
     };
 
     if (!authorized) return null;
+    if (loading) return <LoadingScreen message="Unlocking Operational Command..." />;
 
     return (
         <div className="flex h-screen bg-[#0A0F1C] text-slate-100 font-sans">
@@ -644,12 +647,90 @@ export default function AdminDashboard() {
                                                         {s.created_at ? new Date(s.created_at).toLocaleDateString() : '-'}
                                                     </td>
                                                     <td className="px-8 py-7 text-right">
-                                                        <button className="px-3 py-2 bg-white/5 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-white/10 transition-colors">View Profile</button>
+                                                        <button
+                                                            onClick={() => setSelectedStudent(s)}
+                                                            className="px-3 py-2 bg-white/5 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-white/10 transition-colors"
+                                                        >
+                                                            View Profile
+                                                        </button>
                                                     </td>
                                                 </tr>
                                             ))}
                                         </tbody>
                                     </table>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Student Detail Modal */}
+                    {selectedStudent && (
+                        <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
+                            <div className="absolute inset-0 bg-black/80 backdrop-blur-md" onClick={() => setSelectedStudent(null)} />
+                            <div className="relative w-full max-w-2xl bg-[#0D1525] border border-white/5 rounded-[40px] shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-300">
+                                <div className="p-10">
+                                    <div className="flex justify-between items-start mb-8">
+                                        <div className="flex items-center gap-6">
+                                            <div className="w-20 h-20 rounded-3xl bg-slate-900 flex items-center justify-center text-3xl font-black text-slate-400">
+                                                {selectedStudent.first_name ? selectedStudent.first_name[0] : '?'}
+                                            </div>
+                                            <div>
+                                                <h2 className="text-3xl font-black text-white italic">{selectedStudent.first_name} {selectedStudent.last_name}.</h2>
+                                                <div className="flex items-center gap-3 mt-1">
+                                                    <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">{selectedStudent.phone}</span>
+                                                    <span className="w-1.5 h-1.5 rounded-full bg-slate-700" />
+                                                    <span className="text-[10px] font-black uppercase tracking-widest text-emerald-500">DID Verified</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <button onClick={() => setSelectedStudent(null)} className="p-3 bg-white/5 rounded-2xl hover:bg-white/10 transition-colors">
+                                            <X className="w-5 h-5 text-slate-400" />
+                                        </button>
+                                    </div>
+
+                                    <div className="grid grid-cols-2 gap-6 mb-10">
+                                        <div className="p-6 rounded-3xl bg-white/5 border border-white/5">
+                                            <div className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-2">Milestone Velocity</div>
+                                            <div className="text-2xl font-black text-white">{selectedStudent.percentage}%</div>
+                                            <div className="mt-4 h-1.5 bg-slate-900 rounded-full overflow-hidden">
+                                                <div className="h-full bg-brand-500" style={{ width: `${selectedStudent.percentage}%` }} />
+                                            </div>
+                                        </div>
+                                        <div className="p-6 rounded-3xl bg-white/5 border border-white/5">
+                                            <div className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-2">Registered On</div>
+                                            <div className="text-xl font-black text-white">
+                                                {selectedStudent.created_at ? new Date(selectedStudent.created_at).toLocaleDateString() : 'Historical data'}
+                                            </div>
+                                            <div className="text-[10px] text-slate-500 mt-2 font-bold uppercase tracking-widest">DID Registry v1.0</div>
+                                        </div>
+                                    </div>
+
+                                    <div className="space-y-6">
+                                        <div className="p-6 rounded-3xl bg-white/2 border border-white/5">
+                                            <div className="flex items-center gap-3 mb-4">
+                                                <ShieldCheck className="w-4 h-4 text-brand-400" />
+                                                <h4 className="text-[10px] font-black uppercase tracking-widest text-white">Chain Identity (DID)</h4>
+                                            </div>
+                                            <div className="p-4 bg-black/40 rounded-2xl border border-white/5 text-[11px] font-mono text-slate-400 break-all leading-relaxed">
+                                                {selectedStudent.did || 'did:celo:0x' + selectedStudent.wallet_address?.slice(2)}
+                                            </div>
+                                        </div>
+                                        <div className="p-6 rounded-3xl bg-white/2 border border-white/5">
+                                            <div className="flex items-center gap-3 mb-4">
+                                                <Activity className="w-4 h-4 text-emerald-400" />
+                                                <h4 className="text-[10px] font-black uppercase tracking-widest text-white">Wallet Address</h4>
+                                            </div>
+                                            <div className="flex items-center justify-between p-4 bg-black/40 rounded-2xl border border-white/5 cursor-pointer hover:border-white/10 transition-all">
+                                                <span className="text-[11px] font-mono text-slate-400 break-all">{selectedStudent.wallet_address || 'Not initialized'}</span>
+                                                <ExternalLink className="w-3 h-3 text-slate-600" />
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="mt-10 flex gap-4">
+                                        <button className="flex-1 py-4 bg-brand-600 hover:bg-brand-500 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all shadow-lg shadow-brand-500/20">Message Student</button>
+                                        <button className="flex-1 py-4 bg-white/5 hover:bg-white/10 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all">Download Log</button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -670,11 +751,11 @@ export default function AdminDashboard() {
                                 </button>
                             </div>
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                                {courses.map(course => (
+                                {(courses || []).map(course => (
                                     <div key={course.id} className="glass-panel rounded-[40px] border border-white/5 p-8 flex flex-col justify-between group hover:border-brand-500/20 transition-all">
                                         <div className="mb-8">
                                             <div className="w-full aspect-video rounded-[32px] overflow-hidden bg-slate-800 mb-6 border border-white/5 relative group/img">
-                                                <img src={course.image_url} alt="" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
+                                                <img src={course.image_url} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" alt="Cover" />
                                                 <div
                                                     onClick={() => handleCourseClick(course)}
                                                     className="absolute inset-0 bg-brand-500/60 opacity-0 group-hover/img:opacity-100 transition-all flex items-center justify-center cursor-pointer"
@@ -851,7 +932,7 @@ export default function AdminDashboard() {
                                                     value={settings.default_graduation_grant || 150}
                                                     onChange={(e) => setSettings({ ...settings, default_graduation_grant: parseInt(e.target.value) })}
                                                     onBlur={(e) => updateGlobalGrant('default_graduation_grant', parseInt(e.target.value))}
-                                                    className="bg-[#060914] border border-white/5 rounded-2xl py-3 px-4 text-sm text-white focus:outline-none focus:border-brand-500/50 w-full"
+                                                    className="w-full bg-[#060914] border border-white/5 rounded-2xl py-3 px-4 text-sm text-white focus:outline-none focus:border-brand-500/50"
                                                 />
                                             </div>
                                         </div>
@@ -992,7 +1073,7 @@ export default function AdminDashboard() {
                                             <PlusCircle className="w-3 h-3" /> Add Module
                                         </button>
                                     </div>
-                                    {courseModules.map((mod, i) => (
+                                    {(courseModules || []).map((mod, i) => (
                                         <div key={mod.id} className="glass-panel rounded-[32px] border border-white/5 overflow-hidden">
                                             <div className="p-6 bg-white/[0.02] border-b border-white/5 flex justify-between items-center">
                                                 <div className="flex items-center gap-3">
@@ -1019,7 +1100,7 @@ export default function AdminDashboard() {
                                                 </div>
                                             </div>
                                             <div className="p-4 space-y-2 font-medium">
-                                                {mod.lessons.map((lesson, li) => (
+                                                {(mod.lessons || []).map((lesson, li) => (
                                                     <div key={lesson.id} className="p-6 bg-white/5 rounded-[28px] border border-white/5 hover:border-brand-500/30 transition-all space-y-4 group">
                                                         <div className="flex items-center justify-between">
                                                             <div className="flex items-center gap-4 flex-1">
