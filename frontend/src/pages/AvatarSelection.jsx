@@ -3,10 +3,10 @@ import { useNavigate } from 'react-router-dom';
 import { Check, ArrowRight } from 'lucide-react';
 
 const AVATARS = [
-    { id: 'avatar1', url: '/images/profiles/avatarw1.png' },
-    { id: 'avatar2', url: '/images/profiles/avatarw2.png' },
-    { id: 'avatar3', url: '/images/profiles/avatarw3.png' },
-    { id: 'avatar4', url: '/images/profiles/avatarw4.png' }
+    { id: 'avatar1', url: '/images/profiles/avatarw1.jpg' },
+    { id: 'avatar2', url: '/images/profiles/avatarw2.jpg' },
+    { id: 'avatar3', url: '/images/profiles/avatarw3.jpg' },
+    { id: 'avatar4', url: '/images/profiles/avatarw4.jpg' }
 ];
 
 export default function AvatarSelection() {

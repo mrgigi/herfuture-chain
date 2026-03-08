@@ -3,14 +3,42 @@ const { grantDisbursementContract } = require('../services/blockchainService');
 
 async function getCourses(req, res) {
     try {
+        // Fetch courses along with their lessons and the student progress for those lessons
         const { data, error } = await supabase
             .from('courses')
-            .select('*')
+            .select(`
+                *,
+                lessons (
+                    id,
+                    student_progress (
+                        participant_id
+                    )
+                )
+            `)
             .order('track_number', { ascending: true });
 
         if (error) throw error;
-        res.json(data);
+
+        // Process data to include a unique student count per course
+        const formatted = data.map(course => {
+            const participantIds = new Set();
+            (course.lessons || []).forEach(lesson => {
+                (lesson.student_progress || []).forEach(sp => {
+                    participantIds.add(sp.participant_id);
+                });
+            });
+
+            // Remove the raw lessons/progress data to keep response clean if not needed by other parts
+            const { lessons, ...courseData } = course;
+            return {
+                ...courseData,
+                student_count: participantIds.size
+            };
+        });
+
+        res.json(formatted);
     } catch (error) {
+        console.error('Get Courses Error:', error);
         res.status(500).json({ error: error.message });
     }
 }

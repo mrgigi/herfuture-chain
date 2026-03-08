@@ -146,7 +146,8 @@ export default function AdminDashboard() {
             showToast("Metadata updated");
         } catch (err) {
             console.error("Save course error:", err);
-            showToast("Update failed", "error");
+            const errorMsg = err.response?.data?.error || "Update failed";
+            showToast(errorMsg, "error");
         }
     };
 
@@ -188,20 +189,14 @@ export default function AdminDashboard() {
         if (!file) return;
 
         // In a real app, we'd upload to Supabase Storage. 
-        // For now, we'll use a data URL or simulate an upload for the demo/user.
+        // For now, we'll use a data URL for the demo/user.
         const reader = new FileReader();
         reader.onloadend = async () => {
             const base64 = reader.result;
-            // Update local state
+            // Update local state - DO NOT call API immediately to avoid redundant heavy requests
+            // and potential race conditions. We'll save it when the user clicks "Update Metadata".
             setEditingCourse({ ...editingCourse, image_url: base64 });
-            // If already saved, sync to backend
-            if (editingCourse.id) {
-                try {
-                    await updateCourseDetails(editingCourse.id, { image_url: base64 });
-                } catch (err) {
-                    console.error("Cover upload error:", err);
-                }
-            }
+            showToast("Cover artwork ready. Click Update to save.");
         };
         reader.readAsDataURL(file);
     };
@@ -788,9 +783,15 @@ export default function AdminDashboard() {
                                                 >
                                                     <Trash2 className="w-4 h-4" />
                                                 </button>
-                                                <div className="flex items-center gap-2">
-                                                    <div className={`w-1.5 h-1.5 rounded-full ${course.is_published ? 'bg-emerald-500 animate-pulse' : 'bg-slate-700'}`} />
-                                                    <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">{course.is_published ? 'Published' : 'Draft'}</span>
+                                                <div className="flex items-center gap-4">
+                                                    <div className="flex items-center gap-1.5">
+                                                        <Users className="w-3.5 h-3.5 text-slate-500" />
+                                                        <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">{course.student_count || 0} Students</span>
+                                                    </div>
+                                                    <div className="flex items-center gap-2">
+                                                        <div className={`w-1.5 h-1.5 rounded-full ${course.is_published ? 'bg-emerald-500 animate-pulse' : 'bg-slate-700'}`} />
+                                                        <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">{course.is_published ? 'Published' : 'Draft'}</span>
+                                                    </div>
                                                 </div>
                                             </div>
                                             <button
