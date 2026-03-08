@@ -674,16 +674,16 @@ Format:
                 contents: [{ parts: [{ text: prompt }] }],
                 generationConfig: {
                     temperature: 0.7,
-                    maxOutputTokens: 1200,
-                    responseMimeType: 'application/json'
+                    maxOutputTokens: 1200
                 }
             })
         });
 
         if (!response.ok) {
-            const errText = await response.text();
+            const errBody = await response.json().catch(() => ({}));
+            const errText = errBody.error?.message || response.statusText;
             console.error('[Vercel API] Gemini API error:', errText);
-            return res.status(502).json({ error: `Gemini API error: ${response.status} ${response.statusText}` });
+            return res.status(502).json({ error: `Gemini API error: ${response.status} ${errText}` });
         }
 
         const data = await response.json();
