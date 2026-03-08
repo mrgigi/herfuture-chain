@@ -1285,11 +1285,16 @@ export default function AdminDashboard() {
                                                 <div {...provided.droppableProps} ref={provided.innerRef} className="space-y-6">
                                                     {(courseModules || []).map((mod, i) => (
                                                         <Draggable key={mod.id} draggableId={mod.id} index={i}>
-                                                            {(provided) => (
+                                                            {(provided, snapshot) => (
                                                                 <div
                                                                     ref={provided.innerRef}
                                                                     {...provided.draggableProps}
-                                                                    className="glass-panel rounded-[32px] border border-white/5 overflow-hidden"
+                                                                    style={{
+                                                                        ...provided.draggableProps.style,
+                                                                        width: snapshot.isDragging ? 'calc(100% - 40px)' : '100%',
+                                                                        zIndex: 9999
+                                                                    }}
+                                                                    className={`glass-panel rounded-[32px] border transition-all duration-300 ${snapshot.isDragging ? 'border-brand-500/50 bg-[#0D1525]/90 shadow-[0_20px_50px_rgba(0,0,0,0.5)] scale-[1.02] backdrop-blur-xl' : 'border-white/5 overflow-hidden'}`}
                                                                 >
                                                                     <div className="p-6 bg-white/[0.02] border-b border-white/5 flex justify-between items-center group/mod">
                                                                         <div className="flex items-center gap-4 flex-1">
@@ -1325,12 +1330,17 @@ export default function AdminDashboard() {
                                                                                 <div {...lProvided.droppableProps} ref={lProvided.innerRef} className="space-y-2 min-h-[40px]">
                                                                                     {(mod.lessons || []).map((lesson, li) => (
                                                                                         <Draggable key={lesson.id} draggableId={lesson.id} index={li}>
-                                                                                            {(lDraggableProvided) => (
-                                                                                                <div
-                                                                                                    ref={lDraggableProvided.innerRef}
-                                                                                                    {...lDraggableProvided.draggableProps}
-                                                                                                    className="p-6 bg-white/5 rounded-[28px] border border-white/5 hover:border-brand-500/30 transition-all space-y-4 group"
-                                                                                                >
+                                                                                            {(lDraggableProvided, lSnapshot) => (
+                                                                                                 <div
+                                                                                                     ref={lDraggableProvided.innerRef}
+                                                                                                     {...lDraggableProvided.draggableProps}
+                                                                                                     style={{
+                                                                                                         ...lDraggableProvided.draggableProps.style,
+                                                                                                         width: lSnapshot.isDragging ? "100.5%" : "auto",
+                                                                                                         zIndex: 9999
+                                                                                                     }}
+                                                                                                     className={`p-6 rounded-[28px] border transition-all duration-300 group ${lSnapshot.isDragging ? "bg-[#151D2F] border-brand-500/40 shadow-2xl scale-[1.03] backdrop-blur-md" : "bg-white/5 border-white/5 hover:border-brand-500/30"} space-y-4`}
+                                                                                                 >
                                                                                                     <div className="flex items-center justify-between">
                                                                                                         <div className="flex items-center gap-4 flex-1">
                                                                                                             <div {...lDraggableProvided.dragHandleProps} className="p-1 hover:bg-white/5 rounded-lg cursor-grab active:cursor-grabbing text-slate-700 hover:text-slate-500 transition-all">
