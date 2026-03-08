@@ -355,7 +355,7 @@ export default function AdminDashboard() {
                 title: "New Module",
                 sequence_number: nextSeq
             });
-            setCourseModules([...courseModules, { ...newMod, lessons: [] }]);
+            setCourseModules([...(courseModules || []), { ...newMod, lessons: [] }]);
             showToast("New module added to syllabus", "success");
         } catch (err) {
             console.error("Add module error:", err);
@@ -380,8 +380,8 @@ export default function AdminDashboard() {
     const handleAddLesson = async (moduleId) => {
         setIsAddingLesson(true);
         try {
-            const mod = courseModules.find(m => m.id === moduleId);
-            const nextSeq = mod.lessons.length + 1;
+            const mod = (courseModules || []).find(m => m.id === moduleId);
+            const nextSeq = (mod?.lessons?.length || 0) + 1;
             const newLesson = await createLesson({
                 course_id: editingCourse.id,
                 module_id: moduleId,
@@ -390,8 +390,8 @@ export default function AdminDashboard() {
                 grant_amount: settings.default_lesson_grant || 30,
                 video_url: ""
             });
-            setCourseModules(courseModules.map(m =>
-                m.id === moduleId ? { ...m, lessons: [...m.lessons, newLesson] } : m
+            setCourseModules((courseModules || []).map(m =>
+                m.id === moduleId ? { ...m, lessons: [...(m.lessons || []), newLesson] } : m
             ));
             showToast("New lesson integrated", "success");
         } catch (err) {

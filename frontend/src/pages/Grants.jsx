@@ -23,7 +23,7 @@ export default function Grants() {
                 const participant = await getParticipant(phone);
                 if (participant && participant.id) {
                     const data = await getGrants(participant.id);
-                    setGrants(data);
+                    setGrants(Array.isArray(data) ? data : []);
                 } else {
                     setError('Participant not found.');
                 }

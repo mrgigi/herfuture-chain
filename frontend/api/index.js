@@ -1,7 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import { supabase } from './lib/supabaseService.js';
-import { grantDisbursementContract, adminWallet } from './lib/blockchainService.js';
+import { grantDisbursementContract } from './lib/blockchainService.js';
 import { ethers } from 'ethers';
 
 const app = express();
@@ -52,24 +52,40 @@ app.post('/api/create-wallet', async (req, res) => {
 });
 
 app.get('/api/participant/:phone', async (req, res) => {
-    const { phone } = req.params;
-    const { data, error } = await supabase
-        .from('participants')
-        .select('id, first_name, last_name, phone, wallet_address, did, created_at')
-        .eq('phone', phone)
-        .single();
+    try {
+        const { phone } = req.params;
+        const { data, error } = await supabase
+            .from('participants')
+            .select('id, first_name, last_name, phone, wallet_address, did, created_at')
+            .eq('phone', phone)
+            .order('created_at', { ascending: false })
+            .limit(1);
 
-    if (error || !data) return res.status(404).json({ error: "Participant not found" });
-    res.json(data);
+        if (error || !data || data.length === 0) return res.status(404).json({ error: "Participant not found" });
+        res.json(data[0]);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
 });
 
-// --- 2. LMS Routes ---
+// --- 2. LMS & Curriculum Routes ---
 
 app.get('/api/courses', async (req, res) => {
     try {
-        const { data, error } = await supabase.from('courses').select('*').order('track_number', { ascending: true });
+        const { data: courses, error } = await supabase.from('courses').select('*').order('track_number', { ascending: true });
         if (error) throw error;
-        res.json(data);
+
+        // Fetch student counts (unique participants in student_progress)
+        const { data: progress } = await supabase.from('student_progress').select('participant_id, lessons(course_id)');
+
+        const formatted = courses.map(course => {
+            const courseStudents = new Set(
+                progress?.filter(p => p.lessons?.course_id === course.id).map(p => p.participant_id)
+            );
+            return { ...course, student_count: courseStudents.size };
+        });
+
+        res.json(formatted);
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
@@ -77,37 +93,44 @@ app.get('/api/courses', async (req, res) => {
 
 app.get('/api/courses/:courseId/modules', async (req, res) => {
     const { courseId } = req.params;
-    const { participantId } = req.query;
     try {
-        const { data: modules, error } = await supabase
+        // 1. Fetch modules
+        const { data: modules, error: mErr } = await supabase
+            .from('modules')
+            .select('*')
+            .eq('course_id', courseId)
+            .order('sequence_number', { ascending: true });
+
+        if (mErr) throw mErr;
+
+        // 2. Fetch lessons
+        const { data: lessons, error: lErr } = await supabase
             .from('lessons')
             .select('*')
             .eq('course_id', courseId)
             .order('sequence_number', { ascending: true });
 
-        if (error) throw error;
+        if (lErr) throw lErr;
 
-        if (!participantId) {
-            return res.json(modules.map(m => ({ ...m, locked: m.sequence_number > 1 })));
-        }
-
-        const { data: progress } = await supabase
-            .from('student_progress')
-            .select('lesson_id')
-            .eq('participant_id', participantId)
-            .eq('status', 'completed');
-
-        const completedIds = new Set(progress?.map(p => p.lesson_id) || []);
-
-        const resModules = modules.map(m => ({
-            ...m,
-            locked: m.sequence_number > 1 && !completedIds.has(modules.find(pm => pm.sequence_number === m.sequence_number - 1)?.id),
-            completed: completedIds.has(m.id)
+        // 3. Group nested
+        const result = modules.map(mod => ({
+            ...mod,
+            lessons: (lessons || []).filter(l => l.module_id === mod.id)
         }));
 
-        res.json(resModules);
+        res.json(result);
     } catch (err) {
         res.status(500).json({ error: err.message });
+    }
+});
+
+app.get('/api/lessons/:lessonId', async (req, res) => {
+    try {
+        const { data, error } = await supabase.from('lessons').select('*').eq('id', req.params.lessonId).single();
+        if (error) throw error;
+        res.json(data);
+    } catch (err) {
+        res.status(404).json({ error: "Lesson not found" });
     }
 });
 
@@ -143,97 +166,193 @@ app.post('/api/complete-lesson', async (req, res) => {
     }
 });
 
-// --- 3. Additional Data Routes ---
+// --- 3. Admin Routes (Missing in old version) ---
 
-app.get('/api/credentials/:address', async (req, res) => {
-    const { address } = req.params;
+app.post('/api/admin/courses', async (req, res) => {
     try {
-        console.log(`[Vercel API] Fetching credentials for ${address}...`);
+        const { data, error } = await supabase.from('courses').insert([req.body]).select().single();
+        if (error) throw error;
+        res.json(data);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
 
-        let credentials = [];
-        try {
-            const raw = await credentialRegistryContract.getCredentials(address);
-            credentials = raw.map(c => ({
-                id: c.credentialId.toString(),
-                credentialType: c.credentialType,
-                ipfsHash: c.ipfsHash,
-                timestamp: new Date(Number(c.timestamp) * 1000).toISOString()
-            }));
-        } catch (chainErr) {
-            console.error("[Vercel API] Blockchain fetch error:", chainErr.message);
+app.post('/api/admin/courses/:courseId', async (req, res) => {
+    try {
+        const { error } = await supabase.from('courses').update(req.body).eq('id', req.params.courseId);
+        if (error) throw error;
+        res.json({ success: true });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+app.post('/api/admin/course-status', async (req, res) => {
+    try {
+        const { courseId, isPublished } = req.body;
+        const { error } = await supabase.from('courses').update({ is_published: isPublished }).eq('id', courseId);
+        if (error) throw error;
+        res.json({ success: true });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+app.delete('/api/admin/courses/:courseId', async (req, res) => {
+    const { courseId } = req.params;
+    try {
+        // MANUAL CASCADE
+        const { data: modules } = await supabase.from('modules').select('id').eq('course_id', courseId);
+        const { data: lessons } = await supabase.from('lessons').select('id').eq('course_id', courseId);
+        const lIds = lessons?.map(l => l.id) || [];
+
+        if (lIds.length > 0) {
+            await supabase.from('student_progress').delete().in('lesson_id', lIds);
+            await supabase.from('lesson_completions').delete().in('lesson_id', lIds);
+            await supabase.from('quizzes').delete().in('lesson_id', lIds);
+            await supabase.from('lessons').delete().in('id', lIds);
         }
-
-        // DB Fallback
-        const { data: dbCerts } = await supabase
-            .from('credentials')
-            .select('*')
-            .eq('tx_hash', address); // Using tx_hash as a placeholder if recipient_address is missing, or better: join with participants
-
-        // Actually, we should fetch by participant_id if we have it, but here we only have address.
-        // For the demo, blockchain is the primary source.
-
-        res.json(credentials);
+        if (modules?.length > 0) {
+            await supabase.from('modules').delete().in('id', modules.map(m => m.id));
+        }
+        const { error } = await supabase.from('courses').delete().eq('id', courseId);
+        if (error) throw error;
+        res.json({ success: true });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
 });
 
-app.get('/api/progress-overview/:participantId', async (req, res) => {
-    const { participantId } = req.params;
+app.post('/api/admin/modules', async (req, res) => {
     try {
-        const { data: progress } = await supabase
-            .from('student_progress')
-            .select('lesson_id')
-            .eq('participant_id', participantId)
-            .eq('status', 'completed');
-
-        const { count: totalLessons } = await supabase
-            .from('lessons')
-            .select('*', { count: 'exact', head: true });
-
-        const completedCount = progress?.length || 0;
-        const percentage = totalLessons ? Math.round((completedCount / totalLessons) * 100) : 0;
-
-        res.json({
-            percentage,
-            completedCount,
-            totalModules: totalLessons || 16
-        });
+        const { data, error } = await supabase.from('modules').insert([req.body]).select().single();
+        if (error) throw error;
+        res.json(data);
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
 });
 
-// --- 3. Admin & Analytics ---
+app.delete('/api/admin/modules/:moduleId', async (req, res) => {
+    try {
+        const { moduleId } = req.params;
+        const { data: lessons } = await supabase.from('lessons').select('id').eq('module_id', moduleId);
+        const lIds = lessons?.map(l => l.id) || [];
+        if (lIds.length > 0) {
+            await supabase.from('student_progress').delete().in('lesson_id', lIds);
+            await supabase.from('lesson_completions').delete().in('lesson_id', lIds);
+            await supabase.from('quizzes').delete().in('lesson_id', lIds);
+            await supabase.from('lessons').delete().eq('module_id', moduleId);
+        }
+        await supabase.from('modules').delete().eq('id', moduleId);
+        res.json({ success: true });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+app.post('/api/admin/lessons', async (req, res) => {
+    try {
+        const { data, error } = await supabase.from('lessons').insert([req.body]).select().single();
+        if (error) throw error;
+        res.json(data);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+app.delete('/api/admin/lessons/:lessonId', async (req, res) => {
+    try {
+        const { lessonId } = req.params;
+        await supabase.from('student_progress').delete().eq('lesson_id', lessonId);
+        await supabase.from('lesson_completions').delete().eq('lesson_id', lessonId);
+        await supabase.from('quizzes').delete().eq('lesson_id', lessonId);
+        await supabase.from('lessons').delete().eq('id', lessonId);
+        res.json({ success: true });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// --- 4. Grants & Impact ---
+
+app.get('/api/grants/:participantId', async (req, res) => {
+    try {
+        const { participantId } = req.params;
+        const { data: grants, error } = await supabase
+            .from('grants')
+            .select('*')
+            .eq('participant_id', participantId)
+            .order('created_at', { ascending: false });
+
+        if (error) throw error;
+
+        const { data: lessons } = await supabase.from('lessons').select('track_label, title, grant_amount');
+
+        const formatted = grants.map(grant => {
+            const lesson = lessons?.find(l => l.track_label === grant.milestone);
+            return {
+                ...grant,
+                milestone_name: lesson ? lesson.title : `Milestone ${grant.milestone}`,
+                amount: grant.amount || (lesson ? lesson.grant_amount : 0)
+            };
+        });
+
+        res.json(formatted);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
 
 app.get('/api/impact/stats', async (req, res) => {
     try {
         const { data: grants } = await supabase.from('grants').select('amount');
         const { count: students } = await supabase.from('participants').select('*', { count: 'exact', head: true });
-
         const totalImpact = grants?.reduce((acc, g) => acc + (g.amount || 30), 0) || 0;
-
         res.json({
             totalImpact,
             grantsDistributed: grants?.length || 0,
-            graduates: Math.floor((students || 0) * 0.8), // Mock data
-            countries: 1
+            graduates: Math.floor((students || 0) * 0.8),
+            countries: 1,
+            participants: students || 0
         });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
+});
+
+app.post('/api/ai/generate-quiz', async (req, res) => {
+    // Placeholder - port OpenAI logic if needed, but for now just return empty
+    res.json({ questions: [] });
+});
+
+app.get('/api/admin/settings', async (req, res) => {
+    try {
+        const { data, error } = await supabase.from('system_settings').select('*');
+        if (error) throw error;
+        const s = {};
+        data.forEach(i => s[i.key] = i.value);
+        res.json(s);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+app.post('/api/admin/settings', async (req, res) => {
+    const { key, value } = req.body;
+    await supabase.from('system_settings').upsert({ key, value, updated_at: new Date() });
+    res.json({ success: true });
 });
 
 app.get('/api/admin/participants', async (req, res) => {
     try {
         const { data: parts, error } = await supabase
             .from('participants')
-            .select('id, first_name, last_name, phone, wallet_address, did, student_progress(status)');
+            .select('id, first_name, last_name, phone, wallet_address, did, created_at, student_progress(status)');
 
         if (error) throw error;
-
         const { count: totalL } = await supabase.from('lessons').select('*', { count: 'exact', head: true });
-
         const formatted = parts.map(p => {
             const comp = p.student_progress?.filter(s => s.status === 'completed').length || 0;
             return {
@@ -247,70 +366,18 @@ app.get('/api/admin/participants', async (req, res) => {
     }
 });
 
-// Curriculum Management
-app.post('/api/admin/courses/:courseId', async (req, res) => {
-    const { courseId } = req.params;
-    const { error } = await supabase.from('courses').update(req.body).eq('id', courseId);
-    if (error) return res.status(500).json({ error: error.message });
-    res.json({ success: true });
-});
-
-app.post('/api/admin/modules/:moduleId', async (req, res) => {
-    const { moduleId } = req.params;
-    const { error } = await supabase.from('modules').update(req.body).eq('id', moduleId);
-    if (error) return res.status(500).json({ error: error.message });
-    res.json({ success: true });
-});
-
-app.post('/api/admin/lessons/:lessonId', async (req, res) => {
-    const { lessonId } = req.params;
-    const { error } = await supabase.from('lessons').update(req.body).eq('id', lessonId);
-    if (error) return res.status(500).json({ error: error.message });
-    res.json({ success: true });
-});
-
-app.get('/api/admin/settings', async (req, res) => {
-    const { data, error } = await supabase.from('system_settings').select('*');
-    if (error) return res.status(500).json({ error: error.message });
-    const s = {};
-    data.forEach(i => s[i.key] = i.value);
-    res.json(s);
-});
-
-app.post('/api/admin/settings', async (req, res) => {
-    const { key, value } = req.body;
-    await supabase.from('system_settings').upsert({ key, value, updated_at: new Date() });
-    res.json({ success: true });
-});
-
-app.get('/api/impact/recent-grants', async (req, res) => {
+app.delete('/api/admin/participants/:participantId', async (req, res) => {
     try {
-        const { data, error } = await supabase
-            .from('grants')
-            .select('*, participants(first_name, last_name)')
-            .order('created_at', { ascending: false })
-            .limit(10);
-
+        await supabase.from('student_progress').delete().eq('participant_id', req.params.participantId);
+        await supabase.from('grants').delete().eq('participant_id', req.params.participantId);
+        const { error } = await supabase.from('participants').delete().eq('id', req.params.participantId);
         if (error) throw error;
-
-        const { data: lessons } = await supabase.from('lessons').select('track_label, title, grant_amount');
-
-        const formatted = data.map(g => {
-            const l = lessons?.find(lx => lx.track_label === g.milestone);
-            return {
-                student: g.participants ? `${g.participants.first_name} ${g.participants.last_name}` : 'Anonymous',
-                amount: g.amount || (l ? l.grant_amount : 30),
-                track: l ? l.title : g.milestone,
-                tx: g.tx_hash,
-                time: g.created_at
-            };
-        });
-        res.json({ grants: formatted });
+        res.json({ success: true });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
 });
 
-app.get('/', (req, res) => res.send("HerFuture Chain API Node Live"));
+app.get('/', (req, res) => res.send("HerFuture Chain Unified API Live"));
 
 export default app;
