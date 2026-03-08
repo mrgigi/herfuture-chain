@@ -51,7 +51,7 @@ export default function Topbar({ userName, modulesCompleted, totalModules, sideb
         : null;
 
     const initials = user ? `${user.first_name?.[0] || 'S'}${user.last_name?.[0] || ''}`.toUpperCase() : '??';
-    const displayName = userName || user?.first_name || 'Learner';
+    const displayName = user?.first_name || userName || '';
     const completed = modulesCompleted ?? 0;
     const total = totalModules ?? 16;
 
@@ -66,7 +66,7 @@ export default function Topbar({ userName, modulesCompleted, totalModules, sideb
                     <Menu className="w-6 h-6" />
                 </button>
                 <h1 className="text-base md:text-lg font-bold text-white leading-tight truncate max-w-[180px] xs:max-w-[240px] sm:max-w-md">
-                    Welcome, <span className="text-brand-400">{displayName}</span> 👋
+                    Welcome{displayName ? ',' : ''} <span className="text-brand-400">{displayName || (phone ? '...' : 'Learner')}</span> 👋
                 </h1>
             </div>
 

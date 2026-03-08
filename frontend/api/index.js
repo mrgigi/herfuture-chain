@@ -1,7 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import { supabase } from './lib/supabaseService.js';
-import { grantDisbursementContract } from './lib/blockchainService.js';
+import { grantDisbursementContract, credentialRegistryContract } from './lib/blockchainService.js';
 import { ethers } from 'ethers';
 
 const app = express();
@@ -405,6 +405,54 @@ app.get('/api/admin/participants', async (req, res) => {
         });
         res.json({ participants: formatted });
     } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+app.get('/api/credentials/:address', async (req, res) => {
+    try {
+        const { address } = req.params;
+        if (!address) return res.status(400).json({ error: "Missing address" });
+
+        console.log(`[Vercel API] Fetching credentials for ${address}...`);
+
+        // 1. Fetch from Blockchain (Try-Catch as it might fail in dev without proper RPC/Provider)
+        let credentials = [];
+        try {
+            const raw = await credentialRegistryContract.getCredentials(address);
+            credentials = raw.map(cred => ({
+                id: cred.credentialId.toString(),
+                credentialType: cred.credentialType,
+                ipfsHash: cred.ipfsHash,
+                timestamp: new Date(Number(cred.timestamp) * 1000).toISOString()
+            }));
+        } catch (chainErr) {
+            console.warn("[Vercel API] Blockchain Credentials fetch failed:", chainErr.message);
+        }
+
+        // 2. Fallback to Supabase for demo/mock credentials
+        const { data: dbCerts } = await supabase
+            .from('credentials')
+            .select('*')
+            .eq('recipient_address', address);
+
+        if (dbCerts && dbCerts.length > 0) {
+            const mappedDbCerts = dbCerts.map(c => ({
+                id: c.id.toString(),
+                credentialType: c.credential_type,
+                ipfsHash: c.ipfs_hash,
+                timestamp: c.timestamp,
+                isDemo: true
+            }));
+            const existingHashes = new Set(credentials.map(cr => cr.ipfsHash));
+            mappedDbCerts.forEach(mc => {
+                if (!existingHashes.has(mc.ipfsHash)) credentials.push(mc);
+            });
+        }
+
+        res.json(credentials);
+    } catch (err) {
+        console.error("[Vercel API] Credentials Error:", err);
         res.status(500).json({ error: err.message });
     }
 });
