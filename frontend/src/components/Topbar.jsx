@@ -111,7 +111,7 @@ export default function Topbar({ userName, modulesCompleted, totalModules, sideb
                         className="h-10 w-10 rounded-full bg-slate-800 flex items-center justify-center shadow-lg border-2 border-slate-800 cursor-pointer hover:scale-105 transition-transform overflow-hidden"
                     >
                         {localStorage.getItem('userAvatar') ? (
-                            <img src={localStorage.getItem('userAvatar')} alt="Profile" className="w-full h-full object-cover p-1" />
+                            <img src={localStorage.getItem('userAvatar')} alt="Profile" className="w-full h-full object-cover" />
                         ) : user?.avatar_url ? (
                             <img src={user.avatar_url} alt="Profile" className="w-full h-full object-cover" />
                         ) : (
@@ -124,7 +124,7 @@ export default function Topbar({ userName, modulesCompleted, totalModules, sideb
                             <div className="flex flex-col items-center mb-6">
                                 <div className="h-16 w-16 mb-3 rounded-full bg-slate-800 flex items-center justify-center shadow-lg border-2 border-slate-800 overflow-hidden">
                                     {localStorage.getItem('userAvatar') ? (
-                                        <img src={localStorage.getItem('userAvatar')} alt="Profile" className="w-full h-full object-cover p-2" />
+                                        <img src={localStorage.getItem('userAvatar')} alt="Profile" className="w-full h-full object-cover" />
                                     ) : user?.avatar_url ? (
                                         <img src={user.avatar_url} alt="Profile" className="w-full h-full object-cover" />
                                     ) : (

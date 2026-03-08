@@ -3,10 +3,10 @@ import { useNavigate } from 'react-router-dom';
 import { Check, ArrowRight } from 'lucide-react';
 
 const AVATARS = [
-    { id: 'avatar1', url: '/images/profiles/avatarw1.jpg' },
-    { id: 'avatar2', url: '/images/profiles/avatarw2.jpg' },
-    { id: 'avatar3', url: '/images/profiles/avatarw3.jpg' },
-    { id: 'avatar4', url: '/images/profiles/avatarw4.jpg' }
+    { id: 'avatar1', url: '/images/profiles/avatarw1.png' },
+    { id: 'avatar2', url: '/images/profiles/avatarw2.png' },
+    { id: 'avatar3', url: '/images/profiles/avatarw3.png' },
+    { id: 'avatar4', url: '/images/profiles/avatarw4.png' }
 ];
 
 export default function AvatarSelection() {
@@ -24,7 +24,7 @@ export default function AvatarSelection() {
         <div className="min-h-screen bg-[#060912] flex items-center justify-center p-6 bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-fuchsia-900/20 via-slate-950 to-slate-950">
             <div className="max-w-2xl w-full">
                 <div className="text-center mb-12">
-                    <h1 className="text-4xl font-black text-white mb-2 tracking-tighter">Choose Your Character</h1>
+                    <h1 className="text-4xl font-black text-white mb-2 tracking-tighter">Choose your Profile Picture</h1>
                     <p className="text-slate-500 text-sm font-medium">Pick an avatar to represent you.</p>
                 </div>
 
@@ -36,11 +36,11 @@ export default function AvatarSelection() {
                             className={`relative cursor-pointer group transition-all duration-500 ${selected?.id === avatar.id ? 'scale-105' : 'hover:scale-102'
                                 }`}
                         >
-                            <div className={`aspect-square rounded-[32px] overflow-hidden border-2 transition-all duration-500 bg-slate-900/50 backdrop-blur-xl ${selected?.id === avatar.id
+                            <div className={`aspect-square rounded-full overflow-hidden border-2 transition-all duration-500 bg-slate-900/50 backdrop-blur-xl ${selected?.id === avatar.id
                                 ? 'border-brand-500 shadow-[0_0_40px_rgba(217,70,239,0.3)] bg-brand-500/10'
                                 : 'border-white/10 group-hover:border-white/30'
                                 }`}>
-                                <img src={avatar.url} alt="Avatar" className="w-full h-full object-cover p-2" />
+                                <img src={avatar.url} alt="Avatar" className="w-full h-full object-cover" />
                             </div>
 
                             {selected?.id === avatar.id && (

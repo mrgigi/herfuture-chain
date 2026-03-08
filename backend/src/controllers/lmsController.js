@@ -390,37 +390,44 @@ async function updateSystemSetting(req, res) {
 }
 
 async function updateCourse(req, res) {
+    console.log(`[LMS] Updating course ${req.params.courseId}...`);
     try {
         const { courseId } = req.params;
         const data = { ...req.body };
+        console.log(`[LMS] Received data keys: ${Object.keys(data).join(', ')}`);
 
-        // Clean up data based on known schema to prevent 500s
-        const validFields = ['title', 'description', 'image_url', 'category', 'track_number', 'color_code', 'is_published', 'learning_outcome', 'cover_url'];
-        const updateData = {};
-        Object.keys(data).forEach(key => {
-            if (validFields.includes(key)) {
-                // Fallback mappings if columns are missing
-                if (key === 'learning_outcome') updateData['description'] = data[key];
-                else if (key === 'cover_url') updateData['image_url'] = data[key];
-                else updateData[key] = data[key];
-            }
+        // Use direct mapping - schema is confirmed to have all these columns
+        const updateData = {
+            title: data.title,
+            description: data.description,
+            image_url: data.image_url,
+            track_number: data.track_number,
+            is_published: data.is_published,
+            learning_outcome: data.learning_outcome,
+            cover_url: data.image_url // Sync cover_url if it exists too
+        };
+
+        // Remove undefined fields
+        Object.keys(updateData).forEach(key => {
+            if (updateData[key] === undefined) delete updateData[key];
         });
+
+        console.log(`[LMS] Final update payload keys: ${Object.keys(updateData).join(', ')}`);
 
         const { error } = await supabase
             .from('courses')
             .update(updateData)
             .eq('id', courseId);
 
-        if (error && error.message.includes('column') && error.message.includes('does not exist')) {
-            console.warn("Retry Update: Column mismatch. Using minimal set.");
-            const minimalData = { title: data.title, is_published: data.is_published };
-            const { error: retryError } = await supabase.from('courses').update(minimalData).eq('id', courseId);
-            if (retryError) throw retryError;
-            return res.json({ success: true, warning: 'Some fields ignored due to schema mismatch' });
+        if (error) {
+            console.error(`[LMS] Supabase Update Error:`, error);
+            throw error;
         }
-        if (error) throw error;
+
+        console.log(`[LMS] Course ${courseId} updated successfully.`);
         res.json({ success: true });
     } catch (error) {
+        console.error(`[LMS] updateCourse Exception:`, error);
         res.status(500).json({ error: error.message });
     }
 }
@@ -456,21 +463,17 @@ async function updateLesson(req, res) {
 }
 
 async function createCourse(req, res) {
+    console.log(`[LMS] Creating new course...`);
     try {
-        const { title, learning_outcome, track_number, cover_url } = req.body;
+        const { title, learning_outcome, track_number, image_url } = req.body;
 
-        // Build resilient insert object based on discovered schema
         const insertData = {
             title,
-            track_number,
+            track_number: track_number || 1,
+            learning_outcome: learning_outcome || null,
+            image_url: image_url || null,
             is_published: false
         };
-
-        // Fallback for cover_url/image_url
-        insertData.image_url = cover_url || null;
-
-        // Fallback for learning_outcome/description
-        insertData.description = learning_outcome || null;
 
         const { data, error } = await supabase
             .from('courses')
@@ -478,21 +481,14 @@ async function createCourse(req, res) {
             .select();
 
         if (error) {
-            // If the failure was due to a single missing column (e.g. learning_outcome)
-            // retry with only core columns
-            if (error.message.includes('column') && error.message.includes('does not exist')) {
-                console.warn(`Retry: Insertion failed on columns. Trying restricted set. Error was: ${error.message}`);
-                const { data: retryData, error: retryError } = await supabase
-                    .from('courses')
-                    .insert([{ title, track_number, is_published: false }])
-                    .select();
-                if (retryError) throw retryError;
-                return res.json(retryData[0]);
-            }
+            console.error(`[LMS] Supabase Create Error:`, error);
             throw error;
         }
+
+        console.log(`[LMS] Course created with ID: ${data[0].id}`);
         res.json(data[0]);
     } catch (error) {
+        console.error(`[LMS] createCourse Exception:`, error);
         res.status(500).json({ error: error.message });
     }
 }

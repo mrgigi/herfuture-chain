@@ -19,14 +19,20 @@ app.use(express.urlencoded({ limit: '100mb', extended: true }));
 
 // Health check endpoint
 app.get('/health', (req, res) => {
+    console.log("Health check hit");
     res.status(200).json({ status: 'ok', chain: 'celo-alfajores' });
 });
 
 // Main API Router Mounting
-app.use('/api', apiRoutes);
+console.log("Mounting /api routes");
+app.use('/api', (req, res, next) => {
+    console.log("API request incoming to:", req.url);
+    next();
+}, apiRoutes);
 
 // General Error Handler
 app.use((err, req, res, next) => {
+    console.log("GLOBAL ERROR HANDLER HIT:", err.message);
     console.error("Unhandled Application Error:", err);
     if (err.stack) console.error(err.stack);
 
@@ -34,7 +40,7 @@ app.use((err, req, res, next) => {
         return res.status(413).json({ error: 'Payload too large. Please use a smaller image.' });
     }
 
-    res.status(500).json({ error: 'Something went terribly wrong!' });
+    res.status(500).json({ error: 'Something went terribly wrong - DB Error!' });
 });
 
 process.on('uncaughtException', (err) => {
