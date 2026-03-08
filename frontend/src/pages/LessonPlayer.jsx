@@ -173,11 +173,11 @@ export default function LessonPlayer() {
                         </div>
                         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-32 bg-brand-500/20 blur-2xl rounded-full" />
                     </div>
-                    <h2 className="text-4xl font-black text-white mb-4 tracking-tighter">MISSION MASTERED! 🎉</h2>
+                    <h2 className="text-4xl font-black text-white mb-4 tracking-tighter">YOU DID IT! 🌟</h2>
                     <p className="text-slate-400 text-sm mb-12 leading-relaxed max-w-sm mx-auto">
                         {grantStatus === 'paused'
                             ? "✅ Progress recorded! Your reward will be processed as soon as grant disbursement resumes."
-                            : "Your learning milestone has been recorded and your reward has been sent to your wallet."
+                            : "Your hard work paid off! Your reward has been sent straight to your wallet."
                         }
                     </p>
                     <div className="p-8 rounded-[32px] bg-white/5 border border-white/10 mb-10 group hover:border-brand-500/30 transition-all duration-500">

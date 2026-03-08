@@ -28,9 +28,9 @@ export default function Topbar({ userName, modulesCompleted, totalModules, sideb
     }, [phone]);
 
     const notifications = isDemoAccount ? [
-        { id: 1, title: 'Grant Released!', body: 'Your grant for Module 2.1 has been released on-chain.', time: '2h ago' },
+        { id: 1, title: 'Reward Released!', body: 'Your reward for Lesson 2.1 has been released on-chain.', time: '2h ago' },
         { id: 2, title: 'New Badge Awarded', body: 'You earned the "Digital Literacy" badge.', time: '1d ago' },
-        { id: 3, title: 'Welcome to Track 2', body: 'You have successfully unlocked Track 2 learning path.', time: '3d ago' }
+        { id: 3, title: 'Welcome to Level 2', body: 'You have successfully unlocked the Level 2 learning path.', time: '3d ago' }
     ] : [];
 
     const handleLogout = () => {

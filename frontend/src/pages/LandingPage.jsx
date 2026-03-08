@@ -35,7 +35,7 @@ export default function LandingPage() {
     const [activeAccordionTrack, setActiveAccordionTrack] = useState(null);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-    const trackModules = {
+    const levelLessons = {
         T1: [
             "Self-Leadership & Confidence",
             "Mental Health & Emotional Resilience",
@@ -321,7 +321,7 @@ export default function LandingPage() {
                             {
                                 id: "02",
                                 title: "Skills Development",
-                                subtitle: "3 Tracks + Wellbeing Strand",
+                                subtitle: "3 Levels + Wellbeing Strand",
                                 desc: (
                                     <div className="space-y-4 text-left">
                                         <p>Comprehensive 6-month program covering 18 professional lessons and weekly wellbeing sessions:</p>
@@ -338,7 +338,7 @@ export default function LandingPage() {
                                                     >
                                                         <div className="flex items-center gap-4">
                                                             <div className={`text-[10px] font-black uppercase ${track.id === 'T1' ? 'text-brand-400' : track.id === 'T2' ? 'text-emerald-400' : 'text-orange-400'}`}>
-                                                                {track.label}
+                                                                {track.id.replace('T', 'Level ')}
                                                             </div>
                                                             <div className="font-bold text-white text-sm">{track.title}</div>
                                                         </div>
@@ -346,10 +346,10 @@ export default function LandingPage() {
                                                     </button>
                                                     <div className={`transition-all duration-300 ease-in-out ${activeAccordionTrack === track.id ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'} overflow-hidden`}>
                                                         <div className="px-5 pb-5 pt-0 grid grid-cols-1 sm:grid-cols-2 gap-2">
-                                                            {trackModules[track.id].map((module, mIdx) => (
-                                                                <div key={mIdx} className="flex items-center gap-2 p-2 rounded-lg bg-white/5 border border-white/5">
+                                                            {levelLessons[track.id].map((lesson, lIdx) => (
+                                                                <div key={lIdx} className="flex items-center gap-2 p-2 rounded-lg bg-white/5 border border-white/5">
                                                                     <div className={`w-1 h-1 rounded-full ${track.id === 'T1' ? 'text-brand-400' : track.id === 'T2' ? 'text-emerald-400' : 'text-orange-400'}`} />
-                                                                    <span className="text-xs text-slate-300">{module}</span>
+                                                                    <span className="text-xs text-slate-300">{lesson}</span>
                                                                 </div>
                                                             ))}
                                                         </div>
@@ -364,7 +364,7 @@ export default function LandingPage() {
                             {
                                 id: "03",
                                 title: "Blockchain Credentials",
-                                subtitle: "Globally verifiable certificates",
+                                subtitle: "Globally verifiable achievements",
                                 desc: "When learners complete courses, digital awards are issued on-chain. These are tamper-proof, globally verifiable, and portable across employers.",
                                 icon: <ShieldCheck className="w-8 h-8" />
                             },
@@ -379,7 +379,7 @@ export default function LandingPage() {
                                 id: "05",
                                 title: "Pathways to Income",
                                 subtitle: "Upwork, Fiverr & Entrepreneurship",
-                                desc: "Graduates gain access to digital marketplaces to launch micro-businesses or remote careers, transforming from aid recipients into active economic participants.",
+                                desc: "Graduates gain access to digital marketplaces to launch micro-businesses or remote careers, transforming from students into active economic members.",
                                 icon: <Briefcase className="w-8 h-8" />
                             }
                         ].map((step, i) => (
@@ -468,7 +468,7 @@ export default function LandingPage() {
                     <div className="flex flex-col md:flex-row justify-between items-end mb-20 gap-8">
                         <div>
                             <h2 className="text-[#060914] text-5xl md:text-7xl font-black tracking-tighter leading-none mb-6">Pilot Outcomes.</h2>
-                            <p className="text-[#060914]/60 text-lg font-bold uppercase tracking-widest">Transforming teen moms and unemployed girls from aid recipients into active learners</p>
+                            <p className="text-[#060914]/60 text-lg font-bold uppercase tracking-widest">Transforming teen moms and unemployed girls from students into active leaders</p>
                         </div>
                         <div className="bg-[#060914] text-white/50 p-4 px-8 rounded-full text-xs font-black uppercase tracking-[0.2em] shadow-2xl">
                             Verified on <span className="text-celo">Celo</span>
