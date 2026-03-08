@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
-import { Play, Pause, Volume2, VolumeX, SkipBack, SkipForward } from 'lucide-react';
+import { Play, Pause, Volume2, VolumeX, SkipBack, SkipForward, Maximize, Minimize } from 'lucide-react';
 
 /**
  * YoutubePlayer
@@ -55,6 +55,8 @@ export default function YoutubePlayer({ url }) {
     const [currentTime, setCurrentTime] = useState(0);
     const [duration, setDuration] = useState(0);
     const [showControls, setShowControls] = useState(true);
+    const [isFullscreen, setIsFullscreen] = useState(false);
+    const wrapperRef = useRef(null);
     const hideTimeout = useRef(null);
 
     const videoId = extractVideoId(url);
@@ -176,6 +178,22 @@ export default function YoutubePlayer({ url }) {
         }, 3000);
     };
 
+    const toggleFullscreen = () => {
+        const el = wrapperRef.current;
+        if (!el) return;
+        if (!document.fullscreenElement) {
+            el.requestFullscreen?.();
+        } else {
+            document.exitFullscreen?.();
+        }
+    };
+
+    useEffect(() => {
+        const onFsChange = () => setIsFullscreen(!!document.fullscreenElement);
+        document.addEventListener('fullscreenchange', onFsChange);
+        return () => document.removeEventListener('fullscreenchange', onFsChange);
+    }, []);
+
     if (!videoId) {
         return (
             <div className="w-full aspect-video bg-slate-900 flex flex-col items-center justify-center text-center p-6">
@@ -187,6 +205,7 @@ export default function YoutubePlayer({ url }) {
 
     return (
         <div
+            ref={wrapperRef}
             className="w-full aspect-video bg-black relative select-none group"
             onMouseMove={revealControls}
             onTouchStart={revealControls}
@@ -286,6 +305,18 @@ export default function YoutubePlayer({ url }) {
                             }}
                         />
                     </div>
+
+                    {/* Fullscreen */}
+                    <button
+                        onClick={(e) => { e.stopPropagation(); toggleFullscreen(); }}
+                        className="text-white/70 hover:text-white transition-colors ml-1"
+                        title={isFullscreen ? 'Exit Fullscreen' : 'Fullscreen'}
+                    >
+                        {isFullscreen
+                            ? <Minimize className="w-4 h-4" />
+                            : <Maximize className="w-4 h-4" />
+                        }
+                    </button>
                 </div>
             </div>
         </div>

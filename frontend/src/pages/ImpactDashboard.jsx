@@ -186,7 +186,7 @@ export default function ImpactDashboard() {
                             <div className="space-y-5">
                                 {[
                                     { label: 'Educational Engagement', val: 94 },
-                                    { label: 'Blockchain Literacy', val: 78 },
+                                    { label: 'Digital Skills', val: 78 },
                                     { label: 'Financial Independence', val: 62 },
                                 ].map((track, i) => (
                                     <div key={i}>

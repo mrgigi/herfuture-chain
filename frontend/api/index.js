@@ -491,6 +491,60 @@ app.get('/api/impact/stats', async (req, res) => {
     }
 });
 
+app.get('/api/impact/recent-grants', async (req, res) => {
+    try {
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10;
+        const start = (page - 1) * limit;
+        const end = start + limit - 1;
+
+        const { data, error, count } = await supabase
+            .from('grants')
+            .select(`
+                id,
+                milestone,
+                tx_hash,
+                amount,
+                created_at,
+                participants (
+                    first_name,
+                    last_name
+                )
+            `, { count: 'exact' })
+            .order('created_at', { ascending: false })
+            .range(start, end);
+
+        if (error) throw error;
+
+        const { data: lessons } = await supabase
+            .from('lessons')
+            .select('track_label, title, grant_amount');
+
+        const formatted = (data || []).map(g => {
+            const lesson = (lessons || []).find(l => l.track_label === g.milestone);
+            return {
+                student: g.participants
+                    ? `${g.participants.first_name || 'Student'} ${g.participants.last_name || ''}`.trim()
+                    : 'Anonymous',
+                amount: g.amount || (lesson ? lesson.grant_amount : 0),
+                track: lesson ? lesson.title : g.milestone,
+                tx: g.tx_hash,
+                time: g.created_at
+            };
+        });
+
+        res.json({
+            grants: formatted,
+            total: count || 0,
+            page,
+            limit
+        });
+    } catch (err) {
+        console.error('[Vercel API] recent-grants error:', err);
+        res.status(500).json({ error: err.message });
+    }
+});
+
 app.post('/api/admin/curriculum/reorder', async (req, res) => {
     try {
         const { type, items } = req.body;

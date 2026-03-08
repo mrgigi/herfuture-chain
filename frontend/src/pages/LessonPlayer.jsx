@@ -4,12 +4,14 @@ import { ChevronLeft, CheckCircle, XCircle, Award, ArrowRight, HelpCircle, Zap }
 import { getQuiz, submitLessonProgress, getParticipant, getLesson } from '../lib/api';
 import confetti from 'canvas-confetti';
 import YoutubePlayer from '../components/YoutubePlayer';
+import { useCurrency } from '../hooks/useCurrency';
 
 const PASS_THRESHOLD = 2; // Min correct out of total questions to pass
 
 export default function LessonPlayer() {
     const { lessonId } = useParams();
     const navigate = useNavigate();
+    const { toNaira, formatNaira, formatCUSD } = useCurrency();
 
     const [lesson, setLesson] = useState(null);
     const [allQuestions, setAllQuestions] = useState([]);
@@ -165,10 +167,11 @@ export default function LessonPlayer() {
                         You answered {score}/{totalQuestions || 1} correctly. Your reward has been triggered and is moving to your wallet.
                     </p>
                     <div className="p-8 rounded-[32px] bg-white/5 border border-white/10 mb-10 group hover:border-brand-500/30 transition-all duration-500">
-                        <div className="text-[10px] font-black text-brand-400 uppercase tracking-[0.3em] mb-3">On-Chain Reward Disbursed</div>
+                        <div className="text-[10px] font-black text-brand-400 uppercase tracking-[0.3em] mb-3">Reward Earned</div>
                         <div className="text-5xl font-black text-white group-hover:scale-110 transition-transform duration-500">
-                            {lesson?.grant_amount || 30} <span className="text-xl text-brand-500/60 uppercase">cUSD</span>
+                            {formatNaira(toNaira(lesson?.grant_amount || 0))}
                         </div>
+                        <div className="text-sm text-slate-500 mt-2">{formatCUSD(lesson?.grant_amount || 0)} cUSD</div>
                     </div>
                     <button
                         onClick={() => navigate('/dashboard')}
@@ -245,8 +248,8 @@ export default function LessonPlayer() {
             {/* Header */}
             <header className="p-4 flex items-center justify-between border-b border-white/5 bg-slate-900/50 backdrop-blur-md sticky top-0 z-50">
                 <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-slate-400 hover:text-white transition-colors">
-                    <ChevronLeft className="w-5 h-5" />
-                    <span className="text-sm font-medium">Exit Academy</span>
+                    <ChevronLeft className="w-4 h-4" />
+                    <span className="text-xs font-medium text-slate-500 hover:text-white transition-colors">Exit Academy</span>
                 </button>
                 <div className="text-[10px] font-bold text-white/30 uppercase tracking-[0.2em]">
                     {lesson.title}
@@ -271,7 +274,7 @@ export default function LessonPlayer() {
                                 </div>
                                 <h2 className="text-2xl font-black text-white tracking-tight">KNOWLEDGE CHECK</h2>
                                 <p className="text-slate-500 text-sm mt-1">
-                                    Pass <span className="text-brand-400 font-bold">{PASS_THRESHOLD}/{totalQuestions}</span> to unlock your <span className="text-brand-400 font-bold">{lesson?.grant_amount || 30} cUSD</span> reward.
+                                    Pass <span className="text-brand-400 font-bold">{PASS_THRESHOLD}/{totalQuestions}</span> to unlock your <span className="text-brand-400 font-bold">{formatNaira(toNaira(lesson?.grant_amount || 0))}</span> reward.
                                 </p>
                             </div>
 
@@ -398,9 +401,9 @@ export default function LessonPlayer() {
                                 <h2 className="text-xl font-bold text-white mb-3 leading-tight">{lesson.title}</h2>
                                 <p className="text-slate-400 text-sm leading-relaxed mb-6">{lesson.content}</p>
                                 <div className="p-5 rounded-2xl bg-brand-500/5 border border-brand-500/10 mb-6">
-                                    <div className="text-[10px] font-black text-brand-400 uppercase tracking-widest mb-1">Milestone Reward</div>
-                                    <div className="text-2xl font-black text-white">{lesson.grant_amount} cUSD</div>
-                                    <div className="text-xs text-slate-500 mt-1">Released instantly on-chain</div>
+                                    <div className="text-[10px] font-black text-brand-400 uppercase tracking-widest mb-1">Lesson Reward</div>
+                                    <div className="text-2xl font-black text-white">{formatNaira(toNaira(lesson.grant_amount))}</div>
+                                    <div className="text-xs text-slate-500 mt-1">{formatCUSD(lesson.grant_amount)} cUSD · Paid directly to your wallet — instantly 🎉</div>
                                 </div>
                                 {!showQuiz && (
                                     <button
