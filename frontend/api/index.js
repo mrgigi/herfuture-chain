@@ -221,6 +221,7 @@ app.post('/api/complete-lesson', async (req, res) => {
         if (error) throw error;
 
         let grantStatus = null;
+        let txHash = null;
         const { data: lesson } = await supabase.from('lessons').select('*').eq('id', lessonId).single();
 
         if (lesson && lesson.grant_amount > 0) {
@@ -239,6 +240,7 @@ app.post('/api/complete-lesson', async (req, res) => {
                         console.log(`[Vercel API] Grant release triggered: ${tx2.hash}`);
                         const rec = await tx2.wait();
                         console.log(`[Vercel API] Grant release confirmed in block ${rec.blockNumber}`);
+                        txHash = rec.hash;
 
                         // Prevent duplicate grant rows — only insert if first time
                         const { data: existing } = await supabase
@@ -260,7 +262,7 @@ app.post('/api/complete-lesson', async (req, res) => {
                 grantStatus = 'paused';
             }
         }
-        res.json({ success: true, grantStatus });
+        res.json({ success: true, grantStatus, txHash });
     } catch (err) {
         console.error("[Vercel API] Error:", err.message);
         res.status(500).json({ error: err.message });
@@ -759,7 +761,11 @@ app.get('/api/admin/participants', async (req, res) => {
             .select('id, first_name, last_name, phone, wallet_address, did, created_at, student_progress(status)');
 
         if (error) throw error;
+
         const { count: totalL } = await supabase.from('lessons').select('*', { count: 'exact', head: true });
+        const { data: allGrants } = await supabase.from('grants').select('amount');
+        const totalGrantsValue = allGrants?.reduce((acc, g) => acc + (Number(g.amount) || 0), 0) || 0;
+
         const formatted = parts.map(p => {
             const comp = p.student_progress?.filter(s => s.status === 'completed').length || 0;
             return {
@@ -767,7 +773,10 @@ app.get('/api/admin/participants', async (req, res) => {
                 percentage: totalL ? Math.round((comp / totalL) * 100) : 0
             };
         });
-        res.json({ participants: formatted });
+        res.json({
+            participants: formatted,
+            totalGrantsValue
+        });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }

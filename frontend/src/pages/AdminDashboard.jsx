@@ -581,7 +581,7 @@ export default function AdminDashboard() {
     const stats = {
         totalStudents: students.length,
         avgProgress: students.length ? Math.round(students.reduce((acc, s) => acc + (s.percentage || 0), 0) / students.length) : 0,
-        totalGrants: recentGrants.reduce((acc, g) => acc + (g.amount || 0), 0)
+        totalGrants: studentData.totalGrantsValue || 0
     };
 
     if (!authorized) return null;

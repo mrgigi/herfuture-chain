@@ -28,6 +28,7 @@ export default function LessonPlayer() {
     const [quizFinished, setQuizFinished] = useState(false);
     const [lessonCompleted, setLessonCompleted] = useState(false);
     const [grantStatus, setGrantStatus] = useState(null); // 'disbursed' | 'paused' | null
+    const [txHash, setTxHash] = useState(null);
 
     const triggerCelebration = () => {
         const duration = 3 * 1000;
@@ -120,6 +121,7 @@ export default function LessonPlayer() {
                     const participant = await getParticipant(phone);
                     const res = await submitLessonProgress(participant.id, lessonId, Math.round((finalScore / totalQuestions) * 100));
                     setGrantStatus(res.grantStatus);
+                    setTxHash(res.txHash);
                     triggerCelebration();
                     setLessonCompleted(true);
                 } catch (err) {
@@ -148,6 +150,7 @@ export default function LessonPlayer() {
             const participant = await getParticipant(phone);
             const res = await submitLessonProgress(participant.id, lessonId, 100);
             setGrantStatus(res.grantStatus);
+            setTxHash(res.txHash);
             triggerCelebration();
             setLessonCompleted(true);
         } catch (err) {
@@ -177,7 +180,19 @@ export default function LessonPlayer() {
                         }
                     </p>
                     <div className="p-8 rounded-[32px] bg-white/5 border border-white/10 mb-10 group hover:border-brand-500/30 transition-all duration-500">
-                        <div className="text-[10px] font-black text-brand-400 uppercase tracking-[0.3em] mb-3">Reward Earned</div>
+                        <div className="flex justify-between items-center mb-3">
+                            <div className="text-[10px] font-black text-brand-400 uppercase tracking-[0.3em]">Reward Earned</div>
+                            {txHash && (
+                                <a
+                                    href={`https://celoscan.io/tx/${txHash}`}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    className="text-[10px] font-black text-emerald-400 hover:text-emerald-300 flex items-center gap-1.5 uppercase transition-colors"
+                                >
+                                    View Receipt <ExternalLink className="w-3 h-3" />
+                                </a>
+                            )}
+                        </div>
                         <div className="text-5xl font-black text-white group-hover:scale-110 transition-transform duration-500">
                             {formatNaira(toNaira(lesson?.grant_amount || 0))}
                         </div>
