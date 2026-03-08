@@ -60,7 +60,7 @@ export default function YoutubePlayer({ url }) {
     const wrapperRef = useRef(null);
     const hideTimeout = useRef(null);
 
-    const videoId = extractVideoId(url);
+    const videoId = extractVideoId(url?.trim());
 
     const startProgressTimer = useCallback(() => {
         clearInterval(intervalRef.current);
@@ -233,8 +233,8 @@ export default function YoutubePlayer({ url }) {
         <div
             ref={wrapperRef}
             className={`bg-black relative select-none group transition-all duration-300 ${isFakeFullscreen
-                    ? 'fixed inset-0 z-[9999] w-screen h-screen'
-                    : 'w-full aspect-video'
+                ? 'fixed inset-0 z-[9999] w-screen h-screen'
+                : 'w-full aspect-video'
                 }`}
             onMouseMove={revealControls}
             onTouchStart={revealControls}

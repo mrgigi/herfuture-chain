@@ -7,6 +7,7 @@ import YoutubePlayer from '../components/YoutubePlayer';
 import { useCurrency } from '../hooks/useCurrency';
 
 // Pass = 100% correct — works for any number of questions
+const PASS_THRESHOLD = 3; // Default display threshold, though logic requires 100%
 
 export default function LessonPlayer() {
     const { lessonId } = useParams();
