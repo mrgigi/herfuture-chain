@@ -11,18 +11,24 @@ export default function LoginSignup() {
     const [formData, setFormData] = useState({ firstName: '', lastName: '', localPhone: '', otp: '000000' });
     const navigate = useNavigate();
 
+    // Normalise whatever they typed into a clean 10-digit local number
+    const normalisePhone = (raw) => {
+        let digits = raw.replace(/\D/g, ''); // digits only
+        if (digits.startsWith('234')) digits = digits.slice(3); // strip +234 / 234 prefix
+        if (digits.startsWith('0')) digits = digits.slice(1);   // strip leading 0
+        return digits.slice(0, 10);
+    };
+
     // Always store phone as +234XXXXXXXXXX
-    const fullPhone = '+234' + formData.localPhone.replace(/^0/, '');
+    const fullPhone = '+234' + normalisePhone(formData.localPhone);
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
         if (name === 'localPhone') {
-            // Strip everything except digits, remove leading 0 automatically
-            const digits = value.replace(/\D/g, '').replace(/^0/, '');
-            // Cap at 10 digits (e.g. 8012345678)
-            setFormData(prev => ({ ...prev, localPhone: digits.slice(0, 10) }));
+            // Allow free typing — only strip non-digits and cap raw length to 13
+            const digits = value.replace(/\D/g, '').slice(0, 13);
+            setFormData(prev => ({ ...prev, localPhone: digits }));
         } else if (name === 'firstName' || name === 'lastName') {
-            // Only allow letters and spaces
             const cleaned = value.replace(/[^a-zA-Z\s]/g, '');
             setFormData(prev => ({ ...prev, [name]: cleaned }));
         } else {
@@ -34,15 +40,15 @@ export default function LoginSignup() {
         e.preventDefault();
         setError('');
 
-        // Validate Nigerian number: must be 10 digits after stripping leading 0
-        // Strip leading 0 again at submit time as a safety net
-        const cleanPhone = formData.localPhone.replace(/^0/, '').slice(0, 10);
+        // Normalise at submit time — handles any format they typed
+        const cleanPhone = normalisePhone(formData.localPhone);
+        if (cleanPhone.length !== 10) {
+            setError('Enter a valid Nigerian mobile number (e.g. 08012345678 or 8012345678).');
+            return;
+        }
+        // Sync state with the cleaned version
         if (cleanPhone !== formData.localPhone) {
             setFormData(prev => ({ ...prev, localPhone: cleanPhone }));
-        }
-        if (cleanPhone.length !== 10) {
-            setError('Enter a valid 10-digit Nigerian mobile number.');
-            return;
         }
 
         if (!isLogin) {
@@ -258,7 +264,7 @@ export default function LoginSignup() {
                                                     value={formData.localPhone}
                                                     onChange={handleInputChange}
                                                     inputMode="numeric"
-                                                    maxLength={11}
+                                                    maxLength={13}
                                                     className="interface-input block w-full rounded-r-2xl rounded-l-none"
                                                     placeholder="8012345678"
                                                 />
