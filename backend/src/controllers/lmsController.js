@@ -487,32 +487,34 @@ async function deleteCourse(req, res) {
             .select('id')
             .eq('course_id', courseId);
 
-        if (mFetchError && !mFetchError.message.includes('not find')) throw mFetchError;
+        if (mFetchError && !mFetchError.message?.includes('not find')) throw mFetchError;
 
         const lessonIds = lessons?.map(l => l.id) || [];
         const moduleIds = modules?.map(m => m.id) || [];
 
         console.log(`Deleting Course ${courseId}: Found ${lessonIds.length} lessons and ${moduleIds.length} modules.`);
 
-        // 2. Delete progress records for these lessons
+        // 2. Cascade delete records tied to lessons
         if (lessonIds.length > 0) {
-            // Delete from new lesson_completions table to satisfy foreign keys
-            const { error: pError } = await supabase.from('lesson_completions').delete().in('lesson_id', lessonIds);
-            if (pError && !pError.message.includes('not find')) throw pError;
+            // Delete participant progress (ignore errors if table missing)
+            await supabase.from('participant_progress').delete().in('lesson_id', lessonIds);
 
-            // 3. Delete quizzes for these lessons
+            // Delete lesson completions (ignore errors if table missing)
+            await supabase.from('lesson_completions').delete().in('lesson_id', lessonIds);
+
+            // Delete quizzes for these lessons
             await supabase.from('quizzes').delete().in('lesson_id', lessonIds);
+
+            // Delete the lessons themselves
+            await supabase.from('lessons').delete().in('id', lessonIds);
         }
 
-        // 4. Delete the lessons themselves
-        await supabase.from('lessons').delete().in('id', lessonIds);
-
-        // 5. Delete the modules
+        // 3. Delete the modules
         if (moduleIds.length > 0) {
-            await supabase.from('modules').delete().eq('course_id', courseId);
+            await supabase.from('modules').delete().in('id', moduleIds);
         }
 
-        // 6. Finally delete the course
+        // 4. Finally delete the course
         const { error } = await supabase
             .from('courses')
             .delete()
