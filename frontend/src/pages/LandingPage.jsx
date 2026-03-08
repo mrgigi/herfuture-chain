@@ -132,7 +132,7 @@ export default function LandingPage() {
 
                 {/* Mobile Menu Overlay */}
                 {isMenuOpen && (
-                    <div className="fixed inset-0 bg-[#060914] z-[999] p-8 md:hidden animate-in fade-in slide-in-from-top-4 duration-300 flex flex-col items-center justify-center">
+                    <div className="fixed inset-0 bg-[#060914]/98 backdrop-blur-3xl z-[999] p-8 md:hidden animate-in fade-in duration-200 flex flex-col items-center justify-center">
                         <button
                             onClick={() => setIsMenuOpen(false)}
                             className="absolute top-8 right-8 p-3 text-white/50 hover:text-white transition-all active:scale-95"

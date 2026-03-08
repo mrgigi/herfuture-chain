@@ -135,7 +135,7 @@ export default function Students() {
 
             {/* Mobile Menu Overlay */}
             {isMenuOpen && (
-                <div className="fixed inset-0 bg-[#060914] z-[999] p-8 md:hidden animate-in fade-in slide-in-from-top-4 duration-300 flex flex-col">
+                <div className="fixed inset-0 bg-[#060914]/98 backdrop-blur-3xl z-[999] p-8 md:hidden animate-in fade-in duration-200 flex flex-col">
                     <div className="flex justify-end w-full mb-12">
                         <button
                             onClick={() => setIsMenuOpen(false)}
