@@ -3,10 +3,10 @@ import { useNavigate } from 'react-router-dom';
 import { Check, ArrowRight } from 'lucide-react';
 
 const AVATARS = [
-    { id: 'avatar1', url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Amina&top=longHair&hairColor=2c1b18&skinColor=432d26&clothing=blazer&mouth=smile&facialHairProbability=0' },
-    { id: 'avatar2', url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Bisi&top=turban&hairColor=2c1b18&skinColor=ae5d32&clothing=sweater&mouth=default&facialHairProbability=0' },
-    { id: 'avatar3', url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Chioma&top=shortHair&hairColor=2c1b18&skinColor=614335&clothing=overall&mouth=smile&facialHairProbability=0' },
-    { id: 'avatar4', url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Dada&top=hijab&hairColor=2c1b18&skinColor=ffdbb4&clothing=graphicShirt&mouth=default&facialHairProbability=0' }
+    { id: 'avatar1', url: 'https://api.dicebear.com/7.x/big-smile/svg?seed=Amina&backgroundColor=b6e3f4,c0aede,d1d4f9,ffdfbf&backgroundType=gradientLinear' },
+    { id: 'avatar2', url: 'https://api.dicebear.com/7.x/big-smile/svg?seed=Kezia&backgroundColor=ffd5dc,c0aede,d1d4f9,b6e3f4&backgroundType=gradientLinear' },
+    { id: 'avatar3', url: 'https://api.dicebear.com/7.x/big-smile/svg?seed=Nala&backgroundColor=c0aede,b6e3f4,d1d4f9,ffdfbf&backgroundType=gradientLinear' },
+    { id: 'avatar4', url: 'https://api.dicebear.com/7.x/big-smile/svg?seed=Zara&backgroundColor=d1d4f9,ffd5dc,c0aede,b6e3f4&backgroundType=gradientLinear' }
 ];
 
 export default function AvatarSelection() {
