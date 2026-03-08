@@ -44,11 +44,6 @@ export default function LoginSignup() {
             setError('Enter a valid 10-digit Nigerian mobile number.');
             return;
         }
-        // First digit must be 7 or 8 (e.g. 070x, 080x, 081x)
-        if (!['7', '8'].includes(cleanPhone[0])) {
-            setError('Nigerian numbers must start with 7 or 8 (e.g. 08012345678).');
-            return;
-        }
 
         if (!isLogin) {
             if (!formData.firstName.trim() || formData.firstName.trim().length < 2) {
