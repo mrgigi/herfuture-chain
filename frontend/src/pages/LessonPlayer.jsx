@@ -236,8 +236,8 @@ export default function LessonPlayer() {
                                     key={option}
                                     onClick={() => { setSelectedAnswer(option); setAnswerResult(null); }}
                                     className={`w-full p-4 rounded-2xl border transition-all text-left flex items-center gap-4 active:scale-[0.98] ${selectedAnswer === option
-                                            ? 'bg-brand-500/20 border-brand-500 text-white shadow-lg shadow-brand-500/10'
-                                            : 'bg-white/[0.03] border-white/8 text-slate-300 hover:border-white/15 hover:bg-white/5'
+                                        ? 'bg-brand-500/20 border-brand-500 text-white shadow-lg shadow-brand-500/10'
+                                        : 'bg-white/[0.03] border-white/8 text-slate-300 hover:border-white/15 hover:bg-white/5'
                                         }`}
                                 >
                                     <div className={`w-8 h-8 rounded-xl flex items-center justify-center text-xs font-black shrink-0 ${selectedAnswer === option ? 'bg-brand-500 text-white' : 'bg-white/5 text-slate-500'
@@ -343,19 +343,19 @@ export default function LessonPlayer() {
             <div className="flex border-b border-white/5 mx-4 mt-5">
                 {[
                     { id: 'overview', label: 'About this Lesson' },
-                    { id: 'goals', label: 'What You'll Learn' },
+                    { id: 'goals', label: "What You'll Learn" },
                 ].map(tab => (
-                        <button
-                            key={tab.id}
-                            onClick={() => setActiveTab(tab.id)}
-                            className={`flex-1 py-3 text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === tab.id
-                                    ? 'text-brand-400 border-b-2 border-brand-500'
-                                    : 'text-slate-600 hover:text-slate-400'
-                                }`}
-                        >
-                            {tab.label}
-                        </button>
-                    ))}
+                    <button
+                        key={tab.id}
+                        onClick={() => setActiveTab(tab.id)}
+                        className={`flex-1 py-3 text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === tab.id
+                            ? 'text-brand-400 border-b-2 border-brand-500'
+                            : 'text-slate-600 hover:text-slate-400'
+                            }`}
+                    >
+                        {tab.label}
+                    </button>
+                ))}
             </div>
 
             {/* ── Tab Content ── */}
