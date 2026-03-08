@@ -119,7 +119,7 @@ export default function LessonPlayer() {
                     </p>
 
                     <div className="p-8 rounded-[32px] bg-white/5 border border-white/10 mb-10 group hover:border-brand-500/30 transition-all duration-500">
-                        <div className="text-[10px] font-black text-brand-400 uppercase tracking-[0.3em] mb-3">On-Chain Grant Disbursed</div>
+                        <div className="text-[10px] font-black text-brand-400 uppercase tracking-[0.3em] mb-3">On-Chain Reward Disbursed</div>
                         <div className="text-5xl font-black text-white group-hover:scale-110 transition-transform duration-500">
                             {lesson?.grant_amount || 30} <span className="text-xl text-brand-500/60 uppercase">cUSD</span>
                         </div>
@@ -152,7 +152,7 @@ export default function LessonPlayer() {
             <div className="w-16 h-16 bg-red-500/10 rounded-full flex items-center justify-center mb-6">
                 <HelpCircle className="w-8 h-8 text-red-500" />
             </div>
-            <h2 className="text-xl font-bold text-white mb-2">Module Not Found</h2>
+            <h2 className="text-xl font-bold text-white mb-2">Lesson Not Found</h2>
             <p className="text-slate-500 mb-8 max-w-xs mx-auto">This lesson might be still synchronizing or doesn't exist yet.</p>
             <button
                 onClick={() => navigate('/dashboard')}
@@ -181,7 +181,7 @@ export default function LessonPlayer() {
                     <span className="text-sm font-medium">Exit Academy</span>
                 </button>
                 <div className="text-[10px] font-bold text-white/30 uppercase tracking-[0.2em]">
-                    Module: {lesson.title}
+                    Lesson: {lesson.title}
                 </div>
                 <div className="w-24"></div> {/* Spacer */}
             </header>
@@ -259,13 +259,13 @@ export default function LessonPlayer() {
                                 </div>
                             ) : (
                                 <div className="text-center">
-                                    <p className="text-slate-500 mb-6">No quiz found for this module. You can claim your reward!</p>
+                                    <p className="text-slate-500 mb-6">No quiz found for this lesson. You can claim your reward!</p>
                                     <button
                                         onClick={handleClaimWithoutQuiz}
                                         disabled={loading}
                                         className="btn-primary px-8 py-4 flex items-center gap-2 justify-center mx-auto"
                                     >
-                                        {loading ? <div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : 'Claim Milestone Grant'}
+                                        {loading ? <div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : 'Claim My Reward'}
                                     </button>
                                 </div>
                             )}
@@ -280,7 +280,7 @@ export default function LessonPlayer() {
                             onClick={setActiveTab && (() => setActiveTab('video'))}
                             className={`flex-1 py-4 text-[10px] font-bold uppercase tracking-wider transition-all ${activeTab === 'video' ? 'text-brand-400 bg-brand-500/5 border-b-2 border-brand-500' : 'text-slate-600 hover:text-slate-300'}`}
                         >
-                            Module Overview
+                            Lesson Overview
                         </button>
                         <button
                             onClick={setActiveTab && (() => setActiveTab('outcomes'))}

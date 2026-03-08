@@ -90,7 +90,7 @@ export default function LandingPage() {
         },
         {
             title: "Management Hub",
-            desc: "Control center for administrators to scale the curriculum and manage global impact.",
+            desc: "Control center for administrators to scale the learning path and manage global impact.",
             icon: <LayoutGrid className="w-6 h-6 text-purple-400" />,
             link: "/admin",
             color: "purple",
@@ -315,7 +315,7 @@ export default function LandingPage() {
                                 id: "01",
                                 title: "Digital Identity",
                                 subtitle: "Decentralized wallets for every user",
-                                desc: "Each participant receives a decentralized digital identity. This allows them to build a permanent record of learning achievements, credentials, and economic activity.",
+                                desc: "Each learner receives a decentralized digital identity. This allows them to build a permanent record of learning achievements, digital awards, and economic activity.",
                                 icon: <Smartphone className="w-8 h-8" />
                             },
                             {
@@ -324,7 +324,7 @@ export default function LandingPage() {
                                 subtitle: "3 Tracks + Wellbeing Strand",
                                 desc: (
                                     <div className="space-y-4 text-left">
-                                        <p>Comprehensive 6-month program covering 18 professional modules and weekly wellbeing sessions:</p>
+                                        <p>Comprehensive 6-month program covering 18 professional lessons and weekly wellbeing sessions:</p>
                                         <div className="grid grid-cols-1 gap-3 mt-4">
                                             {[
                                                 { id: 'T1', label: 'Track 1', title: 'Foundations & Wellbeing' },
@@ -365,14 +365,14 @@ export default function LandingPage() {
                                 id: "03",
                                 title: "Blockchain Credentials",
                                 subtitle: "Globally verifiable certificates",
-                                desc: "When participants complete courses, credentials are issued on-chain. These are tamper-proof, globally verifiable, and portable across employers.",
+                                desc: "When learners complete courses, digital awards are issued on-chain. These are tamper-proof, globally verifiable, and portable across employers.",
                                 icon: <ShieldCheck className="w-8 h-8" />
                             },
                             {
                                 id: "04",
-                                title: "Transparent Micro-Grants",
-                                subtitle: "Milestone-based financial releases",
-                                desc: "Participants receive support through smart contracts. Grants are automatically released when milestones are completed, ensuring transparency and reducing leakage.",
+                                title: "Transparent Digital Rewards",
+                                subtitle: "Rewards for reaching your goals",
+                                desc: "Learners receive support through smart contracts. Rewards are automatically released when milestones are completed, ensuring transparency and reducing leakage.",
                                 icon: <Database className="w-8 h-8" />
                             },
                             {
@@ -468,7 +468,7 @@ export default function LandingPage() {
                     <div className="flex flex-col md:flex-row justify-between items-end mb-20 gap-8">
                         <div>
                             <h2 className="text-[#060914] text-5xl md:text-7xl font-black tracking-tighter leading-none mb-6">Pilot Outcomes.</h2>
-                            <p className="text-[#060914]/60 text-lg font-bold uppercase tracking-widest">Transforming teen moms and unemployed girls from aid recipients into participants</p>
+                            <p className="text-[#060914]/60 text-lg font-bold uppercase tracking-widest">Transforming teen moms and unemployed girls from aid recipients into active learners</p>
                         </div>
                         <div className="bg-[#060914] text-white/50 p-4 px-8 rounded-full text-xs font-black uppercase tracking-[0.2em] shadow-2xl">
                             Verified on <span className="text-celo">Celo</span>

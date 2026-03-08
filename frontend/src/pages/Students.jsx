@@ -64,7 +64,7 @@ export default function Students() {
     const portals = [
         {
             title: "Student Portal",
-            desc: "Learn high-demand digital skills and earn your future through milestone-based grants.",
+            desc: "Learn high-demand digital skills and earn your future through milestone-based rewards.",
             icon: <User className="w-6 h-6 text-emerald-400" />,
             link: "/signup",
             color: "emerald",
@@ -74,7 +74,7 @@ export default function Students() {
             title: "Impact & Audit",
             desc: (
                 <>
-                    Real-time transparency. Every grant is cryptographically verified.
+                    Real-time transparency. Every reward is cryptographically verified.
                     <br />
                     <span
                         onClick={(e) => { e.stopPropagation(); navigate('/verify'); }}
@@ -91,7 +91,7 @@ export default function Students() {
         },
         {
             title: "Management Hub",
-            desc: "Control center for administrators to scale the curriculum and manage global impact.",
+            desc: "Control center for administrators to scale the learning path and manage global impact.",
             icon: <LayoutGrid className="w-6 h-6 text-purple-400" />,
             link: "/admin",
             color: "purple",
@@ -193,7 +193,7 @@ export default function Students() {
                     </h1>
 
                     <p className="text-slate-400 text-xl md:text-2xl font-medium leading-relaxed mb-6 animate-in fade-in slide-in-from-bottom-6 duration-1000">
-                        Open-source blockchain infrastructure for <span className="text-white">verifiable skills</span> and <span className="text-white">milestone-based grants</span>.
+                        Open-source blockchain infrastructure for <span className="text-white">verifiable skills</span> and <span className="text-white">milestone-based rewards</span>.
                     </p>
 
                     <p className="text-slate-400 max-w-2xl mx-auto text-sm md:text-base mb-12 animate-in fade-in slide-in-from-bottom-7 duration-1000 font-medium leading-relaxed">
@@ -211,7 +211,7 @@ export default function Students() {
                             href="#how-it-works"
                             className="group px-12 py-5 rounded-2xl bg-white/5 border border-white/10 text-white font-black text-xs uppercase tracking-widest flex items-center gap-3 hover:bg-white/10 transition-all active:scale-95"
                         >
-                            <BookOpen className="w-4 h-4 text-brand-400" /> Curriculum
+                            <BookOpen className="w-4 h-4 text-brand-400" /> Learning Path
                         </a>
                     </div>
                 </div>
@@ -319,7 +319,7 @@ export default function Students() {
                                 id: "01",
                                 title: "Digital Account",
                                 subtitle: "Safe digital account for your journey",
-                                desc: "Each participant receives a secure digital identity to build a permanent record of learning achievements, certificates, and economic activity.",
+                                desc: "Each learner receives a secure digital identity to build a permanent record of learning achievements, digital awards, and economic activity.",
                                 icon: <Smartphone className="w-8 h-8" />
                             },
                             {
@@ -328,7 +328,7 @@ export default function Students() {
                                 subtitle: "3 Tracks + Wellbeing Strand",
                                 desc: (
                                     <div className="space-y-4 text-left">
-                                        <p>Comprehensive 6-month program covering 18 professional modules and weekly wellbeing sessions:</p>
+                                        <p>Comprehensive 6-month program covering 18 professional lessons and weekly wellbeing sessions:</p>
                                         <div className="grid grid-cols-1 gap-3 mt-4">
                                             {[
                                                 { id: 'T1', label: 'Track 1', title: 'Foundations & Wellbeing' },
@@ -374,9 +374,9 @@ export default function Students() {
                             },
                             {
                                 id: "04",
-                                title: "Automated Grants",
-                                subtitle: "Grants for reaching your goals",
-                                desc: "You receive support for reaching learning goals. Grants are automatically released when milestones are completed, ensuring you get exactly what you earned.",
+                                title: "Automated Rewards",
+                                subtitle: "Rewards for reaching your goals",
+                                desc: "You receive support for reaching learning goals. Rewards are automatically released when milestones are completed, ensuring you get exactly what you earned.",
                                 icon: <Database className="w-8 h-8" />
                             },
                             {
@@ -458,7 +458,7 @@ export default function Students() {
                     <div className="flex flex-col md:flex-row justify-between items-end mb-20 gap-8">
                         <div>
                             <h2 className="text-[#060914] text-5xl md:text-7xl font-black tracking-tighter leading-none mb-6">Pilot Outcomes.</h2>
-                            <p className="text-[#060914]/60 text-lg font-bold uppercase tracking-widest">Transforming teen moms and unemployed girls from aid recipients into participants</p>
+                            <p className="text-[#060914]/60 text-lg font-bold uppercase tracking-widest">Transforming teen moms and unemployed girls from aid recipients into active learners</p>
                         </div>
                         <div className="bg-[#060914] text-white/50 p-4 px-8 rounded-full text-xs font-black uppercase tracking-[0.2em] shadow-2xl">
                             Verified on <span className="text-white">Chain</span>

@@ -48,7 +48,7 @@ export default function Dashboard() {
 
     if (loading) return <LoadingScreen message="Personalizing Your Dashboard..." />;
 
-    const name = participant?.first_name || "Student";
+    const name = participant?.first_name || "Learner";
     const totalGrantsReceived = progress.completedCount * 30;
     const buttonText = progress.completedCount === 0 ? "Get Started" : "Resume Learning";
 
@@ -78,14 +78,14 @@ export default function Dashboard() {
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         {[
                             {
-                                label: 'Total Grants',
+                                label: 'Total Earned',
                                 value: `$${totalGrantsReceived}.00`,
                                 icon: <Wallet className="w-4 h-4 text-emerald-400" />,
                                 badge: 'Verified',
                                 badgeColor: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
                             },
                             {
-                                label: 'Upcoming Grant',
+                                label: 'Upcoming Reward',
                                 value: `$150.00`,
                                 icon: <Trophy className="w-4 h-4 text-brand-400" />,
                                 badge: 'Next Milestone',
@@ -127,13 +127,13 @@ export default function Dashboard() {
                                     <div className="flex items-center gap-3 mb-4 justify-center md:justify-start">
                                         <span className="text-[11px] font-black uppercase tracking-widest text-fuchsia-400">Current Progress</span>
                                         <div className="w-1.5 h-1.5 rounded-full bg-slate-700" />
-                                        <span className="text-[11px] font-black uppercase tracking-widest text-slate-500">{progress.completedCount} Modules Mastered</span>
+                                        <span className="text-[11px] font-black uppercase tracking-widest text-slate-500">{progress.completedCount} Lessons Finished</span>
                                     </div>
                                     <h2 className="text-4xl md:text-5xl font-black text-white mb-6 tracking-tighter leading-none">
                                         Start your <br /> <span className="text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-magenta-400 italic">first lesson.</span>
                                     </h2>
                                     <p className="text-slate-400 text-base max-w-xl mb-10 leading-relaxed font-medium">
-                                        Complete lessons and quizzes to earn verifiable credentials and unlock direct-to-wallet grants.
+                                        Complete lessons and quizzes to earn digital awards and unlock direct-to-wallet rewards.
                                     </p>
                                     <button
                                         onClick={() => navigate('/courses')}
@@ -149,13 +149,13 @@ export default function Dashboard() {
                         <div className="lg:hidden bg-emerald-500/5 border border-emerald-500/10 rounded-[32px] p-8 text-center">
                             <div className="text-[10px] font-black uppercase tracking-widest text-emerald-500/60 mb-2">Upcoming Reward</div>
                             <div className="text-4xl font-black text-white mb-2">$150 <span className="text-xs text-emerald-400">cUSD</span></div>
-                            <p className="text-xs text-slate-500 mb-6">Complete Track 2 to trigger automated grant.</p>
+                            <p className="text-xs text-slate-500 mb-6">Complete Level 2 to trigger automated reward.</p>
                             <button onClick={() => navigate('/grants')} className="text-[10px] font-black uppercase tracking-widest text-emerald-400 hover:text-white transition-colors">
                                 View Payout History →
                             </button>
                         </div>
 
-                        {/* Curriculum Grid */}
+                        {/* Learning Journey Grid */}
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pb-12">
                             {courses.map((course, idx) => {
                                 const modulesPerTrack = Math.ceil(progress.totalModules / Math.max(1, courses.length));
@@ -180,12 +180,12 @@ export default function Dashboard() {
                                                 {isDone ? <CheckCircle className="w-6 h-6" /> : (idx + 1)}
                                             </div>
                                             <div>
-                                                <div className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1.5">Track {course.track_number || (idx + 1)}</div>
+                                                <div className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1.5">Level {course.track_number || (idx + 1)}</div>
                                                 <h4 className={`text-lg font-black uppercase tracking-tight leading-tight ${isActive ? 'text-white' : 'text-slate-400'}`}>{course.title}</h4>
                                             </div>
                                             <div className="pt-6 border-t border-white/5 flex items-center justify-between">
                                                 <span className={`text-[10px] font-black uppercase tracking-widest ${isActive ? 'text-fuchsia-400 animate-pulse' : isDone ? 'text-emerald-400' : 'text-slate-600'}`}>
-                                                    {isActive ? 'In Progress' : isDone ? 'Completed' : 'View Track'}
+                                                    {isActive ? 'In Progress' : isDone ? 'Completed' : 'View Level'}
                                                 </span>
                                                 <div className={`w-8 h-8 rounded-full flex items-center justify-center ${isActive ? 'bg-fuchsia-500/10' : 'bg-white/5'}`}>
                                                     <ArrowRight className={`w-4 h-4 ${isActive ? 'text-fuchsia-400' : 'text-slate-500 group-hover:text-white transition-colors'}`} />

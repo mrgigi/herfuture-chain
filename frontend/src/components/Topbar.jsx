@@ -30,7 +30,7 @@ export default function Topbar({ userName, modulesCompleted, totalModules, sideb
     const notifications = isDemoAccount ? [
         { id: 1, title: 'Grant Released!', body: 'Your grant for Module 2.1 has been released on-chain.', time: '2h ago' },
         { id: 2, title: 'New Badge Awarded', body: 'You earned the "Digital Literacy" badge.', time: '1d ago' },
-        { id: 3, title: 'Welcome to Track 2', body: 'You have successfully unlocked Track 2 curriculum.', time: '3d ago' }
+        { id: 3, title: 'Welcome to Track 2', body: 'You have successfully unlocked Track 2 learning path.', time: '3d ago' }
     ] : [];
 
     const handleLogout = () => {
@@ -51,7 +51,7 @@ export default function Topbar({ userName, modulesCompleted, totalModules, sideb
         : null;
 
     const initials = user ? `${user.first_name?.[0] || 'S'}${user.last_name?.[0] || ''}`.toUpperCase() : '??';
-    const displayName = userName || user?.first_name || 'Student';
+    const displayName = userName || user?.first_name || 'Learner';
     const completed = modulesCompleted ?? 0;
     const total = totalModules ?? 16;
 

@@ -24,7 +24,7 @@ const ModuleAccordion = ({ module, index, navigate }) => {
                         {index + 1}
                     </div>
                     <div>
-                        <h3 className="text-lg font-black text-white tracking-tight">{module.title || 'Untitled Module'}</h3>
+                        <h3 className="text-lg font-black text-white tracking-tight">{module.title || 'Untitled Lesson'}</h3>
                         <p className="text-[10px] tracking-wider font-bold text-slate-500 mt-0.5">
                             {lessons.length} {lessons.length === 1 ? 'Lesson' : 'Lessons'} • {lessons.filter(l => l.completed).length} Complete
                         </p>
@@ -115,7 +115,7 @@ export default function CourseDetail() {
 
     const loading = queryLoading;
 
-    if (loading) return <LoadingScreen message="Designing Curriculum Experience..." />;
+    if (loading) return <LoadingScreen message="Designing Learning Path..." />;
 
     return (
         <div className="min-h-screen bg-[#0A0F1C] font-sans text-slate-200 flex flex-col">
@@ -157,7 +157,7 @@ export default function CourseDetail() {
                             Program <span className="text-brand-500">Syllabus</span>
                         </h1>
                         <p className="text-slate-400 text-sm max-w-xl leading-relaxed">
-                            Master the core competencies of digital entrepreneurship and blockchain literacy through our structured, module-based learning experience.
+                            Master the core competencies of digital entrepreneurship and blockchain literacy through our structured, lesson-based learning experience.
                         </p>
                     </div>
 
@@ -177,7 +177,7 @@ export default function CourseDetail() {
                                 <div className="w-16 h-16 rounded-full bg-slate-800/50 flex items-center justify-center mb-6">
                                     <Sparkles className="w-8 h-8 text-slate-600" />
                                 </div>
-                                <h3 className="text-xl font-bold text-white mb-2">Curriculum Pending</h3>
+                                <h3 className="text-xl font-bold text-white mb-2">Lessons Pending</h3>
                                 <p className="text-slate-500 text-sm max-w-xs">Our instructors are currently refining the material for this track. Check back soon!</p>
                             </div>
                         )}

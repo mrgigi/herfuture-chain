@@ -20,8 +20,8 @@ export default function Sidebar({ active, onCollapseChange, isOpen, onClose }) {
 
     const menu = [
         { name: 'Dashboard', icon: Home, path: '/dashboard' },
-        { name: 'Certificates', icon: Award, path: '/certificates' },
-        { name: 'Grant History', icon: Database, path: '/grants' },
+        { name: 'Achievements', icon: Award, path: '/certificates' },
+        { name: 'Reward History', icon: Database, path: '/grants' },
     ];
 
     const resources = [

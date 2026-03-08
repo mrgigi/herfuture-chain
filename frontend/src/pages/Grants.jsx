@@ -68,8 +68,8 @@ export default function Grants() {
 
             <main className={`${sidebarCollapsed ? 'md:ml-[72px]' : 'md:ml-64'} flex-grow p-4 md:p-8 pb-32 transition-all duration-300`}>
                 <div className="mb-8 px-2">
-                    <h2 className="text-2xl font-bold text-white mb-2 tracking-tight">My Grant History</h2>
-                    <p className="text-slate-400">Track all the grant money you've earned while learning and growing your future.</p>
+                    <h2 className="text-2xl font-bold text-white mb-2 tracking-tight">My Reward History</h2>
+                    <p className="text-slate-400">Track all the rewards you've earned while learning and growing your future.</p>
                 </div>
 
                 {error && (

@@ -92,7 +92,7 @@ export default function Verifier() {
                                     <p className="text-sm text-emerald-100 font-mono truncate">{certData.participant}</p>
                                 </div>
                                 <div className="grid grid-cols-2">
-                                    <p className="text-xs text-emerald-500/70 font-semibold mb-1 uppercase tracking-wider">Module</p>
+                                    <p className="text-xs text-emerald-500/70 font-semibold mb-1 uppercase tracking-wider">Lesson</p>
                                     <p className="text-sm text-emerald-100 font-medium">{certData.credentialType}</p>
                                 </div>
                                 <div className="grid grid-cols-2">

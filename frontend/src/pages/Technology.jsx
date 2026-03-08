@@ -235,7 +235,7 @@ export default function Technology() {
                         <div className="p-10 rounded-[40px] bg-indigo-500/5 border border-indigo-500/10">
                             <Handshake className="text-indigo-400 w-10 h-10 mb-6" />
                             <h4 className="text-xl font-bold mb-4 uppercase text-xs tracking-[0.2em]">Strategic Alliances</h4>
-                            <p className="text-slate-500 text-sm leading-relaxed">Combine resources and expertise to scale our curriculum to new regions and demographics.</p>
+                            <p className="text-slate-500 text-sm leading-relaxed">Combine resources and expertise to scale our learning path to new regions and demographics.</p>
                         </div>
                         <div className="p-10 rounded-[40px] bg-purple-500/5 border border-purple-500/10">
                             <Layers className="text-purple-400 w-10 h-10 mb-6" />

@@ -72,7 +72,7 @@ export default function HomeGate() {
 
                             <h2 className="text-4xl font-black mb-3 text-white">I am a Student</h2>
                             <p className="text-slate-200 text-lg leading-relaxed mb-8 font-medium">
-                                Build digital skills, earn grants, and secure your future.
+                                Build digital skills, earn rewards, and secure your future.
                             </p>
 
                             <div className="flex items-center gap-3 text-xs font-black uppercase tracking-[0.2em] text-brand-400 group-hover:text-white transition-colors">
