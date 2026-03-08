@@ -636,7 +636,7 @@ export default function AdminDashboard() {
                                                             </div>
                                                             <div>
                                                                 <div className="font-black text-white">{s.first_name || 'Anonymous'} {s.last_name || ''}</div>
-                                                                <div className="text-[10px] text-slate-500 tracking-widest mt-0.5">{s.phone}</div>
+                                                                <div className="text-[10px] text-slate-500 tracking-widest mt-0.5">{s.phone?.startsWith('+') ? s.phone : '+' + s.phone}</div>
                                                             </div>
                                                         </div>
                                                     </td>
@@ -688,7 +688,7 @@ export default function AdminDashboard() {
                                             <div>
                                                 <h2 className="text-3xl font-black text-white italic">{selectedStudent.first_name} {selectedStudent.last_name}.</h2>
                                                 <div className="flex items-center gap-3 mt-1">
-                                                    <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">{selectedStudent.phone}</span>
+                                                    <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">{selectedStudent.phone?.startsWith('+') ? selectedStudent.phone : '+' + selectedStudent.phone}</span>
                                                     <span className="w-1.5 h-1.5 rounded-full bg-slate-700" />
                                                     <span className="text-[10px] font-black uppercase tracking-widest text-emerald-500">DID Verified</span>
                                                 </div>
