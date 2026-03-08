@@ -26,7 +26,8 @@ import {
     Copy,
     Menu,
     X,
-    AlertCircle
+    AlertCircle,
+    BookOpen
 } from 'lucide-react';
 
 export default function Students() {
@@ -203,6 +204,12 @@ export default function Students() {
                         >
                             Start Learning <ArrowRight className="w-4 h-4 group-hover:translate-x-2 transition-transform" />
                         </button>
+                        <a
+                            href="#how-it-works"
+                            className="group px-12 py-5 rounded-2xl bg-white/5 border border-white/10 text-white font-black text-xs uppercase tracking-widest flex items-center gap-3 hover:bg-white/10 transition-all active:scale-95"
+                        >
+                            <BookOpen className="w-4 h-4 text-brand-400" /> Curriculum
+                        </a>
                     </div>
                 </div>
             </section>
