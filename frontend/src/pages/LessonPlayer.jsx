@@ -130,8 +130,9 @@ export default function LessonPlayer() {
 
                     <div className="p-8 rounded-[32px] bg-white/5 border border-white/10 mb-10 group hover:border-brand-500/30 transition-all duration-500">
                         <div className="text-[10px] font-black text-brand-400 uppercase tracking-[0.3em] mb-3">On-Chain Reward Disbursed</div>
-                        <div className="text-5xl font-black text-white group-hover:scale-110 transition-transform duration-500">
-                            {lesson?.grant_amount || 30} <span className="text-xl text-brand-500/60 uppercase">cUSD</span>
+                        <div className="flex items-baseline gap-3 group-hover:scale-105 transition-transform duration-500">
+                            <div className="text-5xl font-black text-white">{formatNaira(toNaira(lesson?.grant_amount || 30))}</div>
+                            <div className="text-lg font-bold text-slate-500 uppercase">{lesson?.grant_amount || 30} cUSD</div>
                         </div>
                     </div>
 
@@ -181,23 +182,31 @@ export default function LessonPlayer() {
 
     const getEmbedUrl = (url) => {
         if (!url) return '';
+        // If it's already an embed URL, just ensure params are on it
+        const params = 'rel=0&modestbranding=1&iv_load_policy=3';
         try {
             // Handle regular youtube.com/watch?v=...
             if (url.includes('youtube.com/watch')) {
                 const urlObj = new URL(url);
                 const videoId = urlObj.searchParams.get('v');
-                if (videoId) return `https://www.youtube.com/embed/${videoId}`;
+                if (videoId) return `https://www.youtube.com/embed/${videoId}?${params}`;
             }
             // Handle youtu.be/...
             if (url.includes('youtu.be/')) {
                 const videoId = url.split('youtu.be/')[1].split('?')[0];
-                if (videoId) return `https://www.youtube.com/embed/${videoId}`;
+                if (videoId) return `https://www.youtube.com/embed/${videoId}?${params}`;
+            }
+            // Handle already-formatted embed URLs
+            if (url.includes('youtube.com/embed/')) {
+                const base = url.split('?')[0];
+                return `${base}?${params}`;
             }
         } catch (e) {
             console.error("Failed to parse video URL:", e);
         }
-        return url; // fallback
+        return url; // fallback for non-YouTube
     };
+
 
     return (
         <div className="min-h-screen bg-[#0A0F1C] flex flex-col">
@@ -223,7 +232,7 @@ export default function LessonPlayer() {
                         <div className="w-full h-full relative">
                             <iframe
                                 className="absolute inset-0 w-full h-full"
-                                src={`${getEmbedUrl(lesson.video_url)}?autoplay=1&rel=0`}
+                                src={`${getEmbedUrl(lesson.video_url)}&autoplay=1`}
                                 title={lesson.title}
                                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                                 allowFullScreen
@@ -236,7 +245,7 @@ export default function LessonPlayer() {
                                     <Zap className="w-8 h-8 text-brand-400 animate-pulse" />
                                 </div>
                                 <h2 className="text-3xl font-black text-white mb-2 tracking-tight">KNOWLEDGE CHECK</h2>
-                                <p className="text-slate-500 text-sm font-medium">Pass the check to unlock your <span className="text-brand-400 font-bold">{lesson?.grant_amount || 30} cUSD</span> reward.</p>
+                                <p className="text-slate-500 text-sm font-medium">Pass the check to unlock your <span className="text-brand-400 font-bold">{formatNaira(toNaira(lesson?.grant_amount || 30))}</span> reward.</p>
                             </div>
 
                             {/* Heartbeat Progress Bar */}

@@ -4,8 +4,9 @@ import { useQuery } from '@tanstack/react-query';
 import { PlayCircle, CheckCircle, ChevronLeft, Lock, ChevronDown, ChevronUp, BookOpen, Sparkles, DollarSign, HelpCircle } from 'lucide-react';
 import LoadingScreen from '../components/LoadingScreen';
 import { getModules, getParticipant } from '../lib/api';
+import { useCurrency } from '../hooks/useCurrency';
 
-const ModuleAccordion = ({ module, index, navigate }) => {
+const ModuleAccordion = ({ module, index, navigate, formatNaira, toNaira }) => {
     const [isOpen, setIsOpen] = useState(index === 0); // Open first module by default
     const lessons = module?.lessons || [];
     const hasMultipleLessons = lessons.length > 1;
@@ -70,7 +71,7 @@ const ModuleAccordion = ({ module, index, navigate }) => {
                                         </span>
                                         {lesson.grant_amount > 0 && (
                                             <span className="flex items-center gap-1 text-[9px] font-bold text-emerald-500 tracking-wider">
-                                                <DollarSign className="w-2.5 h-2.5" /> {lesson.grant_amount} cUSD Reward
+                                                {formatNaira(toNaira(lesson.grant_amount))} <span className="text-slate-600">({lesson.grant_amount} cUSD)</span>
                                             </span>
                                         )}
                                     </div>
@@ -93,6 +94,7 @@ const ModuleAccordion = ({ module, index, navigate }) => {
 export default function CourseDetail() {
     const { courseId } = useParams();
     const navigate = useNavigate();
+    const { toNaira, formatNaira } = useCurrency();
 
     const { data: modules = [], isLoading: queryLoading } = useQuery({
         queryKey: ['course-modules', courseId],
@@ -151,6 +153,8 @@ export default function CourseDetail() {
                                 module={mod}
                                 index={index}
                                 navigate={navigate}
+                                formatNaira={formatNaira}
+                                toNaira={toNaira}
                             />
                         ))
                     ) : (

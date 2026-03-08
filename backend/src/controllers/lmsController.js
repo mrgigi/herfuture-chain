@@ -144,12 +144,18 @@ async function getLessonQuiz(req, res) {
 
         if (error) throw error;
 
-        // Flatten data if it exists in a 'data' column (backwards compatibility)
+        // Normalize rows: flatten any legacy `data` column, and normalize `correct_answer` -> `answer`
         const refined = (data || []).map(q => {
+            let row = q;
             if (q.data && typeof q.data === 'object') {
-                return { ...q, ...q.data };
+                row = { ...q, ...q.data };
             }
-            return q;
+            // Normalize correct_answer -> answer for frontend compatibility
+            return {
+                question: row.question,
+                options: row.options,
+                answer: row.answer || row.correct_answer
+            };
         });
 
         // Wrap to maintain frontend backward compatibility where it expects data[0].data
@@ -158,6 +164,7 @@ async function getLessonQuiz(req, res) {
         res.status(500).json({ error: error.message });
     }
 }
+
 
 async function getLesson(req, res) {
     try {

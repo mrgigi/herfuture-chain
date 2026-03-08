@@ -1502,8 +1502,8 @@ export default function AdminDashboard() {
                                         </div>
                                         <div>
                                             <div className="flex items-center gap-3 mb-1">
-                                                <h3 className="text-2xl font-black text-white tracking-tight uppercase italic">Curriculum Curation.</h3>
-                                                <span className="px-2 py-0.5 rounded-md bg-brand-500/20 text-brand-400 text-[8px] font-black uppercase tracking-widest border border-brand-500/30">Manual Mode</span>
+                                                <h3 className="text-2xl font-black text-white tracking-tight uppercase italic">Create a Quiz.</h3>
+                                                <span className="px-2 py-0.5 rounded-md bg-brand-500/20 text-brand-400 text-[8px] font-black uppercase tracking-widest border border-brand-500/30">Manual</span>
                                             </div>
                                             <p className="text-xs text-slate-500 font-bold uppercase tracking-widest flex items-center gap-2">
                                                 <BookOpen className="w-3 h-3" /> {currentLessonForQuiz?.title}
@@ -1525,13 +1525,13 @@ export default function AdminDashboard() {
                                             <div className="w-24 h-24 bg-white/5 rounded-[32px] flex items-center justify-center mb-8 border border-white/5">
                                                 <HelpCircle className="w-10 h-10 text-slate-700" />
                                             </div>
-                                            <h4 className="text-xl font-bold text-white mb-2">Build Your Assessment</h4>
-                                            <p className="text-slate-500 text-sm max-w-sm mx-auto mb-10 leading-relaxed font-medium">Add structured questions to verify learner competency and release micro-grants on the blockchain.</p>
+                                            <h4 className="text-xl font-bold text-white mb-2">Create Your Quiz</h4>
+                                            <p className="text-slate-500 text-sm max-w-sm mx-auto mb-10 leading-relaxed font-medium">Add simple questions to test what students learned. Getting them right unlocks their reward.</p>
                                             <button
                                                 onClick={addQuestion}
                                                 className="px-8 py-4 bg-brand-500 hover:bg-brand-400 text-white rounded-2xl font-black uppercase tracking-widest text-[10px] shadow-2xl shadow-brand-500/20 transition-all"
                                             >
-                                                Start Drafting
+                                                Start Creating
                                             </button>
                                         </div>
                                     )}
@@ -1545,13 +1545,13 @@ export default function AdminDashboard() {
                                                         <div className="w-10 h-10 rounded-xl bg-brand-500/10 flex items-center justify-center text-brand-400 text-xs font-black border border-brand-500/10">
                                                             {idx + 1}
                                                         </div>
-                                                        <h4 className="text-xs font-black uppercase tracking-widest text-slate-400 italic">Competency Test</h4>
+                                                        <h4 className="text-xs font-black uppercase tracking-widest text-slate-400 italic">Question {idx + 1}</h4>
                                                     </div>
                                                     <button
                                                         onClick={() => setQuizData(quizData.filter((_, i) => i !== idx))}
                                                         className="p-3 text-slate-600 hover:text-red-400 flex items-center gap-2 hover:bg-red-400/10 rounded-xl transition-all text-[9px] font-black uppercase tracking-widest"
                                                     >
-                                                        <X className="w-4 h-4" /> Discard
+                                                        <X className="w-4 h-4" /> Remove
                                                     </button>
                                                 </div>
 
@@ -1594,7 +1594,7 @@ export default function AdminDashboard() {
 
                                                     <div className="pt-6 border-t border-white/5">
                                                         <label className="text-[10px] font-black uppercase text-emerald-500/70 mb-4 block tracking-[0.2em] ml-2 flex items-center gap-2">
-                                                            <ShieldCheck className="w-3 h-3" /> Designated Solution
+                                                            <ShieldCheck className="w-3 h-3" /> Correct Answer
                                                         </label>
                                                         <div className="relative">
                                                             <select
@@ -1606,7 +1606,7 @@ export default function AdminDashboard() {
                                                                 }}
                                                                 className="w-full bg-emerald-500/[0.03] border border-emerald-500/10 rounded-2xl py-4 px-8 text-sm text-emerald-400 font-bold focus:outline-none focus:border-emerald-500/30 appearance-none cursor-pointer hover:bg-emerald-500/[0.05] transition-all"
                                                             >
-                                                                <option value="" disabled>Choose the correct outcome</option>
+                                                                <option value="" disabled>Pick the correct answer</option>
                                                                 {q.options.filter(o => o.trim() !== "").map((opt, oIdx) => (
                                                                     <option key={oIdx} value={opt} className="bg-[#0D1525] text-slate-200">{opt}</option>
                                                                 ))}
@@ -1627,7 +1627,7 @@ export default function AdminDashboard() {
                                             className="w-full py-6 border-2 border-dashed border-white/5 rounded-[40px] flex items-center justify-center gap-4 text-xs font-black uppercase tracking-[0.2em] text-slate-600 hover:text-brand-400 hover:border-brand-500/20 hover:bg-brand-500/[0.02] transition-all group/add"
                                         >
                                             <PlusCircle className="w-5 h-5 group-hover:scale-125 transition-transform" />
-                                            Extend Curriculum
+                                            Add Another Question
                                         </button>
                                     )}
                                 </div>
@@ -1636,14 +1636,14 @@ export default function AdminDashboard() {
                                 <div className="px-12 py-10 border-t border-white/5 bg-white/[0.01] flex items-center justify-between">
                                     <div className="flex items-center gap-3 text-slate-500 text-[10px] font-black uppercase tracking-[0.1em]">
                                         <div className="w-2 h-2 rounded-full bg-brand-500/40" />
-                                        {quizData.length} Total Verification Points
+                                        {quizData.length} {quizData.length === 1 ? 'Question' : 'Questions'} Added
                                     </div>
                                     <div className="flex items-center gap-6">
                                         <button
                                             onClick={() => setQuizEditorOpen(false)}
                                             className="px-8 py-4 text-slate-500 text-[10px] font-black uppercase tracking-widest hover:text-white hover:bg-white/5 rounded-2xl transition-all"
                                         >
-                                            Back to Syllabus
+                                            Back to Lessons
                                         </button>
                                         <button
                                             onClick={handleSaveQuizManual}
@@ -1651,7 +1651,7 @@ export default function AdminDashboard() {
                                             className="flex items-center gap-3 px-10 py-5 bg-brand-600 hover:bg-brand-500 text-white rounded-3xl text-[11px] font-black uppercase tracking-widest transition-all shadow-[0_20px_40px_rgba(59,130,246,0.25)] hover:shadow-[0_25px_50px_rgba(59,130,246,0.35)] disabled:opacity-50 group hover:-translate-y-1"
                                         >
                                             {isSavingQuiz ? <Loader2 className="w-5 h-5 animate-spin" /> : <ShieldCheck className="w-5 h-5 group-hover:animate-bounce" />}
-                                            Secure Content
+                                            Save Quiz
                                         </button>
                                     </div>
                                 </div>
