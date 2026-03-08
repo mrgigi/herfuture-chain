@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { verifyCredential } from '../lib/api';
 
 export default function Verifier() {
-    const [credentialId, setCredentialId] = useState('');
+    const [credentialId, setCredentialId] = useState('CERT-HF-2026-X82');
     const [status, setStatus] = useState('idle'); // idle, loading, success, error
     const [certData, setCertData] = useState(null);
     const navigate = useNavigate();

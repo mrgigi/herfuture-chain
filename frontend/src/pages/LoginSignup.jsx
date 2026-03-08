@@ -8,7 +8,7 @@ export default function LoginSignup() {
     const [step, setStep] = useState('phone'); // 'phone' or 'otp'
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
-    const [formData, setFormData] = useState({ firstName: '', lastName: '', phone: '', otp: '' });
+    const [formData, setFormData] = useState({ firstName: '', lastName: '', phone: '', otp: '000000' });
     const navigate = useNavigate();
 
     const handleInputChange = (e) => {

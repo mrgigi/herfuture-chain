@@ -105,18 +105,19 @@ export default function Sidebar({ active, onCollapseChange, isOpen, onClose }) {
                     </div>
 
                     {resources.map((item) => (
-                        <button
+                        <div
                             key={item.name}
-                            onClick={() => { }}
-                            title={collapsed && !isOpen ? item.name : ''}
                             className={`w-full flex items-center gap-3 px-3 py-3 rounded-xl transition-all duration-200 ${collapsed && !isOpen ? 'justify-center' : ''
-                                } text-slate-500 hover:bg-white/5 hover:text-slate-300 border border-transparent`}
+                                } text-slate-500/50 cursor-not-allowed border border-transparent`}
                         >
-                            <item.icon className="w-5 h-5 flex-shrink-0 opacity-60" />
+                            <item.icon className="w-5 h-5 flex-shrink-0 opacity-40" />
                             {(!collapsed || isOpen) && (
-                                <span className="font-medium text-xs truncate">{item.name}</span>
+                                <div className="flex flex-col">
+                                    <span className="font-medium text-xs truncate">{item.name}</span>
+                                    <span className="text-[8px] font-black text-brand-500 uppercase tracking-tighter">Coming Soon</span>
+                                </div>
                             )}
-                        </button>
+                        </div>
                     ))}
                 </nav>
 

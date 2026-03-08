@@ -55,7 +55,7 @@ const LoadingScreen = ({ message = "Preparing Your Journey..." }) => {
                             <div className="h-full bg-gradient-to-r from-brand-400 via-fuchsia-400 to-brand-400 w-full animate-loading-slide" />
                         </div>
                         <span className="text-[10px] font-black uppercase tracking-[0.4em] text-brand-400/60 flex items-center gap-2">
-                            <Sparkles className="w-3 h-3" /> Generating Your Future <Sparkles className="w-3 h-3" />
+                            <Sparkles className="w-3 h-3" /> HerFuture Chain • Generating Magic <Sparkles className="w-3 h-3" />
                         </span>
                     </div>
                 </div>
