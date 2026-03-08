@@ -231,6 +231,16 @@ app.delete('/api/admin/courses/:courseId', async (req, res) => {
     }
 });
 
+app.post('/api/admin/modules/:moduleId', async (req, res) => {
+    try {
+        const { error } = await supabase.from('modules').update(req.body).eq('id', req.params.moduleId);
+        if (error) throw error;
+        res.json({ success: true });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
 app.post('/api/admin/modules', async (req, res) => {
     try {
         const { data, error } = await supabase.from('modules').insert([req.body]).select().single();
@@ -253,6 +263,16 @@ app.delete('/api/admin/modules/:moduleId', async (req, res) => {
             await supabase.from('lessons').delete().eq('module_id', moduleId);
         }
         await supabase.from('modules').delete().eq('id', moduleId);
+        res.json({ success: true });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+app.post('/api/admin/lessons/:lessonId', async (req, res) => {
+    try {
+        const { error } = await supabase.from('lessons').update(req.body).eq('id', req.params.lessonId);
+        if (error) throw error;
         res.json({ success: true });
     } catch (err) {
         res.status(500).json({ error: err.message });
