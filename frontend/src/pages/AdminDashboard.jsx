@@ -193,11 +193,11 @@ export default function AdminDashboard() {
         reader.onloadend = async () => {
             const base64 = reader.result;
             // Update local state
-            setEditingCourse({ ...editingCourse, cover_url: base64 });
+            setEditingCourse({ ...editingCourse, image_url: base64 });
             // If already saved, sync to backend
             if (editingCourse.id) {
                 try {
-                    await updateCourseDetails(editingCourse.id, { cover_url: base64 });
+                    await updateCourseDetails(editingCourse.id, { image_url: base64 });
                 } catch (err) {
                     console.error("Cover upload error:", err);
                 }
@@ -1014,8 +1014,8 @@ export default function AdminDashboard() {
                                                     className="relative group cursor-pointer h-32 w-full rounded-2xl overflow-hidden border border-white/5 bg-[#060914] flex items-center justify-center transition-all hover:border-brand-500/30"
                                                     onClick={() => document.getElementById('cover-upload').click()}
                                                 >
-                                                    {editingCourse.cover_url ? (
-                                                        <img src={editingCourse.cover_url} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" alt="Cover" />
+                                                    {editingCourse.image_url ? (
+                                                        <img src={editingCourse.image_url} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" alt="Cover" />
                                                     ) : (
                                                         <div className="flex flex-col items-center gap-2 text-slate-600 group-hover:text-brand-400">
                                                             <Activity className="w-6 h-6" />
@@ -1042,25 +1042,14 @@ export default function AdminDashboard() {
                                                     className="w-full bg-[#060914] border border-white/5 rounded-2xl py-3 px-4 text-sm text-white focus:outline-none focus:border-brand-500/50 min-h-[80px]"
                                                 />
                                             </div>
-                                            <div className="grid grid-cols-2 gap-4">
-                                                <div>
-                                                    <label className="text-[9px] font-black uppercase tracking-widest text-slate-500 mb-2 block pl-1">Track #</label>
-                                                    <input
-                                                        type="number"
-                                                        value={editingCourse.track_number || ''}
-                                                        onChange={(e) => setEditingCourse({ ...editingCourse, track_number: e.target.value })}
-                                                        className="w-full bg-[#060914] border border-white/5 rounded-2xl py-3 px-4 text-sm text-white focus:outline-none focus:border-brand-500/50"
-                                                    />
-                                                </div>
-                                                <div>
-                                                    <label className="text-[9px] font-black uppercase tracking-widest text-slate-500 mb-2 block pl-1">Cover Image URL</label>
-                                                    <input
-                                                        type="text"
-                                                        value={editingCourse.image_url || ''}
-                                                        onChange={(e) => setEditingCourse({ ...editingCourse, image_url: e.target.value })}
-                                                        className="w-full bg-[#060914] border border-white/5 rounded-2xl py-3 px-4 text-[10px] text-white focus:outline-none focus:border-brand-500/50"
-                                                    />
-                                                </div>
+                                            <div className="mb-6">
+                                                <label className="text-[9px] font-black uppercase tracking-widest text-slate-500 mb-2 block pl-1">Track #</label>
+                                                <input
+                                                    type="number"
+                                                    value={editingCourse.track_number || ''}
+                                                    onChange={(e) => setEditingCourse({ ...editingCourse, track_number: e.target.value })}
+                                                    className="w-full bg-[#060914] border border-white/5 rounded-2xl py-3 px-4 text-sm text-white focus:outline-none focus:border-brand-500/50"
+                                                />
                                             </div>
                                             <button
                                                 onClick={saveCourse}
