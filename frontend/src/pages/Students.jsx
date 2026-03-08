@@ -335,15 +335,15 @@ export default function Students() {
                                                 <div key={track.id} className="overflow-hidden bg-white/[0.03] rounded-2xl border border-white/5 text-left">
                                                     <button
                                                         onClick={() => setActiveAccordionTrack(activeAccordionTrack === track.id ? null : track.id)}
-                                                        className="w-full p-5 flex items-center justify-between hover:bg-white/[0.05] transition-colors group"
+                                                        className="w-full p-5 flex items-center justify-between hover:bg-white/[0.05] transition-colors group text-left"
                                                     >
-                                                        <div className="flex items-center gap-4">
-                                                            <div className={`text-[10px] font-black uppercase ${track.id === 'T1' ? 'text-brand-400' : track.id === 'T2' ? 'text-emerald-400' : 'text-orange-400'}`}>
+                                                        <div className="flex items-center gap-3 flex-1 min-w-0 pr-4">
+                                                            <div className={`text-[10px] font-black uppercase whitespace-nowrap ${track.id === 'T1' ? 'text-brand-400' : track.id === 'T2' ? 'text-emerald-400' : 'text-orange-400'}`}>
                                                                 {track.label}
                                                             </div>
-                                                            <div className="font-bold text-white text-sm">{track.title}</div>
+                                                            <div className="font-bold text-white text-sm truncate">{track.title}</div>
                                                         </div>
-                                                        <ChevronDown className={`w-4 h-4 text-slate-500 group-hover:text-white transition-transform duration-300 ${activeAccordionTrack === track.id ? 'rotate-180' : ''}`} />
+                                                        <ChevronDown className={`w-4 h-4 text-slate-500 group-hover:text-white transition-transform duration-300 ${activeAccordionTrack === track.id ? 'rotate-180' : ''} flex-shrink-0`} />
                                                     </button>
                                                     <div className={`transition-all duration-300 ease-in-out ${activeAccordionTrack === track.id ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'} overflow-hidden`}>
                                                         <div className="px-5 pb-5 pt-0 grid grid-cols-1 sm:grid-cols-2 gap-2">
