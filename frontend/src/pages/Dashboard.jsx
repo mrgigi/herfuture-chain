@@ -44,9 +44,12 @@ export default function Dashboard() {
     if (loading) return <LoadingScreen message="Personalizing Your Dashboard..." />;
 
     const name = participant?.first_name || "Learner";
-    const totalGrantsReceived = progress.completedCount * 30;
-    const nextMilestoneAmount = 150;
+    const totalGrantsReceived = progress.totalEarned ?? (progress.completedCount * 30);
+    const nextMilestoneAmount = progress.upcomingReward ?? 30;
     const buttonText = progress.completedCount === 0 ? "Get Started" : "Resume Learning";
+
+    const activePath = (progress.perCourseProgress || []).find(p => p.completed > 0 && p.completed < p.total)
+        || (progress.perCourseProgress || []).find(p => p.completed === 0);
 
     return (
         <div className="p-4 md:p-8 pb-32">
@@ -104,18 +107,22 @@ export default function Dashboard() {
                             {/* Progress Circle */}
                             <div className="relative flex-shrink-0">
                                 <div className="absolute -inset-10 flex items-center justify-center text-[160px] font-black text-white/5 pointer-events-none select-none">
-                                    {progress.percentage}%
+                                    {activePath ? activePath.percentage : progress.percentage}%
                                 </div>
                                 <div className="w-32 h-32 rounded-[36px] bg-gradient-to-br from-fuchsia-500 to-magenta-600 flex items-center justify-center text-4xl font-black text-white shadow-2xl shadow-fuchsia-500/40 relative z-10 -rotate-3 group-hover:rotate-0 transition-all duration-500">
-                                    {progress.percentage}%
+                                    {activePath ? activePath.percentage : progress.percentage}%
                                 </div>
                             </div>
 
                             <div className="flex-1 text-center md:text-left">
                                 <div className="flex items-center gap-3 mb-4 justify-center md:justify-start">
-                                    <span className="text-[11px] font-black uppercase tracking-widest text-fuchsia-400">Current Progress</span>
+                                    <span className="text-[11px] font-black uppercase tracking-widest text-fuchsia-400">
+                                        {activePath ? activePath.title : 'Global Progress'}
+                                    </span>
                                     <div className="w-1.5 h-1.5 rounded-full bg-slate-700" />
-                                    <span className="text-[11px] font-black uppercase tracking-widest text-slate-500">{progress.completedCount} Lessons Finished</span>
+                                    <span className="text-[11px] font-black uppercase tracking-widest text-slate-500">
+                                        {activePath ? `${activePath.completed}/${activePath.total}` : progress.completedCount} Lessons Finished
+                                    </span>
                                 </div>
                                 <h2 className="text-4xl md:text-5xl font-black text-white mb-6 tracking-tighter leading-none">
                                     Start your <br /> <span className="text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-magenta-400 italic">first lesson.</span>
@@ -138,10 +145,10 @@ export default function Dashboard() {
                     {/* Learning Journey Grid */}
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pb-12">
                         {courses.map((course, idx) => {
-                            const modulesPerTrack = Math.ceil(progress.totalModules / Math.max(1, courses.length));
-                            const trackStartThreshold = idx * modulesPerTrack;
-                            const isDone = progress.completedCount >= trackStartThreshold + modulesPerTrack;
-                            const isActive = progress.completedCount >= trackStartThreshold && !isDone;
+                            const courseProgress = (progress.perCourseProgress || []).find(p => p.courseId === course.id);
+                            const isDone = courseProgress ? courseProgress.completed === courseProgress.total : false;
+                            const isActive = courseProgress ? courseProgress.completed > 0 && !isDone : false;
+                            const percentage = courseProgress?.percentage || 0;
 
                             return (
                                 <div
@@ -157,7 +164,7 @@ export default function Dashboard() {
                                     <div className="flex flex-col gap-6 relative z-10">
                                         <div className={`w-14 h-14 rounded-2xl flex items-center justify-center font-black text-xl transition-all duration-500 group-hover:scale-110 ${isActive ? 'bg-gradient-to-br from-fuchsia-500 to-magenta-600 text-white shadow-xl shadow-fuchsia-500/40' : isDone ? 'bg-emerald-500/20 text-emerald-400' : 'bg-slate-800 text-slate-500'
                                             }`}>
-                                            {isDone ? <CheckCircle className="w-6 h-6" /> : (idx + 1)}
+                                            {isDone ? <CheckCircle className="w-6 h-6" /> : (isActive ? `${percentage}%` : (idx + 1))}
                                         </div>
                                         <div>
                                             <div className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1.5">Level {course.track_number || (idx + 1)}</div>

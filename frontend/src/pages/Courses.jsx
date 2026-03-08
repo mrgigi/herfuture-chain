@@ -11,7 +11,7 @@ export default function Courses() {
     const { data: courses = [], isLoading: queryLoading } = useQuery({
         queryKey: ['courses'],
         queryFn: getCourses,
-        select: (data) => data.filter(c => c.is_published)
+        select: (data) => Array.isArray(data) ? data.filter(c => c.is_published) : []
     });
 
     useEffect(() => {

@@ -69,8 +69,9 @@ router.get('/impact/recent-grants', getRecentGrants);
 router.get('/exchange-rate', async (req, res) => {
     try {
         const rate = await getExchangeRate();
-        res.json({ USD_NGN: rate });
+        res.json({ USD_NGN: rate }); // Maintain structure for useCurrency hook
     } catch (error) {
+        console.error("Exchange rate fetch error:", error);
         res.status(500).json({ error: 'Failed to fetch exchange rate' });
     }
 });

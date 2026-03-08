@@ -302,6 +302,77 @@ app.delete('/api/admin/lessons/:lessonId', async (req, res) => {
     }
 });
 
+app.get('/api/progress-overview/:participantId', async (req, res) => {
+    try {
+        const { participantId } = req.params;
+
+        // 1. Fetch student progress
+        const { data: progress, error: pErr } = await supabase
+            .from('student_progress')
+            .select('lesson_id, status')
+            .eq('participant_id', participantId)
+            .eq('status', 'completed');
+
+        if (pErr) throw pErr;
+
+        // 2. Fetch all lessons and their grant amounts
+        const { data: lessons, error: lErr } = await supabase
+            .from('lessons')
+            .select('id, grant_amount, track_label, module_id, course_id, sequence_number')
+            .order('sequence_number', { ascending: true });
+
+        if (lErr) throw lErr;
+
+        // 3. Fetch all courses for track info
+        const { data: courses } = await supabase.from('courses').select('id, title, track_number');
+
+        const completedLessonIds = new Set(progress?.map(p => p.lesson_id) || []);
+
+        // Calculate Total Earned
+        const totalEarned = lessons
+            .filter(l => completedLessonIds.has(l.id))
+            .reduce((acc, l) => acc + (l.grant_amount || 0), 0);
+
+        // Find Upcoming Reward
+        // Sort lessons by track_number then sequence_number to find the "next" one
+        const sortedLessons = lessons.map(l => {
+            const course = courses?.find(c => c.id === l.course_id);
+            return { ...l, track_number: course?.track_number || 999 };
+        }).sort((a, b) => {
+            if (a.track_number !== b.track_number) return a.track_number - b.track_number;
+            return a.sequence_number - b.sequence_number;
+        });
+
+        const nextLesson = sortedLessons.find(l => !completedLessonIds.has(l.id));
+        const upcomingReward = nextLesson ? (nextLesson.grant_amount || 0) : 0;
+
+        // Calculate progress per course
+        const perCourseProgress = courses?.map(course => {
+            const courseLessons = lessons.filter(l => l.course_id === course.id);
+            const courseCompleted = courseLessons.filter(l => completedLessonIds.has(l.id));
+            return {
+                courseId: course.id,
+                title: course.title,
+                completed: courseCompleted.length,
+                total: courseLessons.length,
+                percentage: courseLessons.length ? Math.round((courseCompleted.length / courseLessons.length) * 100) : 0
+            };
+        }) || [];
+
+        res.json({
+            completedCount: progress?.length || 0,
+            totalModules: lessons?.length || 0,
+            percentage: lessons?.length ? Math.round((progress?.length / lessons.length) * 100) : 0,
+            totalEarned,
+            upcomingReward,
+            perCourseProgress
+        });
+    } catch (err) {
+        console.error("[Vercel API] progress-overview error:", err);
+        res.status(500).json({ error: err.message });
+    }
+});
+
 // --- 4. Grants & Impact ---
 
 app.get('/api/grants/:participantId', async (req, res) => {
@@ -366,8 +437,84 @@ app.post('/api/admin/curriculum/reorder', async (req, res) => {
 });
 
 app.post('/api/ai/generate-quiz', async (req, res) => {
-    // Placeholder - port OpenAI logic if needed, but for now just return empty
-    res.json({ questions: [] });
+    try {
+        const { lessonId, title, learning_outcome, content } = req.body;
+        if (!title && !learning_outcome && !content) {
+            return res.status(400).json({ error: 'Missing data for quiz generation' });
+        }
+
+        console.log(`[Vercel API] Generating AI Quiz for: ${title || 'N/A'}`);
+
+        const prompt = `You are an instructional designer. Create a short 5-question multiple-choice quiz (4 options each) for the following lesson.\n\nLesson Title: ${title || 'N/A'}\nLearning Outcome: ${learning_outcome || 'N/A'}\nLesson Content (summary): ${content || 'N/A'}\n\nReturn the result as a JSON array with objects: { "question": string, "options": [string, string, string, string], "answer": string }`;
+
+        const openaiKey = process.env.OPENAI_API_KEY;
+        if (!openaiKey) {
+            console.error("[Vercel API] OPENAI_API_KEY not found in environment.");
+            return res.status(500).json({ error: 'OpenAI API key not configured' });
+        }
+
+        const response = await fetch('https://api.openai.com/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${openaiKey}`
+            },
+            body: JSON.stringify({
+                model: 'gpt-4o-mini',
+                messages: [{ role: 'user', content: prompt }],
+                temperature: 0.7,
+                max_tokens: 1000
+            })
+        });
+
+        if (!response.ok) {
+            const err = await response.text();
+            console.error('[Vercel API] OpenAI error:', err);
+            return res.status(502).json({ error: 'Failed to generate quiz from OpenAI' });
+        }
+
+        const data = await response.json();
+        const raw = data.choices?.[0]?.message?.content?.trim();
+
+        let quiz;
+        try {
+            // Basic cleanup for MD code blocks if AI returns them
+            const cleaned = raw.replace(/```json|```/g, '').trim();
+            quiz = JSON.parse(cleaned);
+        } catch (e) {
+            const jsonMatch = raw.match(/\[.*\]/s);
+            if (jsonMatch) {
+                quiz = JSON.parse(jsonMatch[0]);
+            } else {
+                throw new Error('Unable to parse quiz JSON');
+            }
+        }
+
+        // Persist quiz if lessonId provided
+        if (lessonId && Array.isArray(quiz)) {
+            console.log(`[Vercel API] Storing ${quiz.length} questions for lesson ${lessonId}...`);
+
+            // Cleanup existing first to avoid duplicates
+            await supabase.from('quizzes').delete().eq('lesson_id', lessonId);
+
+            const rowsRows = quiz.map(q => ({
+                lesson_id: lessonId,
+                question: q.question,
+                options: q.options,
+                correct_answer: q.answer || q.correct_answer
+            }));
+
+            const { error: insertErr } = await supabase.from('quizzes').insert(rowsRows);
+            if (insertErr) {
+                console.error('[Vercel API] Failed to store generated quiz:', insertErr);
+            }
+        }
+
+        res.json({ quiz });
+    } catch (err) {
+        console.error('[Vercel API] Quiz generation error:', err);
+        res.status(500).json({ error: err.message });
+    }
 });
 
 app.get('/api/admin/settings', async (req, res) => {

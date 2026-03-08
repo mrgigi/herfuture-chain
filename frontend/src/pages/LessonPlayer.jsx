@@ -230,7 +230,7 @@ export default function LessonPlayer() {
                             {quiz ? (
                                 <div className="space-y-4">
                                     <p className="text-slate-200 text-lg mb-8 leading-relaxed font-medium">{quiz.question}</p>
-                                    {quiz.options.map((option) => (
+                                    {quiz.options && Array.isArray(quiz.options) && quiz.options.map((option) => (
                                         <button
                                             key={option}
                                             onClick={() => setSelectedAnswer(option)}
@@ -252,7 +252,7 @@ export default function LessonPlayer() {
                                         disabled={!selectedAnswer || loading}
                                         className="w-full py-5 rounded-2xl bg-brand-500 hover:bg-brand-400 text-white font-bold uppercase tracking-wider text-xs mt-10 shadow-xl shadow-brand-500/20 transition-all disabled:opacity-50"
                                     >
-                                        {loading ? 'Verifying...' : 'Submit Answer'}
+                                        {!selectedAnswer ? 'Select an Answer' : loading ? 'Verifying...' : 'Submit Answer'}
                                     </button>
                                     <button
                                         onClick={() => setShowQuiz(false)}
@@ -281,13 +281,13 @@ export default function LessonPlayer() {
                 <div className="w-full lg:w-[400px] border-l border-white/5 bg-[#0D121F] flex flex-col">
                     <div className="flex border-b border-white/5">
                         <button
-                            onClick={setActiveTab && (() => setActiveTab('video'))}
+                            onClick={() => setActiveTab('video')}
                             className={`flex-1 py-4 text-[10px] font-bold uppercase tracking-wider transition-all ${activeTab === 'video' ? 'text-brand-400 bg-brand-500/5 border-b-2 border-brand-500' : 'text-slate-600 hover:text-slate-300'}`}
                         >
                             Lesson Overview
                         </button>
                         <button
-                            onClick={setActiveTab && (() => setActiveTab('outcomes'))}
+                            onClick={() => setActiveTab('outcomes')}
                             className={`flex-1 py-4 text-[10px] font-bold uppercase tracking-wider transition-all ${activeTab === 'outcomes' ? 'text-brand-400 bg-brand-500/5 border-b-2 border-brand-500' : 'text-slate-600 hover:text-slate-300'}`}
                         >
                             Learning Goals

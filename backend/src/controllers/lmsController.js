@@ -18,6 +18,7 @@ async function getCourses(req, res) {
             .order('track_number', { ascending: true });
 
         if (error) throw error;
+        if (!data) return res.json([]);
 
         // Process data to include a unique student count per course
         const formatted = data.map(course => {
@@ -59,7 +60,13 @@ async function getCourseModules(req, res) {
         if (mError && mError.message.includes('Could not find the table')) {
             console.warn("⚠️  'modules' table missing. Falling back to single-module view.");
             modules = [{ id: 'default-module', title: 'Main Curriculum', sequence_number: 1 }];
-        } else if (mError) throw mError;
+        } else if (mError) {
+            throw mError;
+        }
+
+        if (!modules || modules.length === 0) {
+            modules = [{ id: 'default-module', title: 'Main Curriculum', sequence_number: 1 }];
+        }
 
         // 2. Fetch all lessons for this course
         const { data: lessons, error: lError } = await supabase
@@ -72,11 +79,10 @@ async function getCourseModules(req, res) {
 
         // 3. Group lessons by module_id
         const lessonsByModule = {};
-        lessons.forEach(lesson => {
+        (lessons || []).forEach(lesson => {
             // Assign to module_id, or default-module if null/no match
-            const mId = lesson.module_id && modules.find(m => m.id === lesson.module_id)
-                ? lesson.module_id
-                : modules[0].id;
+            const matchingModule = modules.find(m => m.id === lesson.module_id);
+            const mId = matchingModule ? lesson.module_id : modules[0].id;
 
             if (!lessonsByModule[mId]) {
                 lessonsByModule[mId] = [];
