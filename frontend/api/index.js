@@ -322,6 +322,22 @@ app.get('/api/impact/stats', async (req, res) => {
     }
 });
 
+app.post('/api/admin/curriculum/reorder', async (req, res) => {
+    try {
+        const { type, items } = req.body;
+        const table = type === 'module' ? 'modules' : 'lessons';
+        const promises = items.map(item => {
+            const updateData = { sequence_number: item.sequence_number };
+            if (item.module_id) updateData.module_id = item.module_id;
+            return supabase.from(table).update(updateData).eq('id', item.id);
+        });
+        await Promise.all(promises);
+        res.json({ success: true });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
 app.post('/api/ai/generate-quiz', async (req, res) => {
     // Placeholder - port OpenAI logic if needed, but for now just return empty
     res.json({ questions: [] });

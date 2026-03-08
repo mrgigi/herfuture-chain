@@ -6,8 +6,9 @@ import {
     GraduationCap, ArrowUpRight, ShieldCheck, Power, LayoutGrid, Activity,
     Edit3, ChevronRight, Save, X, PlusCircle, Home, Globe, LogOut,
     HelpCircle, List, Loader2, Book, CheckCircle, Trash2, Sparkles,
-    Trophy, ArrowRight, ExternalLink, Menu, AlertCircle
+    Trophy, ArrowRight, ExternalLink, Menu, AlertCircle, GripVertical
 } from 'lucide-react';
+import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import LoadingScreen from '../components/LoadingScreen';
 import api, {
     getCourses, getModules, getAdminParticipants, getSystemSettings,
@@ -141,6 +142,7 @@ export default function AdminDashboard() {
     const saveCourse = async () => {
         setIsSavingMetadata(true);
         try {
+            // 1. Save Course Metadata
             await updateCourseDetails(editingCourse.id, {
                 title: editingCourse.title,
                 learning_outcome: editingCourse.learning_outcome,
@@ -148,11 +150,33 @@ export default function AdminDashboard() {
                 image_url: editingCourse.image_url,
                 track_number: parseInt(editingCourse.track_number) || 1
             });
+
+            // 2. Bulk Save Syllabus (Modules & Lessons)
+            // This ensures anything currently in the UI state is flushed to the DB
+            const syllabusPromises = [];
+
+            courseModules.forEach(mod => {
+                // Save Module
+                syllabusPromises.push(updateModule(mod.id, { title: mod.title }));
+
+                // Save Lessons
+                mod.lessons.forEach(lesson => {
+                    syllabusPromises.push(updateLesson(lesson.id, {
+                        title: lesson.title,
+                        video_url: lesson.video_url,
+                        content: lesson.content,
+                        grant_amount: lesson.grant_amount
+                    }));
+                });
+            });
+
+            await Promise.all(syllabusPromises);
+
             queryClient.setQueryData(['admin-courses'], prev => prev.map(c => c.id === editingCourse.id ? editingCourse : c));
-            showToast("Learning Path metadata updated");
+            showToast("Curriculum and metadata synchronized", "success");
         } catch (err) {
-            console.error("Save course error:", err);
-            const errorMsg = err.response?.data?.error || "Update failed";
+            console.error("Full save error:", err);
+            const errorMsg = err.response?.data?.error || "Full synchronized save failed";
             showToast(errorMsg, "error");
         } finally {
             setIsSavingMetadata(false);
@@ -171,8 +195,10 @@ export default function AdminDashboard() {
 
         try {
             await updateLesson(lessonId, { [field]: value });
+            // showToast("Lesson updated", "success"); // Removed to avoid too many toasts during auto-save
         } catch (err) {
             console.error("Auto-save lesson error:", err);
+            showToast("Auto-save failed", "error");
         }
     };
 
@@ -220,6 +246,95 @@ export default function AdminDashboard() {
             showToast("Cover artwork ready. Click Update to save.");
         };
         reader.readAsDataURL(file);
+    };
+
+    const handleDragEnd = async (result) => {
+        if (!result.destination) return;
+
+        const { source, destination, type } = result;
+
+        if (type === 'module') {
+            const items = Array.from(courseModules || []);
+            const [reorderedItem] = items.splice(source.index, 1);
+            items.splice(destination.index, 0, reorderedItem);
+
+            // Update sequence numbers locally
+            const updatedItems = items.map((mod, idx) => ({
+                ...mod,
+                sequence_number: idx + 1
+            }));
+
+            setCourseModules(updatedItems);
+
+            // Sync to backend
+            try {
+                await api.post(`/admin/curriculum/reorder`, {
+                    type: 'module',
+                    items: updatedItems.map(m => ({ id: m.id, sequence_number: m.sequence_number }))
+                });
+                showToast("Module order saved", "success");
+            } catch (err) {
+                console.error("Failed to sync module reorder:", err);
+                showToast("Failed to save module order", "error");
+            }
+        } else {
+            // Lesson reordering (possibly across modules)
+            const sourceModIndex = courseModules.findIndex(m => m.id === source.droppableId);
+            const destModIndex = courseModules.findIndex(m => m.id === destination.droppableId);
+            const sourceMod = courseModules[sourceModIndex];
+            const destMod = courseModules[destModIndex];
+
+            const sourceLessons = Array.from(sourceMod.lessons || []);
+            const [movedLesson] = sourceLessons.splice(source.index, 1);
+
+            if (source.droppableId === destination.droppableId) {
+                // Same module
+                sourceLessons.splice(destination.index, 0, movedLesson);
+                const updatedLessons = sourceLessons.map((l, idx) => ({ ...l, sequence_number: idx + 1 }));
+
+                const newModules = [...courseModules];
+                newModules[sourceModIndex] = { ...sourceMod, lessons: updatedLessons };
+                setCourseModules(newModules);
+
+                try {
+                    await api.post(`/admin/curriculum/reorder`, {
+                        type: 'lesson',
+                        items: updatedLessons.map(l => ({ id: l.id, sequence_number: l.sequence_number, module_id: sourceMod.id }))
+                    });
+                    showToast("Lesson order saved", "success");
+                } catch (err) {
+                    console.error("Failed to sync lesson reorder:", err);
+                    showToast("Failed to save lesson order", "error");
+                }
+            } else {
+                // Different module
+                const destLessons = Array.from(destMod.lessons || []);
+                movedLesson.module_id = destMod.id;
+                destLessons.splice(destination.index, 0, movedLesson);
+
+                const updatedSourceLessons = sourceLessons.map((l, idx) => ({ ...l, sequence_number: idx + 1 }));
+                const updatedDestLessons = destLessons.map((l, idx) => ({ ...l, sequence_number: idx + 1 }));
+
+                const newModules = [...courseModules];
+                newModules[sourceModIndex] = { ...sourceMod, lessons: updatedSourceLessons };
+                newModules[destModIndex] = { ...destMod, lessons: updatedDestLessons };
+                setCourseModules(newModules);
+
+                try {
+                    await api.post(`/admin/curriculum/reorder`, {
+                        type: 'lesson',
+                        items: [
+                            ...updatedSourceLessons.map(l => ({ id: l.id, sequence_number: l.sequence_number, module_id: sourceMod.id })),
+                            ...updatedDestLessons.map(l => ({ id: l.id, sequence_number: l.sequence_number, module_id: destMod.id }))
+                        ]
+                    });
+                    showToast("Lesson moved and order saved", "success");
+                } catch (err) {
+                    console.error("Failed to sync lesson move:", err);
+                    showToast("Failed to save lesson order", "error");
+                }
+            }
+        }
     };
 
     const handleGenerateAIQuiz = async (lesson) => {
@@ -292,6 +407,7 @@ export default function AdminDashboard() {
             await updateModule(moduleId, { title });
         } catch (err) {
             console.error("Save module error:", err);
+            showToast("Failed to save segment title", "error");
         }
     };
 
@@ -1158,120 +1274,161 @@ export default function AdminDashboard() {
                                             {isAddingModule ? 'Adding...' : 'Add Module'}
                                         </button>
                                     </div>
-                                    {(courseModules || []).map((mod, i) => (
-                                        <div key={mod.id} className="glass-panel rounded-[32px] border border-white/5 overflow-hidden">
-                                            <div className="p-6 bg-white/[0.02] border-b border-white/5 flex justify-between items-center">
-                                                <div className="flex items-center gap-3">
-                                                    <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center text-xs font-black text-slate-500">{i + 1}</div>
-                                                    <CurriculumInput
-                                                        value={mod.title}
-                                                        onBlur={(val) => {
-                                                            const newMods = [...courseModules];
-                                                            newMods[i].title = val;
-                                                            setCourseModules(newMods);
-                                                            saveModuleTitle(mod.id, val);
-                                                        }}
-                                                        className="bg-transparent border-none text-white font-black focus:outline-none text-sm p-0 w-full"
-                                                    />
-                                                </div>
-                                                <div className="flex items-center gap-4">
-                                                    <button
-                                                        onClick={() => handleDeleteModule(mod.id)}
-                                                        className="p-1 hover:text-red-400 transition-colors"
-                                                    >
-                                                        <X className="w-3 h-3" />
-                                                    </button>
-                                                </div>
-                                            </div>
-                                            <div className="p-4 space-y-2 font-medium">
-                                                {(mod.lessons || []).map((lesson, li) => (
-                                                    <div key={lesson.id} className="p-6 bg-white/5 rounded-[28px] border border-white/5 hover:border-brand-500/30 transition-all space-y-4 group">
-                                                        <div className="flex items-center justify-between">
-                                                            <div className="flex items-center gap-4 flex-1">
-                                                                <div className="w-2 h-2 rounded-full bg-slate-700 group-hover:bg-brand-500 transition-colors" />
-                                                                <CurriculumInput
-                                                                    value={lesson.title}
-                                                                    onBlur={(val) => saveLessonValue(lesson.id, 'title', val)}
-                                                                    className="bg-transparent border-none text-sm font-bold text-white focus:outline-none w-full p-0 italic"
-                                                                />
-                                                            </div>
-                                                            <div className="flex items-center gap-4">
-                                                                <div className="flex items-center gap-2 bg-[#060914] px-3 py-1.5 rounded-xl border border-white/5">
-                                                                    <DollarSign className="w-3 h-3 text-emerald-400" />
-                                                                    <input
-                                                                        type="number"
-                                                                        value={lesson.grant_amount}
-                                                                        onChange={(e) => saveLessonValue(lesson.id, 'grant_amount', parseInt(e.target.value))}
-                                                                        className="bg-transparent border-none text-[10px] font-black text-white w-12 text-center focus:outline-none p-0"
-                                                                    />
-                                                                    <span className="text-[8px] font-black text-slate-600 uppercase">cUSD</span>
-                                                                </div>
-                                                                <button
-                                                                    onClick={() => handleGenerateAIQuiz(lesson)}
-                                                                    disabled={isGeneratingQuiz === lesson.id}
-                                                                    className={`flex items-center gap-2 px-3 py-1.5 rounded-xl border border-brand-500/30 text-[9px] font-black uppercase tracking-widest transition-all ${isGeneratingQuiz === lesson.id ? 'bg-brand-500/20 text-brand-400' : 'bg-brand-500/10 text-brand-400 hover:bg-brand-500 hover:text-white hover:shadow-[0_0_15px_rgba(59,130,246,0.4)]'}`}
+                                    <DragDropContext onDragEnd={handleDragEnd}>
+                                        <Droppable droppableId="curriculum" type="module">
+                                            {(provided) => (
+                                                <div {...provided.droppableProps} ref={provided.innerRef} className="space-y-6">
+                                                    {(courseModules || []).map((mod, i) => (
+                                                        <Draggable key={mod.id} draggableId={mod.id} index={i}>
+                                                            {(provided) => (
+                                                                <div
+                                                                    ref={provided.innerRef}
+                                                                    {...provided.draggableProps}
+                                                                    className="glass-panel rounded-[32px] border border-white/5 overflow-hidden"
                                                                 >
-                                                                    {isGeneratingQuiz === lesson.id ? (
-                                                                        <Loader2 className="w-3 h-3 animate-spin" />
-                                                                    ) : (
-                                                                        <Sparkles className="w-3 h-3" />
-                                                                    )}
-                                                                    {isGeneratingQuiz === lesson.id ? 'Generating...' : 'AI Quiz'}
-                                                                </button>
-                                                                <button
-                                                                    onClick={() => handleEditQuizManual(lesson)}
-                                                                    className="flex items-center gap-2 px-3 py-1.5 rounded-xl border border-white/5 bg-white/5 text-slate-400 text-[9px] font-black uppercase tracking-widest hover:bg-white/10 hover:text-white transition-all"
-                                                                >
-                                                                    <HelpCircle className="w-3 h-3" />
-                                                                    Curate
-                                                                </button>
-                                                                <button
-                                                                    onClick={() => handleDeleteLesson(lesson.id, mod.id)}
-                                                                    className="opacity-0 group-hover:opacity-100 p-2 hover:bg-red-500/20 hover:text-red-400 rounded-lg transition-all"
-                                                                >
-                                                                    <X className="w-4 h-4" />
-                                                                </button>
-                                                            </div>
-                                                        </div>
+                                                                    <div className="p-6 bg-white/[0.02] border-b border-white/5 flex justify-between items-center group/mod">
+                                                                        <div className="flex items-center gap-4 flex-1">
+                                                                            <div {...provided.dragHandleProps} className="p-1 hover:bg-white/5 rounded-lg cursor-grab active:cursor-grabbing text-slate-600 hover:text-slate-400 transition-all">
+                                                                                <GripVertical className="w-4 h-4" />
+                                                                            </div>
+                                                                            <div className="w-8 h-8 shrink-0 rounded-lg bg-white/5 flex items-center justify-center text-xs font-black text-slate-500">{i + 1}</div>
+                                                                            <div className="flex-1">
+                                                                                <CurriculumInput
+                                                                                    value={mod.title}
+                                                                                    onBlur={(val) => {
+                                                                                        const newMods = [...courseModules];
+                                                                                        newMods[i].title = val;
+                                                                                        setCourseModules(newMods);
+                                                                                        saveModuleTitle(mod.id, val);
+                                                                                    }}
+                                                                                    className="bg-transparent border-none text-white font-black focus:outline-none text-sm p-0 w-full hover:bg-white/[0.02] rounded-md transition-colors"
+                                                                                />
+                                                                            </div>
+                                                                        </div>
+                                                                        <div className="flex items-center gap-4">
+                                                                            <button
+                                                                                onClick={() => handleDeleteModule(mod.id)}
+                                                                                className="p-1 hover:text-red-400 transition-colors opacity-0 group-hover/mod:opacity-100"
+                                                                            >
+                                                                                <X className="w-3 h-3" />
+                                                                            </button>
+                                                                        </div>
+                                                                    </div>
+                                                                    <div className="p-4 space-y-2 font-medium">
+                                                                        <Droppable droppableId={mod.id} type="lesson">
+                                                                            {(lProvided) => (
+                                                                                <div {...lProvided.droppableProps} ref={lProvided.innerRef} className="space-y-2 min-h-[40px]">
+                                                                                    {(mod.lessons || []).map((lesson, li) => (
+                                                                                        <Draggable key={lesson.id} draggableId={lesson.id} index={li}>
+                                                                                            {(lDraggableProvided) => (
+                                                                                                <div
+                                                                                                    ref={lDraggableProvided.innerRef}
+                                                                                                    {...lDraggableProvided.draggableProps}
+                                                                                                    className="p-6 bg-white/5 rounded-[28px] border border-white/5 hover:border-brand-500/30 transition-all space-y-4 group"
+                                                                                                >
+                                                                                                    <div className="flex items-center justify-between">
+                                                                                                        <div className="flex items-center gap-4 flex-1">
+                                                                                                            <div {...lDraggableProvided.dragHandleProps} className="p-1 hover:bg-white/5 rounded-lg cursor-grab active:cursor-grabbing text-slate-700 hover:text-slate-500 transition-all">
+                                                                                                                <GripVertical className="w-3.5 h-3.5" />
+                                                                                                            </div>
+                                                                                                            <div className="w-2 h-2 rounded-full bg-slate-700 group-hover:bg-brand-500 transition-colors" />
+                                                                                                            <div className="flex-1">
+                                                                                                                <CurriculumInput
+                                                                                                                    value={lesson.title}
+                                                                                                                    onBlur={(val) => saveLessonValue(lesson.id, 'title', val)}
+                                                                                                                    className="bg-transparent border-none text-sm font-bold text-white focus:outline-none w-full p-0 italic hover:bg-white/[0.02] rounded-md transition-colors"
+                                                                                                                />
+                                                                                                            </div>
+                                                                                                        </div>
+                                                                                                        <div className="flex items-center gap-4">
+                                                                                                            <div className="flex items-center gap-2 bg-[#060914] px-3 py-1.5 rounded-xl border border-white/5">
+                                                                                                                <DollarSign className="w-3 h-3 text-emerald-400" />
+                                                                                                                <input
+                                                                                                                    type="number"
+                                                                                                                    value={lesson.grant_amount}
+                                                                                                                    onChange={(e) => saveLessonValue(lesson.id, 'grant_amount', parseInt(e.target.value))}
+                                                                                                                    className="bg-transparent border-none text-[10px] font-black text-white w-12 text-center focus:outline-none p-0"
+                                                                                                                />
+                                                                                                                <span className="text-[8px] font-black text-slate-600 uppercase">cUSD</span>
+                                                                                                            </div>
+                                                                                                            <button
+                                                                                                                onClick={() => handleGenerateAIQuiz(lesson)}
+                                                                                                                disabled={isGeneratingQuiz === lesson.id}
+                                                                                                                className={`flex items-center gap-2 px-3 py-1.5 rounded-xl border border-brand-500/30 text-[9px] font-black uppercase tracking-widest transition-all ${isGeneratingQuiz === lesson.id ? 'bg-brand-500/20 text-brand-400' : 'bg-brand-500/10 text-brand-400 hover:bg-brand-500 hover:text-white hover:shadow-[0_0_15px_rgba(59,130,246,0.4)]'}`}
+                                                                                                            >
+                                                                                                                {isGeneratingQuiz === lesson.id ? (
+                                                                                                                    <Loader2 className="w-3 h-3 animate-spin" />
+                                                                                                                ) : (
+                                                                                                                    <Sparkles className="w-3 h-3" />
+                                                                                                                )}
+                                                                                                                {isGeneratingQuiz === lesson.id ? 'Generating...' : 'AI Quiz'}
+                                                                                                            </button>
+                                                                                                            <button
+                                                                                                                onClick={() => handleEditQuizManual(lesson)}
+                                                                                                                className="flex items-center gap-2 px-3 py-1.5 rounded-xl border border-white/5 bg-white/5 text-slate-400 text-[9px] font-black uppercase tracking-widest hover:bg-white/10 hover:text-white transition-all"
+                                                                                                            >
+                                                                                                                <HelpCircle className="w-3 h-3" />
+                                                                                                                Curate
+                                                                                                            </button>
+                                                                                                            <button
+                                                                                                                onClick={() => handleDeleteLesson(lesson.id, mod.id)}
+                                                                                                                className="opacity-0 group-hover:opacity-100 p-2 hover:bg-red-500/20 hover:text-red-400 rounded-lg transition-all"
+                                                                                                            >
+                                                                                                                <X className="w-4 h-4" />
+                                                                                                            </button>
+                                                                                                        </div>
+                                                                                                    </div>
 
-                                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                                            <div>
-                                                                <label className="text-[8px] font-black uppercase tracking-widest text-slate-600 block mb-1.5 ml-1">Video Endpoint (Embed URL)</label>
-                                                                <input
-                                                                    type="text"
-                                                                    value={lesson.video_url || ''}
-                                                                    onChange={(e) => saveLessonValue(lesson.id, 'video_url', e.target.value)}
-                                                                    placeholder="https://www.youtube.com/embed/..."
-                                                                    className="w-full bg-[#060914] border border-white/5 rounded-xl py-2 px-3 text-[10px] text-slate-400 focus:outline-none focus:border-brand-500/50"
-                                                                />
-                                                            </div>
-                                                            <div>
-                                                                <label className="text-[8px] font-black uppercase tracking-widest text-slate-600 block mb-1.5 ml-1">Curriculum Summary</label>
-                                                                <CurriculumInput
-                                                                    value={lesson.content || ''}
-                                                                    onBlur={(val) => saveLessonValue(lesson.id, 'content', val)}
-                                                                    placeholder="Self-leadership and mindset..."
-                                                                    className="w-full bg-[#060914] border border-white/5 rounded-xl py-2 px-3 text-[10px] text-slate-400 focus:outline-none focus:border-brand-500/50"
-                                                                />
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                ))}
-                                                <button
-                                                    onClick={() => handleAddLesson(mod.id)}
-                                                    disabled={isAddingLesson}
-                                                    className="w-full py-3 border border-dashed border-white/10 rounded-2xl flex items-center justify-center gap-2 text-[9px] font-black uppercase tracking-widest text-slate-600 hover:text-slate-400 hover:border-white/20 transition-all mt-4 disabled:opacity-50"
-                                                >
-                                                    {isAddingLesson ? (
-                                                        <Loader2 className="w-3 h-3 animate-spin" />
-                                                    ) : (
-                                                        <PlusCircle className="w-3 h-3" />
-                                                    )}
-                                                    {isAddingLesson ? 'Adding...' : `Add Lesson to ${mod.title}`}
-                                                </button>
-                                            </div>
-                                        </div>
-                                    ))}
+                                                                                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                                                                        <div>
+                                                                                                            <label className="text-[8px] font-black uppercase tracking-widest text-slate-600 block mb-1.5 ml-1">Video Endpoint (Embed URL)</label>
+                                                                                                            <CurriculumInput
+                                                                                                                value={lesson.video_url || ''}
+                                                                                                                onBlur={(val) => saveLessonValue(lesson.id, 'video_url', val)}
+                                                                                                                placeholder="https://www.youtube.com/embed/..."
+                                                                                                                className="w-full bg-[#060914] border border-white/5 rounded-xl py-2 px-3 text-[10px] text-slate-400 focus:outline-none focus:border-brand-500/50"
+                                                                                                            />
+                                                                                                        </div>
+                                                                                                        <div>
+                                                                                                            <label className="text-[8px] font-black uppercase tracking-widest text-slate-600 block mb-1.5 ml-1">Curriculum Summary</label>
+                                                                                                            <CurriculumInput
+                                                                                                                value={lesson.content || ''}
+                                                                                                                onBlur={(val) => saveLessonValue(lesson.id, 'content', val)}
+                                                                                                                placeholder="Self-leadership and mindset..."
+                                                                                                                className="w-full bg-[#060914] border border-white/5 rounded-xl py-2 px-3 text-[10px] text-slate-400 focus:outline-none focus:border-brand-500/50"
+                                                                                                            />
+                                                                                                        </div>
+                                                                                                    </div>
+                                                                                                </div>
+                                                                                            )}
+                                                                                        </Draggable>
+                                                                                    ))}
+                                                                                    {lProvided.placeholder}
+                                                                                </div>
+                                                                            )}
+                                                                        </Droppable>
+                                                                        <button
+                                                                            onClick={() => handleAddLesson(mod.id)}
+                                                                            disabled={isAddingLesson}
+                                                                            className="w-full py-3 border border-dashed border-white/10 rounded-2xl flex items-center justify-center gap-2 text-[9px] font-black uppercase tracking-widest text-slate-600 hover:text-slate-400 hover:border-white/20 transition-all mt-4 disabled:opacity-50"
+                                                                        >
+                                                                            {isAddingLesson ? (
+                                                                                <Loader2 className="w-3 h-3 animate-spin" />
+                                                                            ) : (
+                                                                                <PlusCircle className="w-3 h-3" />
+                                                                            )}
+                                                                            {isAddingLesson ? 'Adding...' : `Add Lesson to ${mod.title}`}
+                                                                        </button>
+                                                                    </div>
+                                                                </div>
+                                                            )}
+                                                        </Draggable>
+                                                    ))}
+                                                    {provided.placeholder}
+                                                </div>
+                                            )}
+                                        </Droppable>
+                                    </DragDropContext>
                                 </div>
                             </div>
                         </div>

@@ -467,6 +467,39 @@ async function updateLesson(req, res) {
     }
 }
 
+async function reorderCurriculum(req, res) {
+    console.log(`[LMS] Reordering curriculum items...`);
+    try {
+        const { type, items } = req.body; // type: 'module' or 'lesson', items: [{id, sequence_number, module_id?}]
+
+        const table = type === 'module' ? 'modules' : 'lessons';
+
+        // Use a transaction-like approach with multiple updates
+        const promises = items.map(item => {
+            const updateData = { sequence_number: item.sequence_number };
+            if (item.module_id) updateData.module_id = item.module_id;
+
+            return supabase
+                .from(table)
+                .update(updateData)
+                .eq('id', item.id);
+        });
+
+        const results = await Promise.all(promises);
+        const errors = results.filter(r => r.error).map(r => r.error);
+
+        if (errors.length > 0) {
+            console.error(`[LMS] Error reordering ${type}:`, errors);
+            return res.status(500).json({ error: 'Some items failed to update', details: errors });
+        }
+
+        res.json({ success: true });
+    } catch (error) {
+        console.error(`[LMS] Reorder exception:`, error);
+        res.status(500).json({ error: error.message });
+    }
+}
+
 async function createCourse(req, res) {
     console.log(`[LMS] Creating new course...`);
     try {
@@ -740,5 +773,6 @@ module.exports = {
     createLesson,
     deleteLesson,
     generateQuiz,
-    saveLessonQuiz
+    saveLessonQuiz,
+    reorderCurriculum
 };
