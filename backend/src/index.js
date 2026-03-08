@@ -9,30 +9,19 @@ const PORT = process.env.PORT || 3000;
 
 // Middleware
 app.use(cors());
-app.use((req, res, next) => {
-    const size = req.headers['content-length'];
-    console.log(`${new Date().toISOString()} - ${req.method} ${req.url} - Body size: ${size ? (size / 1024 / 1024).toFixed(2) + 'MB' : 'unknown'}`);
-    next();
-});
 app.use(express.json({ limit: '100mb' }));
 app.use(express.urlencoded({ limit: '100mb', extended: true }));
 
 // Health check endpoint
 app.get('/health', (req, res) => {
-    console.log("Health check hit");
     res.status(200).json({ status: 'ok', chain: 'celo-alfajores' });
 });
 
 // Main API Router Mounting
-console.log("Mounting /api routes");
-app.use('/api', (req, res, next) => {
-    console.log("API request incoming to:", req.url);
-    next();
-}, apiRoutes);
+app.use('/api', apiRoutes);
 
 // General Error Handler
 app.use((err, req, res, next) => {
-    console.log("GLOBAL ERROR HANDLER HIT:", err.message);
     console.error("Unhandled Application Error:", err);
     if (err.stack) console.error(err.stack);
 
@@ -40,7 +29,7 @@ app.use((err, req, res, next) => {
         return res.status(413).json({ error: 'Payload too large. Please use a smaller image.' });
     }
 
-    res.status(500).json({ error: 'Something went terribly wrong - DB Error!' });
+    res.status(500).json({ error: 'Something went terribly wrong!' });
 });
 
 process.on('uncaughtException', (err) => {
