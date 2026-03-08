@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 import { PlayCircle, CheckCircle, ChevronLeft, Lock, ChevronDown, ChevronUp, BookOpen, Sparkles, DollarSign, HelpCircle } from 'lucide-react';
 import Sidebar from '../components/Sidebar';
 import Topbar from '../components/Topbar';
@@ -93,31 +94,26 @@ const ModuleAccordion = ({ module, index, navigate }) => {
 
 export default function CourseDetail() {
     const { courseId } = useParams();
-    const [modules, setModules] = useState([]);
-    const [loading, setLoading] = useState(true);
     const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const navigate = useNavigate();
 
-    useEffect(() => {
-        const fetchData = async () => {
+    const { data: modules = [], isLoading: queryLoading } = useQuery({
+        queryKey: ['course-modules', courseId],
+        queryFn: async () => {
             const phone = localStorage.getItem('userPhone');
-            if (!localStorage.getItem('userAvatar')) {
-                navigate('/avatar-selection');
-                return;
-            }
-            try {
-                const participant = await getParticipant(phone);
-                const data = await getModules(courseId, participant?.id);
-                setModules(data);
-            } catch (err) {
-                console.error("Failed to fetch modules:", err);
-            } finally {
-                setLoading(false);
-            }
-        };
-        fetchData();
-    }, [courseId]);
+            const participant = await getParticipant(phone);
+            return await getModules(courseId, participant?.id);
+        }
+    });
+
+    useEffect(() => {
+        if (!localStorage.getItem('userAvatar')) {
+            navigate('/avatar-selection');
+        }
+    }, [navigate]);
+
+    const loading = queryLoading;
 
     if (loading) return <LoadingScreen message="Designing Curriculum Experience..." />;
 

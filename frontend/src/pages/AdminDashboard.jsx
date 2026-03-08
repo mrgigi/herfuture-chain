@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom'; // HMR Refresh
+import { useState, useEffect, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
     Users, BookOpen, DollarSign, Settings, Search, MoreHorizontal,
     GraduationCap, ArrowUpRight, ShieldCheck, Power, LayoutGrid, Activity,
@@ -54,10 +55,6 @@ const CurriculumInput = ({ value, onChange, onBlur, className, placeholder, isTe
 
 export default function AdminDashboard() {
     const navigate = useNavigate();
-    const [courses, setCourses] = useState([]);
-    const [students, setStudents] = useState([]);
-    const [settings, setSettings] = useState({ grant_disbursement_active: true });
-    const [recentGrants, setRecentGrants] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
     const [activeTab, setActiveTab] = useState('Overview');
     const [editingCourse, setEditingCourse] = useState(null); // Drill-down state
@@ -79,6 +76,33 @@ export default function AdminDashboard() {
         setTimeout(() => setToast(null), 3000);
     };
 
+    const queryClient = useQueryClient();
+
+    // Queries
+    const { data: courses = [], isLoading: coursesLoading } = useQuery({
+        queryKey: ['admin-courses'],
+        queryFn: getCourses
+    });
+
+    const { data: studentData = { participants: [] }, isLoading: studentsLoading } = useQuery({
+        queryKey: ['admin-participants'],
+        queryFn: () => getAdminParticipants()
+    });
+
+    const { data: settings = { grant_disbursement_active: true }, isLoading: settingsLoading } = useQuery({
+        queryKey: ['admin-settings'],
+        queryFn: getSystemSettings
+    });
+
+    const { data: grantsData, isLoading: grantsLoading } = useQuery({
+        queryKey: ['admin-recent-grants'],
+        queryFn: () => api.get('/impact/recent-grants')
+    });
+
+    const students = studentData.participants || [];
+    const recentGrants = grantsData?.data?.grants || [];
+    const isLoading = coursesLoading || studentsLoading || settingsLoading || grantsLoading;
+
     useEffect(() => {
         const isAdmin = sessionStorage.getItem('is_admin') === 'true';
         if (!isAdmin) {
@@ -86,27 +110,14 @@ export default function AdminDashboard() {
             return;
         }
         setAuthorized(true);
-
-        const fetchData = async () => {
-            try {
-                const [cData, sData, setts, gData] = await Promise.all([
-                    getCourses(),
-                    getAdminParticipants(),
-                    getSystemSettings(),
-                    api.get('/impact/recent-grants')
-                ]);
-                setCourses(cData);
-                setStudents(sData.participants || []);
-                setSettings(setts);
-                setRecentGrants(gData.data.grants || []);
-            } catch (err) {
-                console.error("Dashboard fetch error:", err);
-            } finally {
-                setLoading(false);
-            }
-        };
-        fetchData();
     }, [navigate]);
+
+    // Loading State for Auth
+    useEffect(() => {
+        if (authorized && !isLoading) {
+            setLoading(false);
+        }
+    }, [authorized, isLoading]);
 
     const handleCourseClick = async (course) => {
         setLoading(true);
@@ -131,7 +142,7 @@ export default function AdminDashboard() {
                 image_url: editingCourse.image_url,
                 track_number: parseInt(editingCourse.track_number) || 1
             });
-            setCourses(prev => prev.map(c => c.id === editingCourse.id ? editingCourse : c));
+            queryClient.setQueryData(['admin-courses'], prev => prev.map(c => c.id === editingCourse.id ? editingCourse : c));
             showToast("Metadata updated");
         } catch (err) {
             console.error("Save course error:", err);
@@ -160,7 +171,7 @@ export default function AdminDashboard() {
         try {
             await deleteCourse(courseId);
             showToast("Track deleted");
-            setCourses(prev => prev.filter(c => c.id !== courseId));
+            queryClient.invalidateQueries({ queryKey: ['admin-courses'] });
             setShowDeleteConfirm(null);
             if (editingCourse && editingCourse.id === courseId) {
                 setActiveTab('Curriculum');
@@ -271,13 +282,13 @@ export default function AdminDashboard() {
     const toggleGrants = async () => {
         const newVal = !settings.grant_disbursement_active;
         await updateSystemSetting('grant_disbursement_active', newVal);
-        setSettings(prev => ({ ...prev, grant_disbursement_active: newVal }));
+        queryClient.setQueryData(['admin-settings'], prev => ({ ...prev, grant_disbursement_active: newVal }));
     };
 
     const updateGlobalGrant = async (key, val) => {
         try {
             await updateSystemSetting(key, val);
-            setSettings(prev => ({ ...prev, [key]: val }));
+            queryClient.setQueryData(['admin-settings'], prev => ({ ...prev, [key]: val }));
             showToast("Global grant updated");
         } catch (err) {
             console.error("Update global grant error:", err);
@@ -287,7 +298,7 @@ export default function AdminDashboard() {
 
     const toggleCourse = async (id, currentStatus) => {
         await updateCourseStatus(id, !currentStatus);
-        setCourses(prev => prev.map(c => c.id === id ? { ...c, is_published: !currentStatus } : c));
+        queryClient.setQueryData(['admin-courses'], prev => prev.map(c => c.id === id ? { ...c, is_published: !currentStatus } : c));
     };
 
     const filteredStudents = students ? students.filter(s => {
@@ -303,7 +314,7 @@ export default function AdminDashboard() {
                 learning_outcome: "Track Learning Outcomes...",
                 track_number: nextTrack
             });
-            setCourses([...courses, newCourse]);
+            queryClient.invalidateQueries({ queryKey: ['admin-courses'] });
             handleCourseClick(newCourse);
         } catch (err) {
             console.error("Add course error:", err);
@@ -918,7 +929,7 @@ export default function AdminDashboard() {
                                                 <input
                                                     type="number"
                                                     value={settings.default_lesson_grant || 30}
-                                                    onChange={(e) => setSettings({ ...settings, default_lesson_grant: parseInt(e.target.value) })}
+                                                    onChange={(e) => queryClient.setQueryData(['admin-settings'], { ...settings, default_lesson_grant: parseInt(e.target.value) })}
                                                     onBlur={(e) => updateGlobalGrant('default_lesson_grant', parseInt(e.target.value))}
                                                     className="bg-[#060914] border border-white/5 rounded-2xl py-3 px-4 text-sm text-white focus:outline-none focus:border-brand-500/50 w-full"
                                                 />
@@ -930,7 +941,7 @@ export default function AdminDashboard() {
                                                 <input
                                                     type="number"
                                                     value={settings.default_graduation_grant || 150}
-                                                    onChange={(e) => setSettings({ ...settings, default_graduation_grant: parseInt(e.target.value) })}
+                                                    onChange={(e) => queryClient.setQueryData(['admin-settings'], { ...settings, default_graduation_grant: parseInt(e.target.value) })}
                                                     onBlur={(e) => updateGlobalGrant('default_graduation_grant', parseInt(e.target.value))}
                                                     className="w-full bg-[#060914] border border-white/5 rounded-2xl py-3 px-4 text-sm text-white focus:outline-none focus:border-brand-500/50"
                                                 />

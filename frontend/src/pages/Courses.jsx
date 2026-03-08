@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { BookOpen, ArrowRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 import Sidebar from '../components/Sidebar';
 import Topbar from '../components/Topbar';
 import LoadingScreen from '../components/LoadingScreen';
@@ -8,29 +9,19 @@ import BottomNav from '../components/BottomNav';
 import { getCourses } from '../lib/api';
 
 export default function Courses() {
-    const [courses, setCourses] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-    const navigate = useNavigate();
+    const { data: courses = [], isLoading: queryLoading } = useQuery({
+        queryKey: ['courses'],
+        queryFn: getCourses,
+        select: (data) => data.filter(c => c.is_published)
+    });
 
     useEffect(() => {
-        const fetchCourses = async () => {
-            if (!localStorage.getItem('userAvatar')) {
-                navigate('/avatar-selection');
-                return;
-            }
-            try {
-                const data = await getCourses();
-                setCourses(data.filter(c => c.is_published));
-            } catch (err) {
-                console.error("Failed to fetch courses:", err);
-            } finally {
-                setLoading(false);
-            }
-        };
-        fetchCourses();
-    }, []);
+        if (!localStorage.getItem('userAvatar')) {
+            navigate('/avatar-selection');
+        }
+    }, [navigate]);
+
+    const loading = queryLoading;
 
     if (loading) return <LoadingScreen message="Curating HerFuture Academy..." />;
 

@@ -1,48 +1,65 @@
+import { Suspense, lazy } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import LandingPage from './pages/LandingPage';
-import Students from './pages/Students';
-import Technology from './pages/Technology';
-import HomeGate from './pages/HomeGate';
-import LoginSignup from './pages/LoginSignup';
-import Dashboard from './pages/Dashboard';
-import Courses from './pages/Courses';
-import CourseDetail from './pages/CourseDetail';
-import LessonPlayer from './pages/LessonPlayer';
-import Certificates from './pages/Certificates';
-import Grants from './pages/Grants';
-import Verifier from './pages/Verifier';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import LoadingScreen from './components/LoadingScreen';
 
-import AdminDashboard from './pages/AdminDashboard';
-import AdminLogin from './pages/AdminLogin';
-import ImpactDashboard from './pages/ImpactDashboard';
-import AvatarSelection from './pages/AvatarSelection';
-import AppFooter from './components/AppFooter';
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 1000 * 60 * 5, // 5 minutes
+      retry: 1,
+      refetchOnWindowFocus: false,
+    },
+  },
+});
+
+// Lazy load pages
+const LandingPage = lazy(() => import('./pages/LandingPage'));
+const Students = lazy(() => import('./pages/Students'));
+const Technology = lazy(() => import('./pages/Technology'));
+const HomeGate = lazy(() => import('./pages/HomeGate'));
+const LoginSignup = lazy(() => import('./pages/LoginSignup'));
+const Dashboard = lazy(() => import('./pages/Dashboard'));
+const Courses = lazy(() => import('./pages/Courses'));
+const CourseDetail = lazy(() => import('./pages/CourseDetail'));
+const LessonPlayer = lazy(() => import('./pages/LessonPlayer'));
+const Certificates = lazy(() => import('./pages/Certificates'));
+const Grants = lazy(() => import('./pages/Grants'));
+const Verifier = lazy(() => import('./pages/Verifier'));
+const AdminDashboard = lazy(() => import('./pages/AdminDashboard'));
+const AdminLogin = lazy(() => import('./pages/AdminLogin'));
+const ImpactDashboard = lazy(() => import('./pages/ImpactDashboard'));
+const AvatarSelection = lazy(() => import('./pages/AvatarSelection'));
 
 function App() {
   return (
-    <BrowserRouter>
-      <div className="min-h-screen bg-slate-900 text-slate-100 flex flex-col font-sans">
-        <Routes>
-          <Route path="/" element={<HomeGate />} />
-          <Route path="/gate" element={<HomeGate />} />
-          <Route path="/students" element={<Students />} />
-          <Route path="/tech" element={<Technology />} />
-          <Route path="/signup" element={<LoginSignup />} />
-          <Route path="/admin" element={<AdminDashboard />} />
-          <Route path="/admin-login" element={<AdminLogin />} />
-          <Route path="/impact" element={<ImpactDashboard />} />
-          <Route path="/verify" element={<Verifier />} />
+    <QueryClientProvider client={queryClient}>
+      <BrowserRouter>
+        <div className="min-h-screen bg-slate-900 text-slate-100 flex flex-col font-sans">
+          <Suspense fallback={<LoadingScreen />}>
+            <Routes>
+              <Route path="/" element={<HomeGate />} />
+              <Route path="/gate" element={<HomeGate />} />
+              <Route path="/students" element={<Students />} />
+              <Route path="/tech" element={<Technology />} />
+              <Route path="/signup" element={<LoginSignup />} />
+              <Route path="/admin" element={<AdminDashboard />} />
+              <Route path="/admin-login" element={<AdminLogin />} />
+              <Route path="/impact" element={<ImpactDashboard />} />
+              <Route path="/verify" element={<Verifier />} />
 
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/courses" element={<Courses />} />
-          <Route path="/courses/:courseId" element={<CourseDetail />} />
-          <Route path="/lesson/:lessonId" element={<LessonPlayer />} />
-          <Route path="/certificates" element={<Certificates />} />
-          <Route path="/grants" element={<Grants />} />
-          <Route path="/avatar-selection" element={<AvatarSelection />} />
-        </Routes>
-      </div>
-    </BrowserRouter>
+              <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/courses" element={<Courses />} />
+              <Route path="/courses/:courseId" element={<CourseDetail />} />
+              <Route path="/lesson/:lessonId" element={<LessonPlayer />} />
+              <Route path="/certificates" element={<Certificates />} />
+              <Route path="/grants" element={<Grants />} />
+              <Route path="/avatar-selection" element={<AvatarSelection />} />
+            </Routes>
+          </Suspense>
+        </div>
+      </BrowserRouter>
+    </QueryClientProvider>
   );
 }
 

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Wallet, BookOpen, ArrowRight, CheckCircle, ExternalLink, Trophy, Activity, ChevronRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 import Sidebar from '../components/Sidebar';
 import Topbar from '../components/Topbar';
 import LoadingScreen from '../components/LoadingScreen';
@@ -8,53 +9,40 @@ import BottomNav from '../components/BottomNav';
 import { getParticipant, getProgressOverview, getCourses } from '../lib/api';
 
 export default function Dashboard() {
-    const [participant, setParticipant] = useState(null);
-    const [progress, setProgress] = useState({ percentage: 0, completedCount: 0, totalModules: 16 });
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
-    const [courses, setCourses] = useState([]);
     const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const navigate = useNavigate();
 
+    const phone = localStorage.getItem('userPhone');
+
+    // Queries
+    const { data: participant, isLoading: participantLoading } = useQuery({
+        queryKey: ['participant', phone],
+        queryFn: () => getParticipant(phone),
+        enabled: !!phone
+    });
+
+    const { data: progress = { percentage: 0, completedCount: 0, totalModules: 16 }, isLoading: progressLoading } = useQuery({
+        queryKey: ['progress-overview', participant?.id],
+        queryFn: () => getProgressOverview(participant.id),
+        enabled: !!participant?.id
+    });
+
+    const { data: coursesData = [], isLoading: coursesLoading } = useQuery({
+        queryKey: ['courses'],
+        queryFn: getCourses,
+        select: (data) => Array.isArray(data) ? data.filter(c => c.is_published) : []
+    });
+
     useEffect(() => {
-        const fetchDashboardData = async () => {
-            const phone = localStorage.getItem('userPhone');
-            if (!phone) {
-                setLoading(false);
-                setError('No user logged in');
-                return;
-            }
+        if (!localStorage.getItem('userAvatar')) {
+            navigate('/avatar-selection');
+        }
+    }, [navigate]);
 
-            const avatar = localStorage.getItem('userAvatar');
-            if (!avatar) {
-                navigate('/avatar-selection');
-                return;
-            }
-
-            try {
-                const pData = await getParticipant(phone);
-                setParticipant(pData);
-
-                if (pData?.id) {
-                    const [progData, cData] = await Promise.all([
-                        getProgressOverview(pData.id),
-                        getCourses()
-                    ]);
-                    setProgress(progData);
-                    const published = Array.isArray(cData) ? cData.filter(c => c.is_published) : [];
-                    setCourses(published);
-                }
-            } catch (err) {
-                console.error('Fetch error:', err);
-                setError('Failed to fetch profile data');
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchDashboardData();
-    }, []);
+    const loading = participantLoading || progressLoading || coursesLoading;
+    const error = !phone ? 'No user logged in' : null;
+    const courses = coursesData;
 
     if (loading) return <LoadingScreen message="Personalizing Your Dashboard..." />;
 
