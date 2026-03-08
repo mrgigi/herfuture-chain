@@ -2,8 +2,6 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { PlayCircle, CheckCircle, ChevronLeft, Lock, ChevronDown, ChevronUp, BookOpen, Sparkles, DollarSign, HelpCircle } from 'lucide-react';
-import Sidebar from '../components/Sidebar';
-import Topbar from '../components/Topbar';
 import LoadingScreen from '../components/LoadingScreen';
 import { getModules, getParticipant } from '../lib/api';
 
@@ -95,8 +93,6 @@ const ModuleAccordion = ({ module, index, navigate }) => {
 export default function CourseDetail() {
     const { courseId } = useParams();
     const navigate = useNavigate();
-    const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
     const { data: modules = [], isLoading: queryLoading } = useQuery({
         queryKey: ['course-modules', courseId],
@@ -119,71 +115,57 @@ export default function CourseDetail() {
     if (loading) return <LoadingScreen message="Designing Learning Path..." />;
 
     return (
-        <div className="min-h-screen bg-[#0A0F1C] font-sans text-slate-200 flex flex-col">
-            <Sidebar
-                active="courses"
-                onCollapseChange={setSidebarCollapsed}
-                isOpen={isMobileMenuOpen}
-                onClose={() => setIsMobileMenuOpen(false)}
-            />
-            <Topbar
-                sidebarCollapsed={sidebarCollapsed}
-                onOpenMobileMenu={() => setIsMobileMenuOpen(true)}
-            />
+        <div className="min-h-screen relative pb-32 transition-all duration-300">
+            {/* Header Background Glow */}
+            <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-brand-500/5 blur-[120px] rounded-full -translate-y-1/2 translate-x-1/2 pointer-events-none" />
 
-            <main className={`${sidebarCollapsed ? 'md:ml-[80px]' : 'md:ml-64'} flex-grow min-h-screen relative pb-32 transition-all duration-300`}>
-                {/* Header Background Glow */}
-                <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-brand-500/5 blur-[120px] rounded-full -translate-y-1/2 translate-x-1/2 pointer-events-none" />
-
-                <div className="relative z-10 p-6 md:p-10 max-w-5xl mx-auto">
-                    {/* Navigation */}
-                    <div className="flex justify-between items-center mb-10">
-                        <button
-                            onClick={() => navigate('/courses')}
-                            className="flex items-center gap-2 group text-[10px] font-black uppercase tracking-widest text-slate-500 hover:text-white transition-all bg-white/5 px-4 py-2 rounded-full border border-white/5 hover:border-white/10"
-                        >
-                            <ChevronLeft className="w-3 h-3 group-hover:-translate-x-1 transition-transform" />
-                            Academy Dashboard
-                        </button>
-                    </div>
-
-                    {/* Course Intro */}
-                    <div className="mb-12">
-                        <div className="flex items-center gap-3 mb-4">
-                            <span className="px-3 py-1 bg-brand-500/10 text-brand-400 text-[10px] font-black uppercase tracking-widest rounded-full border border-brand-500/20">Learning Path</span>
-                            <span className="w-1.5 h-1.5 rounded-full bg-slate-700" />
-                            <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">Chain-Verified Certification</span>
-                        </div>
-                        <h1 className="text-4xl md:text-5xl font-black text-white tracking-tighter mb-4 leading-none">
-                            Program <span className="text-brand-500">Syllabus</span>
-                        </h1>
-
-                    </div>
-
-                    {/* Modules Grid */}
-                    <div className="grid grid-cols-1 gap-2">
-                        {modules.length > 0 ? (
-                            modules.map((mod, index) => (
-                                <ModuleAccordion
-                                    key={mod.id}
-                                    module={mod}
-                                    index={index}
-                                    navigate={navigate}
-                                />
-                            ))
-                        ) : (
-                            <div className="glass-panel p-12 rounded-[40px] border border-white/5 flex flex-col items-center text-center">
-                                <div className="w-16 h-16 rounded-full bg-slate-800/50 flex items-center justify-center mb-6">
-                                    <Sparkles className="w-8 h-8 text-slate-600" />
-                                </div>
-                                <h3 className="text-xl font-bold text-white mb-2">Lessons Pending</h3>
-                                <p className="text-slate-500 text-sm max-w-xs">Our instructors are currently refining the material for this track. Check back soon!</p>
-                            </div>
-                        )}
-                    </div>
+            <div className="relative z-10 p-6 md:p-10 max-w-5xl mx-auto">
+                {/* Navigation */}
+                <div className="flex justify-between items-center mb-10">
+                    <button
+                        onClick={() => navigate('/courses')}
+                        className="flex items-center gap-2 group text-[10px] font-black uppercase tracking-widest text-slate-500 hover:text-white transition-all bg-white/5 px-4 py-2 rounded-full border border-white/5 hover:border-white/10"
+                    >
+                        <ChevronLeft className="w-3 h-3 group-hover:-translate-x-1 transition-transform" />
+                        Academy Dashboard
+                    </button>
                 </div>
-            </main>
-            <BottomNav />
+
+                {/* Course Intro */}
+                <div className="mb-12">
+                    <div className="flex items-center gap-3 mb-4">
+                        <span className="px-3 py-1 bg-brand-500/10 text-brand-400 text-[10px] font-black uppercase tracking-widest rounded-full border border-brand-500/20">Learning Path</span>
+                        <span className="w-1.5 h-1.5 rounded-full bg-slate-700" />
+                        <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">Chain-Verified Certification</span>
+                    </div>
+                    <h1 className="text-4xl md:text-5xl font-black text-white tracking-tighter mb-4 leading-none">
+                        Program <span className="text-brand-500">Syllabus</span>
+                    </h1>
+
+                </div>
+
+                {/* Modules Grid */}
+                <div className="grid grid-cols-1 gap-2">
+                    {modules.length > 0 ? (
+                        modules.map((mod, index) => (
+                            <ModuleAccordion
+                                key={mod.id}
+                                module={mod}
+                                index={index}
+                                navigate={navigate}
+                            />
+                        ))
+                    ) : (
+                        <div className="glass-panel p-12 rounded-[40px] border border-white/5 flex flex-col items-center text-center">
+                            <div className="w-16 h-16 rounded-full bg-slate-800/50 flex items-center justify-center mb-6">
+                                <Sparkles className="w-8 h-8 text-slate-600" />
+                            </div>
+                            <h3 className="text-xl font-bold text-white mb-2">Lessons Pending</h3>
+                            <p className="text-slate-500 text-sm max-w-xs">Our instructors are currently refining the material for this track. Check back soon!</p>
+                        </div>
+                    )}
+                </div>
+            </div>
         </div>
     );
 }

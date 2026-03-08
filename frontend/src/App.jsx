@@ -30,6 +30,7 @@ const AdminDashboard = lazy(() => import('./pages/AdminDashboard'));
 const AdminLogin = lazy(() => import('./pages/AdminLogin'));
 const ImpactDashboard = lazy(() => import('./pages/ImpactDashboard'));
 const AvatarSelection = lazy(() => import('./pages/AvatarSelection'));
+const StudentLayout = lazy(() => import('./layouts/StudentLayout'));
 
 function App() {
   return (
@@ -48,12 +49,16 @@ function App() {
               <Route path="/impact" element={<ImpactDashboard />} />
               <Route path="/verify" element={<Verifier />} />
 
-              <Route path="/dashboard" element={<Dashboard />} />
-              <Route path="/courses" element={<Courses />} />
-              <Route path="/courses/:courseId" element={<CourseDetail />} />
+              {/* Student Dashboard Shell */}
+              <Route element={<StudentLayout />}>
+                <Route path="/dashboard" element={<Dashboard />} />
+                <Route path="/courses" element={<Courses />} />
+                <Route path="/courses/:courseId" element={<CourseDetail />} />
+                <Route path="/certificates" element={<Certificates />} />
+                <Route path="/grants" element={<Grants />} />
+              </Route>
+
               <Route path="/lesson/:lessonId" element={<LessonPlayer />} />
-              <Route path="/certificates" element={<Certificates />} />
-              <Route path="/grants" element={<Grants />} />
               <Route path="/avatar-selection" element={<AvatarSelection />} />
             </Routes>
           </Suspense>
