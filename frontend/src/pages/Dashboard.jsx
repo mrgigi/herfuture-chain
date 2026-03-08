@@ -195,24 +195,7 @@ export default function Dashboard() {
                             })}
                         </div>
 
-                        {/* Simplified Skills Hub at bottom */}
-                        <div className="pt-12 border-t border-white/5 flex flex-col md:flex-row items-center justify-between gap-8">
-                            <div className="flex items-center gap-6">
-                                <div className="p-4 rounded-3xl bg-magenta-500/10 border border-magenta-500/20 flex items-center justify-center">
-                                    <Trophy className="w-8 h-8 text-magenta-400" />
-                                </div>
-                                <div>
-                                    <h3 className="text-xl font-black text-white tracking-tight mb-1">Your Skills Hub</h3>
-                                    <p className="text-sm text-slate-500 font-medium">{Math.floor(progress.completedCount / 4)} Verifiable Credentials Earned</p>
-                                </div>
-                            </div>
-                            <button
-                                onClick={() => navigate('/certificates')}
-                                className="px-8 py-4 rounded-2xl bg-white/5 border border-white/10 text-white text-xs font-black uppercase tracking-widest hover:bg-white/10 transition-all active:scale-95"
-                            >
-                                View All Certificates
-                            </button>
-                        </div>
+
                     </div>
                 </div>
             </main>
