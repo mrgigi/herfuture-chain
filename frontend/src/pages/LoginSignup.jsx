@@ -95,11 +95,8 @@ export default function LoginSignup() {
                 try {
                     await api.get(`/participant/${encodeURIComponent(fullPhone)}`);
                     localStorage.setItem('userPhone', fullPhone);
-                    if (!localStorage.getItem('userAvatar')) {
-                        navigate('/avatar-selection');
-                    } else {
-                        navigate('/dashboard');
-                    }
+                    // Existing users always go straight to the dashboard
+                    navigate('/dashboard');
                 } catch (err) {
                     setError('User not found. Please sign up first.');
                 }

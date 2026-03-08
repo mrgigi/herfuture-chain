@@ -315,11 +315,10 @@ app.get('/api/progress-overview/:participantId', async (req, res) => {
 
         if (pErr) throw pErr;
 
-        // 2. Fetch all lessons and their grant amounts
+        // 2. Fetch all lessons WITH their module sequence number for correct ordering
         const { data: lessons, error: lErr } = await supabase
             .from('lessons')
-            .select('id, grant_amount, track_label, module_id, course_id, sequence_number')
-            .order('sequence_number', { ascending: true });
+            .select('id, grant_amount, track_label, module_id, course_id, sequence_number, modules(sequence_number)');
 
         if (lErr) throw lErr;
 
@@ -328,24 +327,38 @@ app.get('/api/progress-overview/:participantId', async (req, res) => {
 
         const completedLessonIds = new Set(progress?.map(p => p.lesson_id) || []);
 
-        // Calculate Total Earned
+        // Calculate Total Earned from actual lesson grant amounts
         const totalEarned = lessons
             .filter(l => completedLessonIds.has(l.id))
-            .reduce((acc, l) => acc + (l.grant_amount || 0), 0);
+            .reduce((acc, l) => acc + (Number(l.grant_amount) || 0), 0);
 
-        // Find Upcoming Reward
-        // Sort lessons by track_number (from course) then sequence_number to find the "next" one
+        // Find Upcoming Reward using 3-level sort:
+        // 1. Course track_number (track/learning path order)
+        // 2. Module sequence_number (module order within a course)
+        // 3. Lesson sequence_number (lesson order within a module)
         const sortedLessons = lessons.map(l => {
             const course = courses?.find(c => c.id === l.course_id);
-            return { ...l, track_number: course?.track_number || 999 };
+            return {
+                ...l,
+                course_track: course?.track_number ?? 999,
+                module_seq: l.modules?.sequence_number ?? 999,
+                lesson_seq: l.sequence_number ?? 999
+            };
         }).sort((a, b) => {
-            if (a.track_number !== b.track_number) return a.track_number - b.track_number;
-            return (a.sequence_number || 0) - (b.sequence_number || 0);
+            if (a.course_track !== b.course_track) return a.course_track - b.course_track;
+            if (a.module_seq !== b.module_seq) return a.module_seq - b.module_seq;
+            return a.lesson_seq - b.lesson_seq;
         });
 
-        // The "next" lesson is the first one in the sorted list that the user HAS NOT completed
+        console.log('[Vercel API] Sorted lessons for upcoming reward:', sortedLessons.slice(0, 5).map(l => ({
+            id: l.id, grant: l.grant_amount, course_track: l.course_track, mod_seq: l.module_seq, lesson_seq: l.lesson_seq
+        })));
+
+        // The "next" lesson is the first in the correctly sorted list that the user has NOT completed
         const nextLesson = sortedLessons.find(l => !completedLessonIds.has(l.id));
         const upcomingReward = nextLesson ? (Number(nextLesson.grant_amount) || 0) : 0;
+
+        console.log('[Vercel API] Next lesson:', { id: nextLesson?.id, grant: nextLesson?.grant_amount });
 
         // Calculate progress per course
         const perCourseProgress = courses?.map(course => {

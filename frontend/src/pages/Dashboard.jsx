@@ -76,7 +76,7 @@ export default function Dashboard() {
                             value: formatNaira(toNaira(nextMilestoneAmount)),
                             secondary: `${formatCUSD(nextMilestoneAmount)} cUSD`,
                             icon: <Trophy className="w-4 h-4 text-brand-400" />,
-                            badge: 'Next Milestone',
+                            badge: 'Next Lesson',
                             badgeColor: 'bg-brand-500/10 text-brand-400 border-brand-500/20'
                         }
                     ].map((stat, i) => (
