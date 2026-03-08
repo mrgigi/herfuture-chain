@@ -3,6 +3,10 @@
 @tailwind utilities;
 
 @layer base {
+  :root {
+    --color-fuchsia: #d946ef;
+    --color-magenta: #f43f5e;
+  }
   body {
     background-color: #0f172a;
     /* Slate 900 for dark mode */
@@ -18,6 +22,14 @@
     -webkit-backdrop-filter: blur(12px);
     border: 1px solid rgba(255, 255, 255, 0.1);
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  }
+
+  .bg-feminine-gradient {
+    @apply bg-gradient-to-r from-magenta-500 to-fuchsia-500;
+  }
+
+  .bg-brand-glow {
+    @apply bg-gradient-to-tr from-brand-600 via-magenta-500 to-fuchsia-500;
   }
 
   .btn-primary {

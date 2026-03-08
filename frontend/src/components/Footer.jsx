@@ -54,7 +54,7 @@ export default function Footer() {
                         <h4 className="text-[10px] uppercase font-black tracking-[0.2em] text-white mb-6">Company</h4>
                         <ul className="space-y-4 text-slate-500 text-sm font-medium">
                             <li onClick={() => navigate('/')} className="hover:text-brand-400 cursor-pointer transition-colors">Manifesto</li>
-                            <li onClick={() => navigate('/gate')} className="hover:text-brand-400 cursor-pointer transition-colors">Infrastructure</li>
+                            <li onClick={() => navigate('/')} className="hover:text-brand-400 cursor-pointer transition-colors">Infrastructure</li>
                             <li className="hover:text-brand-400 cursor-pointer transition-colors opacity-50">Partners</li>
                         </ul>
                     </div>

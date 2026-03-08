@@ -116,7 +116,7 @@ export default function Students() {
 
                 <div className="flex items-center gap-4">
                     <button
-                        onClick={() => navigate('/gate')}
+                        onClick={() => navigate('/signup')}
                         className="hidden sm:block px-6 py-2 rounded-xl bg-brand-500 hover:bg-brand-400 text-white text-[10px] font-black uppercase tracking-widest transition-all shadow-[0_0_20px_rgba(59,130,246,0.3)]"
                     >
                         GET STARTED
@@ -151,7 +151,7 @@ export default function Students() {
                                 </a>
                             ))}
                             <button
-                                onClick={() => navigate('/gate')}
+                                onClick={() => navigate('/signup')}
                                 className="w-full py-5 rounded-2xl bg-brand-600 text-white font-black text-xs uppercase tracking-[0.3em] mt-8"
                             >
                                 GATEWAY →
@@ -192,7 +192,7 @@ export default function Students() {
 
                     <div className="flex flex-col sm:flex-row gap-4 justify-center items-center animate-in fade-in slide-in-from-bottom-8 duration-1000">
                         <button
-                            onClick={() => navigate('/gate')}
+                            onClick={() => navigate('/signup')}
                             className="group px-12 py-5 rounded-2xl bg-white text-[#060914] font-black text-xs uppercase tracking-widest flex items-center gap-3 hover:bg-brand-500 hover:text-white transition-all shadow-2xl shadow-brand-500/20"
                         >
                             Start Learning <ArrowRight className="w-4 h-4 group-hover:translate-x-2 transition-transform" />
@@ -472,7 +472,7 @@ export default function Students() {
                 <h2 className="text-5xl md:text-7xl font-black mb-12 tracking-tight">Join the Future <br /> of Learning & Work.</h2>
                 <div className="flex justify-center">
                     <button
-                        onClick={() => navigate('/gate')}
+                        onClick={() => navigate('/signup')}
                         className="px-12 py-6 rounded-3xl bg-brand-500 text-white font-black uppercase tracking-widest text-xs shadow-2xl shadow-brand-500/30"
                     >
                         Apply as a Learner

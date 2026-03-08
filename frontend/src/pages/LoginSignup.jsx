@@ -109,22 +109,22 @@ export default function LoginSignup() {
                         <img src="/images/logo.svg" alt="HerFuture Chain Logo" className="h-full w-auto" />
                     </div>
                     <button
-                        onClick={() => navigate('/gate')}
+                        onClick={() => navigate('/')}
                         className="flex items-center gap-2 text-slate-500 hover:text-white transition-all text-[10px] font-black tracking-widest uppercase group bg-white/5 px-4 py-2 rounded-xl border border-white/5"
                     >
                         <ArrowLeft className="w-3.5 h-3.5 group-hover:-translate-x-1 transition-transform" />
-                        Gateway
+                        Home
                     </button>
                 </nav>
 
                 <div className="flex-grow flex items-center justify-center p-6 lg:p-16 relative">
                     {/* Desktop Escape Button */}
                     <button
-                        onClick={() => navigate('/gate')}
+                        onClick={() => navigate('/')}
                         className="hidden lg:flex absolute top-10 right-10 items-center gap-2 text-slate-500 hover:text-white transition-all text-[10px] font-black tracking-widest uppercase group bg-white/5 px-4 py-2 rounded-xl border border-white/5 opacity-50 hover:opacity-100"
                     >
                         <ArrowLeft className="w-3.5 h-3.5 group-hover:-translate-x-1 transition-transform" />
-                        Gateway
+                        Home
                     </button>
 
                     <div className="w-full max-w-md z-10 animate-in fade-in slide-in-from-bottom-4 duration-700">

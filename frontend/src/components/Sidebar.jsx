@@ -61,16 +61,16 @@ export default function Sidebar({ active, onCollapseChange }) {
                                 title={collapsed ? item.name : ''}
                                 className={`w-full flex items-center gap-3 px-3 py-3.5 rounded-xl transition-all duration-200 ${collapsed ? 'justify-center' : ''
                                     } ${isActive
-                                        ? 'bg-brand-500/15 text-brand-400 border border-brand-500/20'
+                                        ? 'bg-fuchsia-500/15 text-fuchsia-400 border border-fuchsia-500/20'
                                         : 'text-slate-400 hover:bg-slate-800/60 hover:text-slate-200 border border-transparent'
                                     }`}
                             >
-                                <item.icon className={`w-5 h-5 flex-shrink-0 ${isActive ? 'text-brand-400' : 'text-slate-500'}`} />
+                                <item.icon className={`w-5 h-5 flex-shrink-0 ${isActive ? 'text-fuchsia-400' : 'text-slate-500'}`} />
                                 {!collapsed && (
                                     <span className="font-medium text-sm truncate">{item.name}</span>
                                 )}
                                 {isActive && !collapsed && (
-                                    <span className="ml-auto w-1.5 h-1.5 rounded-full bg-brand-400" />
+                                    <span className="ml-auto w-1.5 h-1.5 rounded-full bg-fuchsia-400" />
                                 )}
                             </button>
                         );

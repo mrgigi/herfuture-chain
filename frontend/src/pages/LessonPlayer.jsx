@@ -16,6 +16,7 @@ export default function LessonPlayer() {
 
     useEffect(() => {
         const fetchData = async () => {
+            setLoading(true);
             try {
                 const [lessonData, quizData] = await Promise.all([
                     getLesson(lessonId),
@@ -27,6 +28,8 @@ export default function LessonPlayer() {
                 }
             } catch (err) {
                 console.error("Failed to fetch lesson data:", err);
+            } finally {
+                setLoading(false);
             }
         };
         fetchData();
@@ -75,7 +78,34 @@ export default function LessonPlayer() {
         );
     }
 
-    if (!lesson) return <div className="min-h-screen bg-[#0A0F1C] flex items-center justify-center text-slate-500">Loading module...</div>;
+    if (loading) return (
+        <div className="min-h-screen bg-[#0A0F1C] flex flex-col items-center justify-center p-6 text-center">
+            <div className="h-12 w-12 border-4 border-brand-500/30 border-t-brand-500 rounded-full animate-spin mb-4" />
+            <p className="text-slate-500 font-medium">Syncing with HerFuture Academy...</p>
+        </div>
+    );
+
+    if (!lesson) return (
+        <div className="min-h-screen bg-[#0A0F1C] flex flex-col items-center justify-center p-6 text-center">
+            <div className="w-16 h-16 bg-red-500/10 rounded-full flex items-center justify-center mb-6">
+                <HelpCircle className="w-8 h-8 text-red-500" />
+            </div>
+            <h2 className="text-xl font-bold text-white mb-2">Module Not Found</h2>
+            <p className="text-slate-500 mb-8 max-w-xs mx-auto">This lesson might be still synchronizing or doesn't exist yet.</p>
+            <button
+                onClick={() => navigate('/dashboard')}
+                className="px-6 py-3 bg-slate-800 hover:bg-slate-700 text-white rounded-xl font-bold transition-all text-sm mb-4"
+            >
+                Back to Dashboard
+            </button>
+            <button
+                onClick={() => window.location.reload()}
+                className="text-brand-400 text-xs font-bold hover:underline"
+            >
+                Retry Sync
+            </button>
+        </div>
+    );
 
     return (
         <div className="min-h-screen bg-[#0A0F1C] flex flex-col">

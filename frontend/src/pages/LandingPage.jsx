@@ -116,7 +116,7 @@ export default function LandingPage() {
 
                 <div className="flex items-center gap-4">
                     <button
-                        onClick={() => navigate('/gate')}
+                        onClick={() => navigate('/signup')}
                         className="hidden sm:block px-6 py-2 rounded-xl bg-brand-500 hover:bg-brand-400 text-white text-[10px] font-black uppercase tracking-widest transition-all shadow-[0_0_20px_rgba(59,130,246,0.3)]"
                     >
                         GET STARTED
@@ -151,7 +151,7 @@ export default function LandingPage() {
                                 </a>
                             ))}
                             <button
-                                onClick={() => navigate('/gate')}
+                                onClick={() => navigate('/signup')}
                                 className="w-full py-5 rounded-2xl bg-brand-600 text-white font-black text-xs uppercase tracking-[0.3em] mt-8"
                             >
                                 GATEWAY →
@@ -179,7 +179,7 @@ export default function LandingPage() {
 
                     <h1 className="text-5xl sm:text-7xl md:text-9xl font-black mb-8 tracking-tighter leading-[0.85] text-white animate-in fade-in slide-in-from-bottom-4 duration-1000">
                         HerFuture <br />
-                        <span className="bg-gradient-to-r from-emerald-400 via-brand-400 to-indigo-400 bg-clip-text text-transparent">Chain.</span>
+                        <span className="bg-gradient-to-r from-emerald-400 via-brand-400 to-fuchsia-400 bg-clip-text text-transparent">Chain.</span>
                     </h1>
 
                     <p className="text-slate-400 text-xl md:text-2xl font-medium leading-relaxed mb-6 animate-in fade-in slide-in-from-bottom-6 duration-1000">
@@ -192,14 +192,14 @@ export default function LandingPage() {
 
                     <div className="flex flex-col sm:flex-row gap-4 justify-center items-center animate-in fade-in slide-in-from-bottom-8 duration-1000">
                         <button
-                            onClick={() => navigate('/gate')}
+                            onClick={() => navigate('/signup')}
                             className="group px-8 py-5 rounded-2xl bg-white text-[#060914] font-black text-xs uppercase tracking-widest flex items-center gap-3 hover:bg-brand-500 hover:text-white transition-all shadow-2xl shadow-brand-500/20"
                         >
                             Start Learning <ArrowRight className="w-4 h-4 group-hover:translate-x-2 transition-transform" />
                         </button>
                         <button
                             onClick={() => setIsPartnerModalOpen(true)}
-                            className="px-8 py-5 rounded-2xl bg-white/5 border border-white/10 text-white font-black text-xs uppercase tracking-widest hover:bg-white/10 transition-all backdrop-blur-md"
+                            className="px-8 py-5 rounded-2xl bg-white/5 border border-white/10 text-white font-black text-xs uppercase tracking-widest hover:bg-magenta-500/10 hover:text-magenta-400 transition-all backdrop-blur-md"
                         >
                             Partner With Us
                         </button>
@@ -496,14 +496,14 @@ export default function LandingPage() {
                     {portals.map((portal, idx) => (
                         <div
                             key={idx}
-                            onClick={() => navigate('/gate')}
+                            onClick={() => navigate('/')}
                             className="group relative glass-panel p-10 rounded-[50px] border border-white/5 hover:border-brand-500/30 transition-all duration-700 cursor-pointer overflow-hidden flex flex-col h-full"
                         >
                             <div className="mb-8 w-fit p-4 rounded-2xl bg-white/5 border border-white/5 group-hover:bg-brand-500/10 group-hover:border-brand-500/20 transition-colors">
                                 {portal.icon}
                             </div>
                             <div className="mb-4 inline-flex items-center gap-2">
-                                <div className={`w-2 h-2 rounded-full ${portal.color === 'emerald' ? 'bg-emerald-400' : portal.color === 'amber' ? 'bg-amber-400' : 'bg-purple-400'} animate-pulse`} />
+                                <div className={`w-2 h-2 rounded-full ${portal.color === 'emerald' ? 'bg-emerald-400' : portal.color === 'amber' ? 'bg-fuchsia-400' : 'bg-magenta-400'} animate-pulse`} />
                                 <span className="text-[10px] font-black tracking-widest uppercase text-slate-500">{portal.tag}</span>
                             </div>
                             <h3 className="text-2xl font-bold mb-4">{portal.title}</h3>
@@ -523,7 +523,7 @@ export default function LandingPage() {
                 <h2 className="text-5xl md:text-7xl font-black mb-12 tracking-tight">Join the Future <br /> of Learning & Work.</h2>
                 <div className="flex flex-col sm:flex-row gap-6 justify-center">
                     <button
-                        onClick={() => navigate('/gate')}
+                        onClick={() => navigate('/signup')}
                         className="px-12 py-6 rounded-3xl bg-brand-500 text-white font-black uppercase tracking-widest text-xs shadow-2xl shadow-brand-500/30"
                     >
                         Apply as a Learner

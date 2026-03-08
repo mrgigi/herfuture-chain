@@ -102,7 +102,7 @@ export default function ImpactDashboard() {
                         { label: 'Donor Treasury', val: '$100k', accent: 'text-amber-400' },
                         { label: 'Audit Score', val: '99.8%', accent: 'text-brand-400' },
                         { label: 'Total Disbursed', val: `$${stats.totalImpact}`, accent: 'text-emerald-400' },
-                        { label: 'Milestones', val: stats.grantsDistributed, accent: 'text-purple-400' },
+                        { label: 'Milestones', val: stats.grantsDistributed, accent: 'text-fuchsia-400' },
                     ].map((s, i) => (
                         <div key={i} className="bg-slate-900 border border-white/5 rounded-2xl p-5">
                             <div className={`text-2xl font-black mb-1 ${s.accent}`}>{s.val}</div>
@@ -192,7 +192,7 @@ export default function ImpactDashboard() {
                                             <span className="text-slate-300">{track.val}%</span>
                                         </div>
                                         <div className="h-1 w-full bg-slate-800 rounded-full overflow-hidden">
-                                            <div className="h-full bg-brand-500 rounded-full" style={{ width: `${track.val}%` }} />
+                                            <div className="h-full bg-magenta-500 rounded-full" style={{ width: `${track.val}%` }} />
                                         </div>
                                     </div>
                                 ))}

@@ -27,11 +27,15 @@ async function getCourseModules(req, res) {
             .eq('course_id', courseId)
             .order('sequence_number', { ascending: true });
 
-        // FALLBACK: If modules table is missing, just group all lessons into one dummy module
+        // FALLBACK: If modules table is missing, or no modules exist, create a default
         if (mError && mError.message.includes('Could not find the table')) {
             console.warn("⚠️  'modules' table missing. Falling back to single-module view.");
             modules = [{ id: 'default-module', title: 'Main Curriculum', sequence_number: 1 }];
         } else if (mError) throw mError;
+
+        if (!modules || modules.length === 0) {
+            modules = [{ id: 'default-module', title: 'Main Curriculum', sequence_number: 1 }];
+        }
 
         // 2. Fetch all lessons for this course
         const { data: lessons, error: lError } = await supabase
@@ -42,11 +46,14 @@ async function getCourseModules(req, res) {
 
         if (lError) throw lError;
 
-        // 3. Group lessons by module_id or put all in the default module
+        // 3. Group lessons by module_id
         const lessonsByModule = {};
         lessons.forEach(lesson => {
-            const mId = lesson.module_id || (modules.length === 1 ? modules[0].id : null);
-            if (!mId) return;
+            // Assign to module_id, or default-module if null/no match
+            const mId = lesson.module_id && modules.find(m => m.id === lesson.module_id)
+                ? lesson.module_id
+                : modules[0].id;
+
             if (!lessonsByModule[mId]) {
                 lessonsByModule[mId] = [];
             }
@@ -69,6 +76,11 @@ async function saveLessonQuiz(req, res) {
     try {
         const { lessonId } = req.params;
         const { data } = req.body;
+
+        if (!lessonId || lessonId.startsWith('temp-')) {
+            return res.status(400).json({ error: "Cannot save quiz for unsaved lesson. Please save lesson metadata first." });
+        }
+
         const { error } = await supabase
             .from('quizzes')
             .upsert({
@@ -423,6 +435,18 @@ async function createCourse(req, res) {
 async function deleteCourse(req, res) {
     try {
         const { courseId } = req.params;
+
+        // Safety Check: Are there any students who have progress in this course?
+        const { count, error: pError } = await supabase
+            .from('participant_progress')
+            .select('*', { count: 'exact', head: true })
+            .eq('course_id', courseId);
+
+        if (pError) throw pError;
+        if (count > 0) {
+            return res.status(403).json({ error: "Cannot delete a track that has active students. Please de-publish it instead." });
+        }
+
         const { error } = await supabase
             .from('courses')
             .delete()
@@ -456,6 +480,17 @@ async function createModule(req, res) {
 async function deleteModule(req, res) {
     try {
         const { moduleId } = req.params;
+
+        // Cascade delete would be ideal, but for safety and clear feedback:
+        // 1. Delete all lessons in this module
+        const { error: lError } = await supabase
+            .from('lessons')
+            .delete()
+            .eq('module_id', moduleId);
+
+        if (lError) throw lError;
+
+        // 2. Delete the module itself
         const { error } = await supabase
             .from('modules')
             .delete()

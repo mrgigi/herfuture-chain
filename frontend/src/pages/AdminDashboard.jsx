@@ -3,16 +3,52 @@ import { useNavigate } from 'react-router-dom';
 import {
     Users, BookOpen, DollarSign, Settings, Search, MoreHorizontal,
     GraduationCap, ArrowUpRight, ShieldCheck, Power, LayoutGrid, Activity,
-    Edit3, ChevronRight, Save, X, PlusCircle, Home, Globe, LogOut
+    Edit3, ChevronRight, Save, X, PlusCircle, Home, Globe, LogOut,
+    HelpCircle, List, Loader2, Book, CheckCircle
 } from 'lucide-react';
 import api, {
     getCourses, getAdminParticipants, getSystemSettings,
     updateSystemSetting, updateCourseStatus, updateCourseDetails,
-    updateModule, updateLesson, getModules,
+    updateModule, updateLesson,
     createModule, deleteModule, createLesson, deleteLesson,
     createCourse, generateQuizAI, getQuiz, saveQuiz
 } from '../lib/api';
-import { Sparkles, Loader2, HelpCircle, List } from 'lucide-react';
+
+const CurriculumInput = ({ value, onChange, onBlur, className, placeholder, isTextArea = false }) => {
+    const [localValue, setLocalValue] = useState(value);
+
+    useEffect(() => {
+        setLocalValue(value);
+    }, [value]);
+
+    const handleChange = (e) => {
+        setLocalValue(e.target.value);
+        if (onChange) onChange(e.target.value);
+    };
+
+    if (isTextArea) {
+        return (
+            <textarea
+                value={localValue || ''}
+                onChange={handleChange}
+                onBlur={() => onBlur && onBlur(localValue)}
+                className={className}
+                placeholder={placeholder}
+            />
+        );
+    }
+
+    return (
+        <input
+            type="text"
+            value={localValue || ''}
+            onChange={handleChange}
+            onBlur={() => onBlur && onBlur(localValue)}
+            className={className}
+            placeholder={placeholder}
+        />
+    );
+};
 
 export default function AdminDashboard() {
     const navigate = useNavigate();
@@ -31,6 +67,12 @@ export default function AdminDashboard() {
     const [currentLessonForQuiz, setCurrentLessonForQuiz] = useState(null);
     const [quizData, setQuizData] = useState([]);
     const [isSavingQuiz, setIsSavingQuiz] = useState(false);
+    const [toast, setToast] = useState(null);
+
+    const showToast = (message, type = 'success') => {
+        setToast({ message, type });
+        setTimeout(() => setToast(null), 3000);
+    };
 
     useEffect(() => {
         const isAdmin = sessionStorage.getItem('is_admin') === 'true';
@@ -85,23 +127,51 @@ export default function AdminDashboard() {
                 track_number: parseInt(editingCourse.track_number) || 1
             });
             setCourses(prev => prev.map(c => c.id === editingCourse.id ? editingCourse : c));
+            showToast("Metadata updated");
         } catch (err) {
             console.error("Save course error:", err);
+            showToast("Update failed", "error");
         }
     };
 
     const saveLessonValue = async (lessonId, field, value) => {
+        // Update local state immediately for snappy UI
+        setCourseModules(prev => prev.map(m => ({
+            ...m,
+            lessons: m.lessons.map(l => l.id === lessonId ? { ...l, [field]: value } : l)
+        })));
+
+        // Skip backend sync for temporary IDs - they get saved during "Update Metadata"
+        if (lessonId.startsWith('temp-')) return;
+
         try {
-            const lesson = courseModules.flatMap(m => m.lessons).find(l => l.id === lessonId);
-            const updated = { ...lesson, [field]: value };
             await updateLesson(lessonId, { [field]: value });
-            setCourseModules(prev => prev.map(m => ({
-                ...m,
-                lessons: m.lessons.map(l => l.id === lessonId ? updated : l)
-            })));
         } catch (err) {
-            console.error("Save lesson error:", err);
+            console.error("Auto-save lesson error:", err);
         }
+    };
+
+    const handleUploadCover = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        // In a real app, we'd upload to Supabase Storage. 
+        // For now, we'll use a data URL or simulate an upload for the demo/user.
+        const reader = new FileReader();
+        reader.onloadend = async () => {
+            const base64 = reader.result;
+            // Update local state
+            setEditingCourse({ ...editingCourse, cover_url: base64 });
+            // If already saved, sync to backend
+            if (editingCourse.id) {
+                try {
+                    await updateCourseDetails(editingCourse.id, { cover_url: base64 });
+                } catch (err) {
+                    console.error("Cover upload error:", err);
+                }
+            }
+        };
+        reader.readAsDataURL(file);
     };
 
     const handleGenerateAIQuiz = async (lesson) => {
@@ -128,6 +198,10 @@ export default function AdminDashboard() {
     };
 
     const handleEditQuizManual = async (lesson) => {
+        if (lesson.id.startsWith('temp-')) {
+            alert("Please 'Update Metadata' for this lesson first to generate a permanent ID on the blockchain.");
+            return;
+        }
         setCurrentLessonForQuiz(lesson);
         setQuizData([]);
         setQuizEditorOpen(true);
@@ -213,18 +287,22 @@ export default function AdminDashboard() {
                 sequence_number: nextSeq
             });
             setCourseModules([...courseModules, { ...newMod, lessons: [] }]);
+            showToast("Module added");
         } catch (err) {
             console.error("Add module error:", err);
+            showToast("Failed to add module", "error");
         }
     };
 
     const handleDeleteModule = async (moduleId) => {
-        if (!window.confirm("Delete this module and all its lessons?")) return;
+        if (!window.confirm("Are you sure you want to delete this module and all its lessons?")) return;
         try {
             await deleteModule(moduleId);
             setCourseModules(courseModules.filter(m => m.id !== moduleId));
+            showToast("Module deleted");
         } catch (err) {
             console.error("Delete module error:", err);
+            showToast("Failed to delete module", "error");
         }
     };
 
@@ -243,13 +321,15 @@ export default function AdminDashboard() {
             setCourseModules(courseModules.map(m =>
                 m.id === moduleId ? { ...m, lessons: [...m.lessons, newLesson] } : m
             ));
+            showToast("Lesson added");
         } catch (err) {
             console.error("Add lesson error:", err);
+            showToast("Failed to add lesson", "error");
         }
     };
 
     const handleDeleteLesson = async (lessonId, moduleId) => {
-        if (!window.confirm("Delete this lesson?")) return;
+        if (!window.confirm("Are you sure you want to delete this lesson?")) return;
         try {
             await deleteLesson(lessonId);
             setCourseModules(courseModules.map(m =>
@@ -258,8 +338,10 @@ export default function AdminDashboard() {
                     lessons: m.lessons.filter(l => l.id !== lessonId)
                 } : m
             ));
+            showToast("Lesson deleted");
         } catch (err) {
             console.error("Delete lesson error:", err);
+            showToast("Failed to delete lesson", "error");
         }
     };
 
@@ -296,7 +378,7 @@ export default function AdminDashboard() {
                                 setActiveTab(item.label);
                                 setEditingCourse(null);
                             }}
-                            className={`flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer transition-all ${activeTab === item.label ? 'bg-brand-500 text-white shadow-lg' : 'text-slate-500 hover:text-slate-300 hover:bg-white/5'}`}
+                            className={`flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer transition-all ${activeTab === item.label ? 'bg-fuchsia-500 text-white shadow-lg shadow-fuchsia-500/20' : 'text-slate-500 hover:text-slate-300 hover:bg-white/5'}`}
                         >
                             {item.icon}
                             <span className="text-sm font-semibold">{item.label}</span>
@@ -339,7 +421,7 @@ export default function AdminDashboard() {
                         <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 mb-12">
                             <div>
                                 <div className="flex items-center gap-3 mb-2">
-                                    <span className="text-[10px] font-black uppercase tracking-[0.3em] text-brand-400">System Live</span>
+                                    <span className="text-[10px] font-black uppercase tracking-[0.3em] text-fuchsia-400">System Live</span>
                                     <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                                 </div>
                                 <h1 className="text-4xl font-black text-white mb-2 tracking-tight">Command Center.</h1>
@@ -390,7 +472,7 @@ export default function AdminDashboard() {
                                     {/* System chart/graph visualization placeholder */}
                                     <div className="aspect-[2/1] bg-gradient-to-t from-slate-900 to-slate-900/0 rounded-t-3xl relative overflow-hidden flex items-end px-4 gap-1">
                                         {[40, 60, 45, 80, 55, 70, 90, 65, 50, 85, 40, 75].map((h, i) => (
-                                            <div key={i} className="flex-1 bg-brand-500/20 rounded-t-lg transition-all hover:bg-brand-500/40" style={{ height: `${h}%` }} />
+                                            <div key={i} className="flex-1 bg-fuchsia-500/20 rounded-t-lg transition-all hover:bg-fuchsia-500/40" style={{ height: `${h}%` }} />
                                         ))}
                                     </div>
                                 </div>
@@ -707,6 +789,32 @@ export default function AdminDashboard() {
                                                 className="w-full bg-[#060914] border border-white/5 rounded-2xl py-3 px-4 text-sm text-white focus:outline-none focus:border-brand-500/50 min-h-[60px]"
                                             />
                                         </div>
+                                        <div className="mb-6">
+                                            <label className="text-[9px] font-black uppercase tracking-widest text-slate-500 mb-3 block pl-1">Track Cover Image</label>
+                                            <div
+                                                className="relative group cursor-pointer h-32 w-full rounded-2xl overflow-hidden border border-white/5 bg-[#060914] flex items-center justify-center transition-all hover:border-brand-500/30"
+                                                onClick={() => document.getElementById('cover-upload').click()}
+                                            >
+                                                {editingCourse.cover_url ? (
+                                                    <img src={editingCourse.cover_url} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" alt="Cover" />
+                                                ) : (
+                                                    <div className="flex flex-col items-center gap-2 text-slate-600 group-hover:text-brand-400">
+                                                        <Activity className="w-6 h-6" />
+                                                        <span className="text-[10px] font-black uppercase tracking-widest">Upload Artwork</span>
+                                                    </div>
+                                                )}
+                                                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-all">
+                                                    <PlusCircle className="w-6 h-6 text-white" />
+                                                </div>
+                                                <input
+                                                    id="cover-upload"
+                                                    type="file"
+                                                    accept="image/*"
+                                                    className="hidden"
+                                                    onChange={handleUploadCover}
+                                                />
+                                            </div>
+                                        </div>
                                         <div>
                                             <label className="text-[9px] font-black uppercase tracking-widest text-slate-500 mb-2 block pl-1">Description</label>
                                             <textarea
@@ -762,15 +870,14 @@ export default function AdminDashboard() {
                                         <div className="p-6 bg-white/[0.02] border-b border-white/5 flex justify-between items-center">
                                             <div className="flex items-center gap-3">
                                                 <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center text-xs font-black text-slate-500">{i + 1}</div>
-                                                <input
-                                                    type="text"
+                                                <CurriculumInput
                                                     value={mod.title}
-                                                    onChange={(e) => {
+                                                    onBlur={(val) => {
                                                         const newMods = [...courseModules];
-                                                        newMods[i].title = e.target.value;
+                                                        newMods[i].title = val;
                                                         setCourseModules(newMods);
+                                                        saveModuleTitle(mod.id, val);
                                                     }}
-                                                    onBlur={(e) => saveModuleTitle(mod.id, e.target.value)}
                                                     className="bg-transparent border-none text-white font-black focus:outline-none text-sm p-0 min-w-[200px]"
                                                 />
                                             </div>
@@ -790,11 +897,10 @@ export default function AdminDashboard() {
                                                     <div className="flex items-center justify-between">
                                                         <div className="flex items-center gap-4 flex-1">
                                                             <div className="w-2 h-2 rounded-full bg-slate-700 group-hover:bg-brand-500 transition-colors" />
-                                                            <input
-                                                                type="text"
+                                                            <CurriculumInput
                                                                 value={lesson.title}
-                                                                onChange={(e) => saveLessonValue(lesson.id, 'title', e.target.value)}
-                                                                className="bg-transparent border-none text-sm font-bold text-white focus:outline-none flex-1 p-0"
+                                                                onBlur={(val) => saveLessonValue(lesson.id, 'title', val)}
+                                                                className="bg-transparent border-none text-sm font-bold text-white focus:outline-none flex-1 p-0 italic"
                                                             />
                                                         </div>
                                                         <div className="flex items-center gap-4">
@@ -849,10 +955,9 @@ export default function AdminDashboard() {
                                                         </div>
                                                         <div>
                                                             <label className="text-[8px] font-black uppercase tracking-widest text-slate-600 block mb-1.5 ml-1">Curriculum Summary</label>
-                                                            <input
-                                                                type="text"
+                                                            <CurriculumInput
                                                                 value={lesson.content || ''}
-                                                                onChange={(e) => saveLessonValue(lesson.id, 'content', e.target.value)}
+                                                                onBlur={(val) => saveLessonValue(lesson.id, 'content', val)}
                                                                 placeholder="Self-leadership and mindset..."
                                                                 className="w-full bg-[#060914] border border-white/5 rounded-xl py-2 px-3 text-[10px] text-slate-400 focus:outline-none focus:border-brand-500/50"
                                                             />
@@ -873,117 +978,182 @@ export default function AdminDashboard() {
                         </div>
                     </div>
                 )}
-                {/* Quiz Editor Modal */}
+                {/* Quiz Editor Modal - Premium Redesign */}
                 {quizEditorOpen && (
-                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 backdrop-blur-xl bg-black/60">
-                        <div className="glass-panel w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col rounded-[48px] border border-white/10 shadow-2xl animate-in zoom-in-95 duration-300">
-                            <div className="p-8 border-b border-white/5 flex justify-between items-center bg-white/[0.02]">
-                                <div>
-                                    <h3 className="text-xl font-black text-white italic">Curating Quiz.</h3>
-                                    <p className="text-[10px] text-slate-500 font-bold uppercase tracking-tighter">Lesson: {currentLessonForQuiz?.title}</p>
+                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-12 backdrop-blur-2xl bg-slate-950/80">
+                        <div className="bg-[#0D121F] w-full max-w-5xl h-[85vh] overflow-hidden flex flex-col rounded-[48px] border border-white/10 shadow-[0_0_80px_rgba(0,0,0,0.5)] animate-in zoom-in-95 duration-500">
+                            {/* Modal Header */}
+                            <div className="px-12 py-10 border-b border-white/5 flex justify-between items-center bg-gradient-to-r from-white/[0.03] to-transparent">
+                                <div className="flex items-center gap-6">
+                                    <div className="w-16 h-16 bg-brand-500/10 rounded-2xl flex items-center justify-center border border-brand-500/20">
+                                        <GraduationCap className="w-8 h-8 text-brand-400" />
+                                    </div>
+                                    <div>
+                                        <div className="flex items-center gap-3 mb-1">
+                                            <h3 className="text-2xl font-black text-white tracking-tight uppercase italic">Curriculum Curation.</h3>
+                                            <span className="px-2 py-0.5 rounded-md bg-brand-500/20 text-brand-400 text-[8px] font-black uppercase tracking-widest border border-brand-500/30">Manual Mode</span>
+                                        </div>
+                                        <p className="text-xs text-slate-500 font-bold uppercase tracking-widest flex items-center gap-2">
+                                            <BookOpen className="w-3 h-3" /> {currentLessonForQuiz?.title}
+                                        </p>
+                                    </div>
                                 </div>
-                                <button onClick={() => setQuizEditorOpen(false)} className="p-2 hover:bg-white/5 rounded-full transition-colors">
-                                    <X className="w-5 h-5 text-slate-500" />
+                                <button
+                                    onClick={() => setQuizEditorOpen(false)}
+                                    className="w-12 h-12 flex items-center justify-center bg-white/5 hover:bg-white/10 rounded-2xl transition-all group"
+                                >
+                                    <X className="w-5 h-5 text-slate-500 group-hover:text-white group-hover:rotate-90 transition-all duration-300" />
                                 </button>
                             </div>
 
-                            <div className="flex-1 overflow-y-auto p-8 space-y-8 custom-scrollbar">
+                            {/* Modal Body */}
+                            <div className="flex-1 overflow-y-auto p-12 space-y-12 custom-scrollbar bg-black/20">
                                 {quizData.length === 0 && (
-                                    <div className="text-center py-12">
-                                        <div className="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-4">
-                                            <HelpCircle className="w-8 h-8 text-slate-700" />
+                                    <div className="text-center py-24 flex flex-col items-center">
+                                        <div className="w-24 h-24 bg-white/5 rounded-[32px] flex items-center justify-center mb-8 border border-white/5">
+                                            <HelpCircle className="w-10 h-10 text-slate-700" />
                                         </div>
-                                        <p className="text-slate-500 text-xs font-medium">No questions yet. Use AI or add manually.</p>
+                                        <h4 className="text-xl font-bold text-white mb-2">Build Your Assessment</h4>
+                                        <p className="text-slate-500 text-sm max-w-sm mx-auto mb-10 leading-relaxed font-medium">Add structured questions to verify learner competency and release micro-grants on the blockchain.</p>
+                                        <button
+                                            onClick={addQuestion}
+                                            className="px-8 py-4 bg-brand-500 hover:bg-brand-400 text-white rounded-2xl font-black uppercase tracking-widest text-[10px] shadow-2xl shadow-brand-500/20 transition-all"
+                                        >
+                                            Start Drafting
+                                        </button>
                                     </div>
                                 )}
 
                                 {quizData.map((q, idx) => (
-                                    <div key={idx} className="space-y-4 p-6 bg-white/[0.03] rounded-3xl border border-white/5 relative group">
-                                        <button
-                                            onClick={() => setQuizData(quizData.filter((_, i) => i !== idx))}
-                                            className="absolute top-4 right-4 p-1.5 text-slate-600 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-all"
-                                        >
-                                            <X className="w-4 h-4" />
-                                        </button>
-                                        <div>
-                                            <label className="text-[9px] font-black uppercase text-slate-500 mb-2 block">Question {idx + 1}</label>
-                                            <input
-                                                type="text"
-                                                value={q.question}
-                                                onChange={(e) => {
-                                                    const newData = [...quizData];
-                                                    newData[idx].question = e.target.value;
-                                                    setQuizData(newData);
-                                                }}
-                                                className="w-full bg-[#060914]/50 border border-white/5 rounded-2xl py-3 px-4 text-sm text-white focus:outline-none focus:border-brand-500/50"
-                                                placeholder="e.g. What is a smart contract?"
-                                            />
-                                        </div>
-                                        <div className="grid grid-cols-2 gap-4">
-                                            {q.options.map((opt, oIdx) => (
-                                                <div key={oIdx}>
-                                                    <label className="text-[8px] font-black uppercase text-slate-600 mb-1.5 block ml-1">Option {String.fromCharCode(65 + oIdx)}</label>
+                                    <div key={idx} className="group relative">
+                                        <div className="absolute -left-4 top-0 bottom-0 w-1 bg-brand-500/40 rounded-full opacity-0 group-hover:opacity-100 transition-all" />
+                                        <div className="bg-white/[0.02] rounded-[40px] border border-white/5 p-10 transition-all hover:bg-white/[0.04] hover:border-brand-500/20">
+                                            <div className="flex justify-between items-start mb-8">
+                                                <div className="flex items-center gap-4">
+                                                    <div className="w-10 h-10 rounded-xl bg-brand-500/10 flex items-center justify-center text-brand-400 text-xs font-black border border-brand-500/10">
+                                                        {idx + 1}
+                                                    </div>
+                                                    <h4 className="text-xs font-black uppercase tracking-widest text-slate-400 italic">Competency Test</h4>
+                                                </div>
+                                                <button
+                                                    onClick={() => setQuizData(quizData.filter((_, i) => i !== idx))}
+                                                    className="p-3 text-slate-600 hover:text-red-400 flex items-center gap-2 hover:bg-red-400/10 rounded-xl transition-all text-[9px] font-black uppercase tracking-widest"
+                                                >
+                                                    <X className="w-4 h-4" /> Discard
+                                                </button>
+                                            </div>
+
+                                            <div className="space-y-8">
+                                                <div>
+                                                    <label className="text-[10px] font-black uppercase text-brand-400 mb-3 block tracking-[0.2em] ml-2">Question Title</label>
                                                     <input
                                                         type="text"
-                                                        value={opt}
+                                                        value={q.question}
                                                         onChange={(e) => {
                                                             const newData = [...quizData];
-                                                            newData[idx].options[oIdx] = e.target.value;
+                                                            newData[idx].question = e.target.value;
                                                             setQuizData(newData);
                                                         }}
-                                                        className="w-full bg-[#060914]/30 border border-white/5 rounded-xl py-2 px-3 text-[10px] text-slate-400 focus:outline-none focus:border-brand-500/50"
+                                                        className="w-full bg-[#060914] border border-white/10 rounded-3xl py-5 px-8 text-lg font-bold text-white focus:outline-none focus:border-brand-500/50 focus:ring-4 ring-brand-500/5 transition-all placeholder:text-slate-700"
+                                                        placeholder="What fundamental concept are we testing?"
                                                     />
                                                 </div>
-                                            ))}
-                                        </div>
-                                        <div>
-                                            <label className="text-[9px] font-black uppercase text-brand-500/50 mb-2 block">Correct Answer</label>
-                                            <select
-                                                value={q.answer}
-                                                onChange={(e) => {
-                                                    const newData = [...quizData];
-                                                    newData[idx].answer = e.target.value;
-                                                    setQuizData(newData);
-                                                }}
-                                                className="w-full bg-brand-500/5 border border-brand-500/20 rounded-2xl py-3 px-4 text-sm text-brand-400 focus:outline-none appearance-none"
-                                            >
-                                                <option value="" disabled>Select the correct option</option>
-                                                {q.options.filter(o => o.trim() !== "").map((opt, oIdx) => (
-                                                    <option key={oIdx} value={opt} className="bg-[#0D1525]">{opt}</option>
-                                                ))}
-                                            </select>
+
+                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                                    {q.options.map((opt, oIdx) => (
+                                                        <div key={oIdx} className="relative group/opt">
+                                                            <div className="absolute left-6 top-1/2 -translate-y-1/2 text-brand-500/40 font-black text-xs group-focus-within/opt:text-brand-400 transition-colors uppercase">
+                                                                {String.fromCharCode(65 + oIdx)}
+                                                            </div>
+                                                            <input
+                                                                type="text"
+                                                                value={opt}
+                                                                onChange={(e) => {
+                                                                    const newData = [...quizData];
+                                                                    newData[idx].options[oIdx] = e.target.value;
+                                                                    setQuizData(newData);
+                                                                }}
+                                                                className="w-full bg-[#060914]/50 border border-white/5 rounded-2xl py-4 pl-14 pr-6 text-sm text-slate-300 focus:outline-none focus:border-brand-500/30 focus:bg-[#060914] transition-all hover:bg-white/[0.02]"
+                                                                placeholder={`Option ${String.fromCharCode(65 + oIdx)}`}
+                                                            />
+                                                        </div>
+                                                    ))}
+                                                </div>
+
+                                                <div className="pt-6 border-t border-white/5">
+                                                    <label className="text-[10px] font-black uppercase text-emerald-500/70 mb-4 block tracking-[0.2em] ml-2 flex items-center gap-2">
+                                                        <ShieldCheck className="w-3 h-3" /> Designated Solution
+                                                    </label>
+                                                    <div className="relative">
+                                                        <select
+                                                            value={q.answer}
+                                                            onChange={(e) => {
+                                                                const newData = [...quizData];
+                                                                newData[idx].answer = e.target.value;
+                                                                setQuizData(newData);
+                                                            }}
+                                                            className="w-full bg-emerald-500/[0.03] border border-emerald-500/10 rounded-2xl py-4 px-8 text-sm text-emerald-400 font-bold focus:outline-none focus:border-emerald-500/30 appearance-none cursor-pointer hover:bg-emerald-500/[0.05] transition-all"
+                                                        >
+                                                            <option value="" disabled>Choose the correct outcome</option>
+                                                            {q.options.filter(o => o.trim() !== "").map((opt, oIdx) => (
+                                                                <option key={oIdx} value={opt} className="bg-[#0D1525] text-slate-200">{opt}</option>
+                                                            ))}
+                                                        </select>
+                                                        <div className="absolute right-6 top-1/2 -translate-y-1/2 pointer-events-none text-emerald-500/50">
+                                                            <List className="w-4 h-4" />
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                 ))}
 
-                                <button
-                                    onClick={addQuestion}
-                                    className="w-full py-4 border-2 border-dashed border-white/5 rounded-3xl flex items-center justify-center gap-2 text-[10px] font-black uppercase tracking-widest text-slate-500 hover:text-brand-400 hover:border-brand-500/20 transition-all font-black"
-                                >
-                                    <PlusCircle className="w-4 h-4" /> Add Question
-                                </button>
+                                {quizData.length > 0 && (
+                                    <button
+                                        onClick={addQuestion}
+                                        className="w-full py-6 border-2 border-dashed border-white/5 rounded-[40px] flex items-center justify-center gap-4 text-xs font-black uppercase tracking-[0.2em] text-slate-600 hover:text-brand-400 hover:border-brand-500/20 hover:bg-brand-500/[0.02] transition-all group/add"
+                                    >
+                                        <PlusCircle className="w-5 h-5 group-hover:scale-125 transition-transform" />
+                                        Extend Curriculum
+                                    </button>
+                                )}
                             </div>
 
-                            <div className="p-8 border-t border-white/5 bg-white/[0.02] flex items-center justify-between">
-                                <button
-                                    onClick={() => setQuizEditorOpen(false)}
-                                    className="px-6 py-3 text-slate-500 text-[10px] font-black uppercase tracking-widest hover:text-white transition-colors"
-                                >
-                                    Cancel
-                                </button>
-                                <button
-                                    onClick={handleSaveQuizManual}
-                                    disabled={isSavingQuiz}
-                                    className="flex items-center gap-2 px-8 py-3 bg-brand-600 hover:bg-brand-500 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all shadow-xl shadow-brand-500/10 disabled:opacity-50"
-                                >
-                                    {isSavingQuiz ? <Loader2 className="w-4 h-4 animate-spin" /> : <ShieldCheck className="w-4 h-4" />}
-                                    Save Quiz
-                                </button>
+                            {/* Modal Footer */}
+                            <div className="px-12 py-10 border-t border-white/5 bg-white/[0.01] flex items-center justify-between">
+                                <div className="flex items-center gap-3 text-slate-500 text-[10px] font-black uppercase tracking-[0.1em]">
+                                    <div className="w-2 h-2 rounded-full bg-brand-500/40" />
+                                    {quizData.length} Total Verification Points
+                                </div>
+                                <div className="flex items-center gap-6">
+                                    <button
+                                        onClick={() => setQuizEditorOpen(false)}
+                                        className="px-8 py-4 text-slate-500 text-[10px] font-black uppercase tracking-widest hover:text-white hover:bg-white/5 rounded-2xl transition-all"
+                                    >
+                                        Back to Syllabus
+                                    </button>
+                                    <button
+                                        onClick={handleSaveQuizManual}
+                                        disabled={isSavingQuiz}
+                                        className="flex items-center gap-3 px-10 py-5 bg-brand-600 hover:bg-brand-500 text-white rounded-3xl text-[11px] font-black uppercase tracking-widest transition-all shadow-[0_20px_40px_rgba(59,130,246,0.25)] hover:shadow-[0_25px_50px_rgba(59,130,246,0.35)] disabled:opacity-50 group hover:-translate-y-1"
+                                    >
+                                        {isSavingQuiz ? <Loader2 className="w-5 h-5 animate-spin" /> : <ShieldCheck className="w-5 h-5 group-hover:animate-bounce" />}
+                                        Secure Content
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>
                 )}
             </main>
+            {/* Toast Feedback */}
+            {toast && (
+                <div className={`fixed bottom-8 left-1/2 -translate-x-1/2 z-[100] px-6 py-3 rounded-2xl border backdrop-blur-xl shadow-2xl flex items-center gap-3 animate-in fade-in slide-in-from-bottom-4 duration-300 ${toast.type === 'error' ? 'bg-red-500/10 border-red-500/20 text-red-400' : 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400'}`}>
+                    {toast.type === 'error' ? <AlertCircle className="w-4 h-4" /> : <CheckCircle className="w-4 h-4" />}
+                    <span className="text-xs font-black uppercase tracking-widest">{toast.message}</span>
+                </div>
+            )}
         </div>
     );
 }
