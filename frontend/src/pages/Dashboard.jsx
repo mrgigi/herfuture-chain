@@ -46,7 +46,7 @@ export default function Dashboard() {
 
     if (loading) return <LoadingScreen message="Personalizing Your Dashboard..." />;
 
-    const name = participant?.first_name || "Student";
+    const name = participant?.first_name || "{First Name}";
     const totalGrantsReceived = progress.completedCount * 30;
     const buttonText = progress.completedCount === 0 ? "Get Started" : "Resume Learning";
 

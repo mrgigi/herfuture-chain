@@ -51,7 +51,7 @@ export default function Topbar({ userName, modulesCompleted, totalModules, sideb
         : null;
 
     const initials = user ? `${user.first_name?.[0] || 'S'}${user.last_name?.[0] || ''}`.toUpperCase() : '??';
-    const displayName = userName || user?.first_name || 'Student';
+    const displayName = userName || user?.first_name || '{First Name}';
     const completed = modulesCompleted ?? 0;
     const total = totalModules ?? 16;
 
