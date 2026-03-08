@@ -46,18 +46,31 @@ export default function LessonPlayer() {
             }
             setLoading(true);
             try {
-                const [lessonData, quizData] = await Promise.all([
-                    getLesson(lessonId),
-                    getQuiz(lessonId)
-                ]);
+                // Fetch lesson — this MUST succeed
+                const lessonData = await getLesson(lessonId);
                 setLesson(lessonData);
-                // Load ALL questions from the quiz
-                const quizArray = quizData?.[0]?.data;
-                if (quizArray && quizArray.length > 0) {
-                    setAllQuestions(quizArray);
+
+                // Fetch quiz separately — failure here should NOT break the lesson
+                try {
+                    const quizData = await getQuiz(lessonId);
+                    // Handle both flat array and nested [{data:[]}] formats
+                    let questions = [];
+                    if (Array.isArray(quizData)) {
+                        if (quizData[0]?.data) {
+                            questions = quizData[0].data;
+                        } else if (quizData[0]?.question) {
+                            questions = quizData; // flat array of question objects
+                        }
+                    }
+                    if (questions.length > 0) {
+                        setAllQuestions(questions);
+                    }
+                } catch (quizErr) {
+                    console.warn("Quiz fetch failed (lesson still loads):", quizErr.message);
                 }
             } catch (err) {
                 console.error("Failed to fetch lesson data:", err);
+                // lesson remains null → shows "Lesson Not Found"
             } finally {
                 setLoading(false);
             }
@@ -274,10 +287,10 @@ export default function LessonPlayer() {
                                         <div
                                             key={i}
                                             className={`h-2 rounded-full transition-all duration-500 ${i < currentQuestionIndex
-                                                    ? 'w-6 bg-emerald-500'
-                                                    : i === currentQuestionIndex
-                                                        ? 'w-8 bg-brand-500'
-                                                        : 'w-2 bg-white/10'
+                                                ? 'w-6 bg-emerald-500'
+                                                : i === currentQuestionIndex
+                                                    ? 'w-8 bg-brand-500'
+                                                    : 'w-2 bg-white/10'
                                                 }`}
                                         />
                                     ))}
@@ -327,8 +340,8 @@ export default function LessonPlayer() {
                                     {/* Feedback Banner */}
                                     {questionResult && (
                                         <div className={`mt-4 p-4 rounded-2xl text-center font-black text-sm uppercase tracking-wider animate-in fade-in duration-300 ${questionResult === 'correct'
-                                                ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
-                                                : 'bg-red-500/10 text-red-400 border border-red-500/20'
+                                            ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
+                                            : 'bg-red-500/10 text-red-400 border border-red-500/20'
                                             }`}>
                                             {questionResult === 'correct' ? '✅ Correct! Well done.' : '❌ Not quite. Review the answer above.'}
                                         </div>

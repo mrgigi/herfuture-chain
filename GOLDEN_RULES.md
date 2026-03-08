@@ -32,3 +32,32 @@ Always use the **Preferred Term** instead of the **Legacy Term** in any student-
 
 ---
 *Created on 2026-03-08*
+
+---
+
+## 4. Reward & Progress Business Logic
+
+These rules govern how earnings, upcoming rewards, and progress percentages are calculated across the platform.
+
+### 💰 Total Earned
+- Calculated as the **sum of `grant_amount`** for every lesson the learner has completed.
+- Each lesson sets its own `grant_amount` (e.g., $30, $20). There is **no global flat rate**.
+- Source: `lessons.grant_amount` joined to `student_progress` where `status = 'completed'`.
+
+### 🏆 Upcoming Reward
+- Displays the `grant_amount` of the **next incomplete lesson** in the learner's path.
+- Lessons are prioritised in this strict order:
+  1. **Course `track_number`** (lowest track first)
+  2. **Module `sequence_number`** (first module in that course)
+  3. **Lesson `sequence_number`** (first lesson in that module)
+- This ensures the reward shown matches exactly what they'll earn next — not a milestone average.
+
+### 📈 Progress Percentage
+- **Hero section**: Shows the percentage of the **currently active learning path** (the first incomplete course).
+- **Learning Journey grid**: Each card shows percentage for its own specific course only.
+- Formula: `completed lessons in course / total lessons in course × 100`
+- Global percentage (all lessons / all courses) is calculated but only used as a fallback.
+
+### 🔒 Grant Disbursement Gate
+- Blockchain grant release only fires if `system_settings.grant_disbursement_active = true`.
+- Admins can toggle this from the Command Center in the Admin Dashboard.

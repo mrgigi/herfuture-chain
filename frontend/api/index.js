@@ -134,6 +134,63 @@ app.get('/api/lessons/:lessonId', async (req, res) => {
     }
 });
 
+app.get('/api/lessons/:lessonId/quiz', async (req, res) => {
+    try {
+        const { data, error } = await supabase
+            .from('quizzes')
+            .select('*')
+            .eq('lesson_id', req.params.lessonId);
+
+        if (error) throw error;
+
+        if (!data || data.length === 0) {
+            return res.json([]);
+        }
+
+        // Return in the shape expected by LessonPlayer: [{ data: questions[] }]
+        const questions = data.map(q => ({
+            question: q.question,
+            options: q.options,
+            answer: q.correct_answer,
+            correct_answer: q.correct_answer
+        }));
+
+        res.json([{ data: questions }]);
+    } catch (err) {
+        console.error('[Vercel API] Quiz fetch error:', err);
+        res.status(500).json({ error: err.message });
+    }
+});
+
+app.post('/api/lessons/:lessonId/quiz', async (req, res) => {
+    try {
+        const { lessonId } = req.params;
+        const { data: quizData } = req.body;
+
+        if (!Array.isArray(quizData) || quizData.length === 0) {
+            return res.status(400).json({ error: 'Invalid quiz data' });
+        }
+
+        // Clear existing
+        await supabase.from('quizzes').delete().eq('lesson_id', lessonId);
+
+        const rows = quizData.map(q => ({
+            lesson_id: lessonId,
+            question: q.question,
+            options: q.options,
+            correct_answer: q.answer || q.correct_answer
+        }));
+
+        const { error } = await supabase.from('quizzes').insert(rows);
+        if (error) throw error;
+
+        res.json({ success: true });
+    } catch (err) {
+        console.error('[Vercel API] Quiz save error:', err);
+        res.status(500).json({ error: err.message });
+    }
+});
+
 app.post('/api/complete-lesson', async (req, res) => {
     const { participantId, lessonId, score } = req.body;
     try {
