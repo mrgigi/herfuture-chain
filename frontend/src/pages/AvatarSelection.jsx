@@ -3,10 +3,10 @@ import { useNavigate } from 'react-router-dom';
 import { Check, ArrowRight } from 'lucide-react';
 
 const AVATARS = [
-    { id: 'avatar1', url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Aaliyah&top=longHair&hairColor=2c1b18&skinColor=614335&clothing=graphicShirt' },
-    { id: 'avatar2', url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Nala&top=shaggy&hairColor=2c1b18&skinColor=ae5d32&clothing=hoodie' },
-    { id: 'avatar3', url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Zuri&top=turban&hairColor=2c1b18&skinColor=ffdbb4&clothing=overall' },
-    { id: 'avatar4', url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Fatima&top=longHair&hairColor=2c1b18&skinColor=432d26&clothing=blazer' }
+    { id: 'avatar1', url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Amina&top=longHair&hairColor=2c1b18&skinColor=432d26&clothing=blazer&mouth=smile&facialHairProbability=0' },
+    { id: 'avatar2', url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Bisi&top=turban&hairColor=2c1b18&skinColor=ae5d32&clothing=sweater&mouth=default&facialHairProbability=0' },
+    { id: 'avatar3', url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Chioma&top=shortHair&hairColor=2c1b18&skinColor=614335&clothing=overall&mouth=smile&facialHairProbability=0' },
+    { id: 'avatar4', url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Dada&top=hijab&hairColor=2c1b18&skinColor=ffdbb4&clothing=graphicShirt&mouth=default&facialHairProbability=0' }
 ];
 
 export default function AvatarSelection() {
@@ -60,7 +60,7 @@ export default function AvatarSelection() {
                         : 'bg-slate-800 text-slate-500 cursor-not-allowed opacity-50'
                         }`}
                 >
-                    Let's Go <ArrowRight className="w-4 h-4" />
+                    Continue to Dashboard <ArrowRight className="w-4 h-4" />
                 </button>
             </div>
         </div>
