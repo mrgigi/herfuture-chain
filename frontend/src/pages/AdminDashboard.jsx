@@ -392,11 +392,11 @@ export default function AdminDashboard() {
                 learning_outcome: editingCourse.learning_outcome,
                 content: lesson.content
             });
-            alert(`Successfully generated a 5-question quiz for "${lesson.title}"!`);
-            // Optionally refresh lesson data if needed
+            alert(`✅ Successfully generated a 5-question quiz for "${lesson.title}"!`);
         } catch (err) {
             console.error("AI Generation error:", err);
-            alert("Failed to generate quiz. Check console for details.");
+            const serverMsg = err?.response?.data?.error || err?.message || 'Unknown error';
+            alert(`❌ Quiz generation failed:\n\n${serverMsg}\n\nIf it says "API key not configured", add OPENAI_API_KEY to your Vercel environment variables.`);
         } finally {
             setIsGeneratingQuiz(null);
         }
