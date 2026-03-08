@@ -665,7 +665,7 @@ Rules:
 Format:
 [{"question": "...", "options": ["A", "B", "C", "D"], "answer": "A"}]`;
 
-        const geminiUrl = `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${geminiKey}`;
+        const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiKey}`;
 
         const response = await fetch(geminiUrl, {
             method: 'POST',
