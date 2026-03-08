@@ -21,7 +21,7 @@ export default function Dashboard() {
         refetchOnMount: true,
     });
 
-    const { data: progress = { percentage: 0, completedCount: 0, totalModules: 16 }, isLoading: progressLoading } = useQuery({
+    const { data: progress = { percentage: 0, completedCount: 0, totalLessons: 16 }, isLoading: progressLoading } = useQuery({
         queryKey: ['progress-overview', participant?.id],
         queryFn: () => getProgressOverview(participant.id),
         enabled: !!participant?.id,

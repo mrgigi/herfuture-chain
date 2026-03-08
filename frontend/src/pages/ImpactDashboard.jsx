@@ -136,16 +136,16 @@ export default function ImpactDashboard() {
                                         </div>
                                         <div>
                                             <div className="text-sm font-semibold text-white">{grant.student || 'Unknown'}</div>
-                                            <div className="text-[11px] text-slate-500 mt-0.5">{grant.track || 'Self-Leadership'} · {formatTime(grant.time)}</div>
+                                            <div className="text-[11px] text-slate-500 mt-0.5">{grant.track || 'Self-Leadership'} · {formatTime(grant.created_at)}</div>
                                         </div>
                                     </div>
                                     <div className="text-right">
                                         <div className="text-sm font-black text-emerald-400">+${grant.amount || 0}</div>
                                         <button
-                                            onClick={() => grant.tx && window.open(`https://sepolia.celoscan.io/tx/${grant.tx}`, '_blank')}
+                                            onClick={() => grant.tx_hash && window.open(`https://celoscan.io/tx/${grant.tx_hash}`, '_blank')}
                                             className="text-[9px] text-slate-600 hover:text-brand-400 transition-colors font-mono"
                                         >
-                                            {grant.tx ? `${grant.tx.substring(0, 8)}...` : 'PENDING'}
+                                            {grant.tx_hash ? `${grant.tx_hash.substring(0, 8)}...` : 'PENDING'}
                                         </button>
                                     </div>
                                 </div>

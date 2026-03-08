@@ -396,7 +396,7 @@ export default function AdminDashboard() {
         } catch (err) {
             console.error("AI Generation error:", err);
             const serverMsg = err?.response?.data?.error || err?.message || 'Unknown error';
-            alert(`❌ Quiz generation failed:\n\n${serverMsg}\n\nIf it says "API key not configured", add OPENAI_API_KEY to your Vercel environment variables.`);
+            alert(`❌ Quiz generation failed:\n\n${serverMsg}\n\nNote: If you see "429 Too Many Requests", please wait a minute and try again.\nIf it says "API key not configured", add GEMINI_API_KEY to your Vercel environment variables.`);
         } finally {
             setIsGeneratingQuiz(null);
         }
