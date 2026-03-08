@@ -102,7 +102,7 @@ export default function ImpactDashboard() {
                 {/* Top Stats Row */}
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
                     {[
-                        { label: 'Donor Treasury', val: formatNaira(toNaira(100000)), accent: 'text-amber-400' },
+                        { label: 'Donor Treasury', val: formatNaira(toNaira(stats.treasuryBalance || 100000)), accent: 'text-amber-400' },
                         { label: 'Audit Score', val: '99.8%', accent: 'text-brand-400' },
                         { label: 'Total Disbursed', val: formatNaira(toNaira(stats.totalImpact)), accent: 'text-emerald-400' },
                         { label: 'Milestones', val: stats.grantsDistributed, accent: 'text-fuchsia-400' },

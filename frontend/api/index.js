@@ -736,7 +736,9 @@ app.get('/api/admin/settings', async (req, res) => {
     try {
         const { data, error } = await supabase.from('system_settings').select('*');
         if (error) throw error;
-        const s = {};
+        const s = {
+            adminWalletAddress: process.env.ADMIN_WALLET_ADDRESS || adminWallet.address
+        };
         data.forEach(i => s[i.key] = i.value);
         res.json(s);
     } catch (err) {

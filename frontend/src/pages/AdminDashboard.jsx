@@ -1186,7 +1186,7 @@ export default function AdminDashboard() {
                                     <div className="space-y-4">
                                         <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 block pl-1">Bridge Address (Admin Wallet)</label>
                                         <div className="p-5 bg-black/40 border border-white/5 rounded-2xl flex items-center justify-between group hover:border-brand-500/30 transition-all">
-                                            <code className="text-[11px] text-slate-400 font-mono tracking-tight">0x71C7656EC7ab88b098defB751B7401B5f6d8976F</code>
+                                            <code className="text-[11px] text-slate-400 font-mono tracking-tight">{settings.adminWalletAddress || '0x71C7656EC7ab88b098defB751B7401B5f6d8976F'}</code>
                                             <div className="flex items-center gap-2">
                                                 <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                                                 <span className="text-[9px] font-black uppercase tracking-widest text-brand-400 opacity-60 group-hover:opacity-100 transition-opacity">Copy</span>
