@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useCurrency } from '../hooks/useCurrency';
 import { ChevronLeft, CheckCircle, Award, ArrowRight, BookOpen, PlayCircle, HelpCircle, Zap } from 'lucide-react';
 import { getQuiz, submitLessonProgress, getParticipant, getLesson } from '../lib/api';
 import confetti from 'canvas-confetti';
@@ -7,6 +8,7 @@ import confetti from 'canvas-confetti';
 export default function LessonPlayer() {
     const { lessonId } = useParams();
     const navigate = useNavigate();
+    const { toNaira, formatNaira } = useCurrency();
     const [lesson, setLesson] = useState(null);
     const [quiz, setQuiz] = useState(null);
     const [showQuiz, setShowQuiz] = useState(false);
@@ -177,6 +179,26 @@ export default function LessonPlayer() {
         </div>
     );
 
+    const getEmbedUrl = (url) => {
+        if (!url) return '';
+        try {
+            // Handle regular youtube.com/watch?v=...
+            if (url.includes('youtube.com/watch')) {
+                const urlObj = new URL(url);
+                const videoId = urlObj.searchParams.get('v');
+                if (videoId) return `https://www.youtube.com/embed/${videoId}`;
+            }
+            // Handle youtu.be/...
+            if (url.includes('youtu.be/')) {
+                const videoId = url.split('youtu.be/')[1].split('?')[0];
+                if (videoId) return `https://www.youtube.com/embed/${videoId}`;
+            }
+        } catch (e) {
+            console.error("Failed to parse video URL:", e);
+        }
+        return url; // fallback
+    };
+
     return (
         <div className="min-h-screen bg-[#0A0F1C] flex flex-col">
             {/* Player Header */}
@@ -201,7 +223,7 @@ export default function LessonPlayer() {
                         <div className="w-full h-full relative">
                             <iframe
                                 className="absolute inset-0 w-full h-full"
-                                src={`${lesson.video_url}?autoplay=1&rel=0`}
+                                src={`${getEmbedUrl(lesson.video_url)}?autoplay=1&rel=0`}
                                 title={lesson.title}
                                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                                 allowFullScreen
@@ -214,7 +236,7 @@ export default function LessonPlayer() {
                                     <Zap className="w-8 h-8 text-brand-400 animate-pulse" />
                                 </div>
                                 <h2 className="text-3xl font-black text-white mb-2 tracking-tight">KNOWLEDGE CHECK</h2>
-                                <p className="text-slate-500 text-sm font-medium">Pass the check to unlock your <span className="text-brand-400 font-bold">{lesson?.grant_amount || 150} cUSD</span> reward.</p>
+                                <p className="text-slate-500 text-sm font-medium">Pass the check to unlock your <span className="text-brand-400 font-bold">{lesson?.grant_amount || 30} cUSD</span> reward.</p>
                             </div>
 
                             {/* Heartbeat Progress Bar */}
@@ -304,10 +326,13 @@ export default function LessonPlayer() {
                                 <h2 className="text-2xl font-bold text-white mb-4 leading-tight">{lesson.title}</h2>
                                 <p className="text-slate-400 text-sm leading-relaxed mb-8">{lesson.content}</p>
 
-                                <div className="p-6 rounded-3xl bg-brand-500/5 border border-brand-500/10 mb-8">
+                                <div className="p-6 rounded-3xl bg-brand-500/5 border border-brand-500/10 mb-8 tracking-wider">
                                     <div className="text-[10px] font-black text-brand-400 uppercase tracking-widest mb-2">Milestone Reward</div>
-                                    <div className="text-2xl font-black text-white">{lesson.grant_amount} cUSD</div>
-                                    <div className="text-xs text-slate-500 mt-1">Released instantly on-chain</div>
+                                    <div className="flex items-baseline gap-2">
+                                        <div className="text-2xl font-black text-white">{formatNaira(toNaira(lesson.grant_amount || 30))}</div>
+                                        <div className="text-sm font-bold text-slate-500 uppercase tracking-widest">{lesson.grant_amount || 30} cUSD</div>
+                                    </div>
+                                    <div className="text-xs text-slate-500 mt-1 uppercase">Released instantly on-chain</div>
                                 </div>
 
                                 {!showQuiz && (
