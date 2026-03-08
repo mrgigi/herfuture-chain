@@ -60,6 +60,20 @@ export default function LessonPlayer() {
         }
     };
 
+    const handleClaimWithoutQuiz = async () => {
+        setLoading(true);
+        try {
+            const phone = localStorage.getItem('userPhone');
+            const participant = await getParticipant(phone);
+            await submitLessonProgress(participant.id, lessonId, 100);
+            setCompleted(true);
+        } catch (err) {
+            console.error("Failed to claim grant:", err);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     if (completed) {
         return (
             <div className="min-h-screen bg-[#0A0F1C] flex items-center justify-center p-6 text-center">
@@ -189,10 +203,11 @@ export default function LessonPlayer() {
                                 <div className="text-center">
                                     <p className="text-slate-500 mb-6">No quiz found for this module. You can claim your reward!</p>
                                     <button
-                                        onClick={() => setCompleted(true)}
-                                        className="btn-primary px-8 py-4"
+                                        onClick={handleClaimWithoutQuiz}
+                                        disabled={loading}
+                                        className="btn-primary px-8 py-4 flex items-center gap-2 justify-center mx-auto"
                                     >
-                                        Claim Milestone Grant
+                                        {loading ? <div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : 'Claim Milestone Grant'}
                                     </button>
                                 </div>
                             )}

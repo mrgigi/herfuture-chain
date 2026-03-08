@@ -133,8 +133,15 @@ export default function LandingPage() {
 
                 {/* Mobile Menu Overlay */}
                 {isMenuOpen && (
-                    <div className="fixed inset-0 top-[72px] bg-[#060914] z-50 p-8 md:hidden animate-in fade-in slide-in-from-right-4 duration-300">
-                        <div className="flex flex-col gap-8">
+                    <div className="fixed inset-0 bg-[#060914]/98 backdrop-blur-2xl z-[100] p-8 md:hidden animate-in fade-in zoom-in-95 duration-300 flex flex-col items-center justify-center">
+                        <button
+                            onClick={() => setIsMenuOpen(false)}
+                            className="absolute top-8 right-8 p-3 text-white/50 hover:text-white transition-colors"
+                        >
+                            <X className="w-8 h-8" />
+                        </button>
+
+                        <div className="flex flex-col gap-10 text-center">
                             {[
                                 { label: 'The Problem', href: '#problem' },
                                 { label: 'Our Solution', href: '#solution' },
@@ -145,16 +152,16 @@ export default function LandingPage() {
                                     key={i}
                                     href={item.href}
                                     onClick={() => setIsMenuOpen(false)}
-                                    className="text-2xl font-black text-white uppercase tracking-widest border-b border-white/5 pb-4 last:border-0"
+                                    className="text-3xl font-black text-white uppercase tracking-[0.2em] hover:text-brand-400 transition-colors"
                                 >
                                     {item.label}
                                 </a>
                             ))}
                             <button
-                                onClick={() => navigate('/signup')}
-                                className="w-full py-5 rounded-2xl bg-brand-600 text-white font-black text-xs uppercase tracking-[0.3em] mt-8"
+                                onClick={() => { navigate('/signup'); setIsMenuOpen(false); }}
+                                className="w-full mt-8 px-12 py-5 rounded-2xl bg-brand-600 text-white font-black text-xs uppercase tracking-[0.4em] shadow-2xl shadow-brand-600/20"
                             >
-                                GATEWAY →
+                                GET STARTED →
                             </button>
                         </div>
                     </div>

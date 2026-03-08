@@ -135,7 +135,7 @@ export default function Sidebar({ active, onCollapseChange, isOpen, onClose }) {
                                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
                                     <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
                                 </span>
-                                <span className="text-xs font-bold text-slate-400">Mainnet Connected</span>
+                                <span className="text-xs font-bold text-slate-400">Identity Secure</span>
                             </div>
                         </div>
                     )}

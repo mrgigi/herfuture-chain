@@ -51,11 +51,17 @@ export default function LoginSignup() {
     const handleFinishAuth = async () => {
         try {
             if (isLogin) {
-                // For now, simulate login by checking if participant exists
                 try {
-                    await api.get(`/participant/${formData.phone}`);
+                    const response = await api.get(`/participant/${formData.phone}`);
                     localStorage.setItem('userPhone', formData.phone);
-                    navigate('/dashboard');
+
+                    // Check if avatar exists in localStorage (or would be fetched/set by dashboard)
+                    // For now, if it's NOT in localStorage, force selection for better UX
+                    if (!localStorage.getItem('userAvatar')) {
+                        navigate('/avatar-selection');
+                    } else {
+                        navigate('/dashboard');
+                    }
                 } catch (err) {
                     setError('User not found. Please sign up first.');
                 }
@@ -64,6 +70,7 @@ export default function LoginSignup() {
                     const response = await createWallet(formData.firstName, formData.lastName, formData.phone);
                     console.log('Wallet created successfully:', response);
                     localStorage.setItem('userPhone', formData.phone);
+                    // New signups ALWAYS go to avatar selection
                     navigate('/avatar-selection');
                 } catch (err) {
                     setError(err.response?.data?.error || 'Failed to create decentralized identity. Please try again.');

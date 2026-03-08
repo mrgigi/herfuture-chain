@@ -1,7 +1,8 @@
-import { useNavigate } from 'react-router-dom';
-import { User, Cpu, ArrowRight, Heart, Handshake, Globe } from 'lucide-react';
+import { User, Cpu, ArrowRight, Heart, Handshake, Globe, Menu, X } from 'lucide-react';
+import { useState } from 'react';
 
 export default function HomeGate() {
+    const [isMenuOpen, setIsMenuOpen] = useState(false);
     const navigate = useNavigate();
 
     const partners = [
@@ -19,24 +20,74 @@ export default function HomeGate() {
             <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-brand-600/10 blur-[120px] pointer-events-none" />
             <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full bg-indigo-600/10 blur-[120px] pointer-events-none" />
 
-            <nav className="relative z-30 px-6 py-8 flex justify-between items-center w-full max-w-7xl mx-auto">
+            <nav className="relative z-50 px-6 py-8 flex justify-between items-center w-full max-w-7xl mx-auto">
                 <div className="flex items-center gap-2 cursor-pointer transition-transform active:scale-95 h-12" onClick={() => navigate('/')}>
                     <img src="/images/logo.svg" alt="HerFuture Chain Logo" className="h-full w-auto" />
                 </div>
-                <div className="flex items-center gap-6">
+
+                {/* Desktop Menu */}
+                <div className="hidden md:flex items-center gap-6">
                     <button
                         onClick={() => navigate('/impact')}
-                        className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 hover:text-fuchsia-400 transition-colors"
+                        className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 hover:text-white transition-colors"
                     >
                         Impact & Audit
                     </button>
                     <button
                         onClick={() => navigate('/admin')}
-                        className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 hover:text-fuchsia-400 transition-colors"
+                        className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 hover:text-white transition-colors"
                     >
                         Management Hub
                     </button>
                 </div>
+
+                {/* Mobile Menu Toggle */}
+                <button
+                    className="md:hidden p-2 text-white hover:bg-white/5 rounded-lg transition-colors"
+                    onClick={() => setIsMenuOpen(!isMenuOpen)}
+                >
+                    {isMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+                </button>
+
+                {/* Mobile Menu Overlay */}
+                {isMenuOpen && (
+                    <div className="fixed inset-0 top-0 bg-[#060914] z-[100] p-8 md:hidden animate-in fade-in slide-in-from-top-4 duration-300 flex flex-col items-center justify-center gap-12 text-center">
+                        <button
+                            onClick={() => setIsMenuOpen(false)}
+                            className="absolute top-8 right-8 p-2 text-slate-400 hover:text-white"
+                        >
+                            <X className="w-8 h-8" />
+                        </button>
+
+                        <div
+                            className="h-16 mb-8 cursor-pointer"
+                            onClick={() => { navigate('/'); setIsMenuOpen(false); }}
+                        >
+                            <img src="/images/logo.svg" alt="Logo" className="h-full w-auto mx-auto" />
+                        </div>
+
+                        <div className="flex flex-col gap-10">
+                            <button
+                                onClick={() => { navigate('/impact'); setIsMenuOpen(false); }}
+                                className="text-2xl font-black text-white uppercase tracking-widest"
+                            >
+                                Impact & Audit
+                            </button>
+                            <button
+                                onClick={() => { navigate('/admin'); setIsMenuOpen(false); }}
+                                className="text-2xl font-black text-white uppercase tracking-widest"
+                            >
+                                Management Hub
+                            </button>
+                            <button
+                                onClick={() => { navigate('/students'); setIsMenuOpen(false); }}
+                                className="text-2xl font-black text-brand-400 uppercase tracking-widest mt-8"
+                            >
+                                GATEWAY →
+                            </button>
+                        </div>
+                    </div>
+                )}
             </nav>
 
             <div className="flex-grow flex flex-col items-center justify-center px-6 py-12 relative z-10">

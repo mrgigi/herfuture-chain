@@ -126,8 +126,13 @@ export default function Dashboard() {
                                 <div className="absolute top-0 right-0 w-96 h-96 bg-fuchsia-500/5 blur-[100px] rounded-full -translate-y-1/2 translate-x-1/2 group-hover:bg-fuchsia-500/10 transition-colors pointer-events-none" />
 
                                 {/* Progress Circle */}
-                                <div className="w-32 h-32 rounded-[36px] bg-gradient-to-br from-fuchsia-500 to-magenta-600 flex items-center justify-center text-4xl font-black text-white shadow-2xl shadow-fuchsia-500/40 flex-shrink-0 -rotate-3 group-hover:rotate-0 transition-all duration-500">
-                                    {progress.percentage}%
+                                <div className="relative flex-shrink-0">
+                                    <div className="absolute -inset-10 flex items-center justify-center text-[160px] font-black text-white/5 pointer-events-none select-none">
+                                        {progress.percentage}%
+                                    </div>
+                                    <div className="w-32 h-32 rounded-[36px] bg-gradient-to-br from-fuchsia-500 to-magenta-600 flex items-center justify-center text-4xl font-black text-white shadow-2xl shadow-fuchsia-500/40 relative z-10 -rotate-3 group-hover:rotate-0 transition-all duration-500">
+                                        {progress.percentage}%
+                                    </div>
                                 </div>
 
                                 <div className="flex-1 text-center md:text-left">
@@ -137,10 +142,10 @@ export default function Dashboard() {
                                         <span className="text-[11px] font-black uppercase tracking-widest text-slate-500">{progress.completedCount} Modules Mastered</span>
                                     </div>
                                     <h2 className="text-4xl md:text-5xl font-black text-white mb-6 tracking-tighter leading-none">
-                                        Ready for your <br /> <span className="text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-magenta-400">next milestone?</span>
+                                        Start your <br /> <span className="text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-magenta-400 italic">first lesson.</span>
                                     </h2>
                                     <p className="text-slate-400 text-base max-w-xl mb-10 leading-relaxed font-medium">
-                                        Every module completed syncs direct grants to your Celo wallet.
+                                        Complete lessons and quizzes to earn verifiable credentials and unlock direct-to-wallet grants.
                                     </p>
                                     <button
                                         onClick={() => navigate('/courses')}
@@ -158,62 +163,50 @@ export default function Dashboard() {
                             <div className="text-4xl font-black text-white mb-2">$150 <span className="text-xs text-emerald-400">cUSD</span></div>
                             <p className="text-xs text-slate-500 mb-6">Complete Track 2 to trigger automated grant.</p>
                             <button onClick={() => navigate('/grants')} className="text-[10px] font-black uppercase tracking-widest text-emerald-400 hover:text-white transition-colors">
-                                View Payout Ledger →
+                                View Payout History →
                             </button>
                         </div>
 
                         {/* Curriculum Grid */}
-                        <div className="space-y-6">
-                            <div className="flex items-center justify-between px-2">
-                                <h3 className="text-xs font-black text-white uppercase tracking-[0.3em] flex items-center gap-3">
-                                    <div className="w-2 h-2 rounded-full bg-fuchsia-500" />
-                                    Your Curriculum Path
-                                </h3>
-                                <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">
-                                    {courses.length} Tracks Available
-                                </span>
-                            </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pb-12">
+                            {courses.map((course, idx) => {
+                                const modulesPerTrack = Math.ceil(progress.totalModules / Math.max(1, courses.length));
+                                const trackStartThreshold = idx * modulesPerTrack;
+                                const isDone = progress.completedCount >= trackStartThreshold + modulesPerTrack;
+                                const isActive = progress.completedCount >= trackStartThreshold && !isDone;
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                {courses.map((course, idx) => {
-                                    const modulesPerTrack = Math.ceil(progress.totalModules / Math.max(1, courses.length));
-                                    const trackStartThreshold = idx * modulesPerTrack;
-                                    const isDone = progress.completedCount >= trackStartThreshold + modulesPerTrack;
-                                    const isActive = progress.completedCount >= trackStartThreshold && !isDone;
-
-                                    return (
-                                        <div
-                                            key={course.id}
-                                            onClick={() => (isActive || isDone) && navigate('/courses')}
-                                            className={`group p-8 rounded-[40px] border transition-all duration-500 relative overflow-hidden ${isActive
-                                                ? 'bg-fuchsia-500/[0.04] border-fuchsia-500/30 shadow-2xl shadow-fuchsia-500/10 ring-1 ring-fuchsia-500/20 scale-[1.02]'
-                                                : isDone
-                                                    ? 'bg-slate-900/60 border-white/5 opacity-80'
-                                                    : 'bg-black/20 border-white/[0.02] opacity-40 grayscale pointer-events-none'
-                                                } cursor-pointer hover:-translate-y-1`}
-                                        >
-                                            <div className="flex flex-col gap-6 relative z-10">
-                                                <div className={`w-14 h-14 rounded-2xl flex items-center justify-center font-black text-xl transition-all duration-500 group-hover:scale-110 ${isActive ? 'bg-gradient-to-br from-fuchsia-500 to-magenta-600 text-white shadow-xl shadow-fuchsia-500/40' : isDone ? 'bg-emerald-500/20 text-emerald-400' : 'bg-slate-800 text-slate-500'
-                                                    }`}>
-                                                    {isDone ? <CheckCircle className="w-6 h-6" /> : (idx + 1)}
-                                                </div>
-                                                <div>
-                                                    <div className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1.5">Track {course.track_number || (idx + 1)}</div>
-                                                    <h4 className={`text-lg font-black uppercase tracking-tight leading-tight ${isActive ? 'text-white' : 'text-slate-400'}`}>{course.title}</h4>
-                                                </div>
-                                                {isActive && (
-                                                    <div className="pt-6 border-t border-fuchsia-500/10 flex items-center justify-between">
-                                                        <span className="text-[10px] font-black text-fuchsia-400 uppercase tracking-widest animate-pulse">In Progress</span>
-                                                        <div className="w-8 h-8 rounded-full bg-fuchsia-500/10 flex items-center justify-center">
-                                                            <ArrowRight className="w-4 h-4 text-fuchsia-400" />
-                                                        </div>
-                                                    </div>
-                                                )}
+                                return (
+                                    <div
+                                        key={course.id}
+                                        onClick={() => (isActive || isDone) && navigate('/courses')}
+                                        className={`group p-8 rounded-[40px] border transition-all duration-500 relative overflow-hidden ${isActive
+                                            ? 'bg-fuchsia-500/[0.04] border-fuchsia-500/30 shadow-2xl shadow-fuchsia-500/10 ring-1 ring-fuchsia-500/20 scale-[1.02]'
+                                            : isDone
+                                                ? 'bg-slate-900/60 border-white/5 opacity-80'
+                                                : 'bg-black/20 border-white/[0.02] opacity-40 grayscale pointer-events-none'
+                                            } cursor-pointer hover:-translate-y-1`}
+                                    >
+                                        <div className="flex flex-col gap-6 relative z-10">
+                                            <div className={`w-14 h-14 rounded-2xl flex items-center justify-center font-black text-xl transition-all duration-500 group-hover:scale-110 ${isActive ? 'bg-gradient-to-br from-fuchsia-500 to-magenta-600 text-white shadow-xl shadow-fuchsia-500/40' : isDone ? 'bg-emerald-500/20 text-emerald-400' : 'bg-slate-800 text-slate-500'
+                                                }`}>
+                                                {isDone ? <CheckCircle className="w-6 h-6" /> : (idx + 1)}
                                             </div>
+                                            <div>
+                                                <div className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1.5">Track {course.track_number || (idx + 1)}</div>
+                                                <h4 className={`text-lg font-black uppercase tracking-tight leading-tight ${isActive ? 'text-white' : 'text-slate-400'}`}>{course.title}</h4>
+                                            </div>
+                                            {isActive && (
+                                                <div className="pt-6 border-t border-fuchsia-500/10 flex items-center justify-between">
+                                                    <span className="text-[10px] font-black text-fuchsia-400 uppercase tracking-widest animate-pulse">In Progress</span>
+                                                    <div className="w-8 h-8 rounded-full bg-fuchsia-500/10 flex items-center justify-center">
+                                                        <ArrowRight className="w-4 h-4 text-fuchsia-400" />
+                                                    </div>
+                                                </div>
+                                            )}
                                         </div>
-                                    );
-                                })}
-                            </div>
+                                    </div>
+                                );
+                            })}
                         </div>
 
                         {/* Simplified Skills Hub at bottom */}
