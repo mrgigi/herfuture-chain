@@ -1,10 +1,10 @@
 import { ethers } from 'ethers';
 
-const provider = new ethers.JsonRpcProvider(process.env.CELO_RPC_URL);
+const provider = new ethers.JsonRpcProvider(process.env.CELO_RPC_URL || "https://forno.celo-sepolia.celo-testnet.org");
 const adminWallet = new ethers.Wallet(process.env.ADMIN_PRIVATE_KEY || '0x0000000000000000000000000000000000000000000000000000000000000000', provider);
 
-const credentialRegistryAddress = process.env.CREDENTIAL_REGISTRY_ADDRESS;
-const grantDisbursementAddress = process.env.GRANT_DISBURSEMENT_ADDRESS;
+const credentialRegistryAddress = process.env.CREDENTIAL_REGISTRY_ADDRESS || '0x3C1ec4CBDd8cbAFFa11D3BBc889AB061a65Fe77E';
+const grantDisbursementAddress = process.env.GRANT_DISBURSEMENT_ADDRESS || '0xb5A1AD12393640745868374170321254210dE4FE';
 const cUSDAddress = process.env.MOCK_CUSD_ADDRESS || "0x18871DD3fb8F301809294069E791397b2F002cBb";
 
 const erc20Abi = [
