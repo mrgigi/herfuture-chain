@@ -257,8 +257,7 @@ app.post('/api/complete-lesson', async (req, res) => {
                                 tx_hash: rec.hash,
                                 withdrawable_amount: lesson.grant_amount,
                                 savings_amount: 0,
-                                investment_amount: 0,
-                                lesson_id: lesson.id
+                                investment_amount: 0
                             }]);
                             if (insErr) {
                                 console.error("[Vercel API] Grant DB Insert Error:", insErr.message);
@@ -575,9 +574,8 @@ app.get('/api/grants/:participantId', async (req, res) => {
         const { data: lessons } = await supabase.from('lessons').select('id, track_label, title, grant_amount');
 
         const formatted = grants.map(grant => {
-            // Try matching by lesson_id first (best), then track_label
-            const lesson = lessons?.find(l => l.id === grant.lesson_id) ||
-                lessons?.find(l => l.track_label === grant.milestone);
+            // Match entirely by track_label since lesson_id is not in DB table
+            const lesson = lessons?.find(l => l.track_label === grant.milestone);
 
             return {
                 ...grant,
@@ -655,7 +653,6 @@ app.get('/api/impact/recent-grants', async (req, res) => {
                 savings_amount,
                 investment_amount,
                 created_at,
-                lesson_id,
                 participants (
                     first_name,
                     last_name
@@ -671,13 +668,12 @@ app.get('/api/impact/recent-grants', async (req, res) => {
             .select('id, track_label, title, grant_amount');
 
         const formatted = (data || []).map(g => {
-            const lesson = (lessons || []).find(l => l.id === g.lesson_id) ||
-                (lessons || []).find(l => l.track_label === g.milestone);
+            const lesson = (lessons || []).find(l => l.track_label === g.milestone);
             return {
                 student: g.participants
                     ? `${g.participants.first_name || 'Student'} ${g.participants.last_name || ''}`.trim()
                     : 'Anonymous',
-                amount: g.amount || (lesson ? lesson.grant_amount : 0),
+                amount: g.withdrawable_amount || g.amount || (lesson ? lesson.grant_amount : 0),
                 track: lesson ? lesson.title : (g.milestone?.startsWith('M_') ? 'Lesson Reward' : g.milestone),
                 tx_hash: g.tx_hash,
                 created_at: g.created_at
