@@ -233,6 +233,33 @@ app.post('/api/complete-lesson', async (req, res) => {
                 const { data: p } = await supabase.from('participants').select('wallet_address').eq('id', participantId).single();
                 if (p?.wallet_address) {
                     const milestone = lesson.track_label || `M_${lesson.id}`;
+
+                    // 1. Unconditionally Save Reward to Database first
+                    let grantRecordId = null;
+                    const { data: existing } = await supabase
+                        .from('grants')
+                        .select('id')
+                        .eq('participant_id', participantId)
+                        .eq('milestone', milestone)
+                        .limit(1);
+
+                    if (!existing || existing.length === 0) {
+                        const { data: newGrant, error: insErr } = await supabase.from('grants').insert([{
+                            participant_id: participantId,
+                            milestone,
+                            withdrawable_amount: lesson.grant_amount || 0,
+                            savings_amount: 0,
+                            investment_amount: 0,
+                            status: 'pending' // Initialize as pending tx
+                        }]).select('id').single();
+
+                        if (newGrant) grantRecordId = newGrant.id;
+                        if (insErr) console.error("[Vercel API] Grant DB Insert Error:", insErr.message);
+                    } else {
+                        grantRecordId = existing[0].id;
+                    }
+
+                    // 2. Attempt Blockchain Transaction
                     try {
                         const tx1 = await grantDisbursementContract.completeMilestone(p.wallet_address, milestone);
                         await tx1.wait();
@@ -241,30 +268,14 @@ app.post('/api/complete-lesson', async (req, res) => {
                         const rec = await tx2.wait();
                         console.log(`[Vercel API] Grant release confirmed in block ${rec.blockNumber}`);
                         txHash = rec.hash;
-
-                        // Prevent duplicate grant rows — only insert if first time
-                        const { data: existing } = await supabase
-                            .from('grants')
-                            .select('id')
-                            .eq('participant_id', participantId)
-                            .eq('milestone', milestone)
-                            .limit(1);
-
-                        if (!existing || existing.length === 0) {
-                            const { error: insErr } = await supabase.from('grants').insert([{
-                                participant_id: participantId,
-                                milestone,
-                                tx_hash: rec.hash,
-                                withdrawable_amount: lesson.grant_amount,
-                                savings_amount: 0,
-                                investment_amount: 0
-                            }]);
-                            if (insErr) {
-                                console.error("[Vercel API] Grant DB Insert Error:", insErr.message);
-                                throw new Error("Failed to record reward in database: " + insErr.message);
-                            }
-                        }
                         grantStatus = 'disbursed';
+
+                        // 3. Update DB with confirmed Hash
+                        if (grantRecordId) {
+                            await supabase.from('grants')
+                                .update({ tx_hash: rec.hash, status: 'disbursed' })
+                                .eq('id', grantRecordId);
+                        }
                     } catch (bcErr) {
                         console.error("[Vercel API] Blockchain Grant Error:", bcErr.message);
                     }
