@@ -1218,13 +1218,60 @@ export default function AdminDashboard() {
                                         </div>
                                     </div>
 
-                                    <div className="space-y-4">
-                                        <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 block pl-1">Bridge Address (Admin Wallet)</label>
-                                        <div className="p-5 bg-black/40 border border-white/5 rounded-2xl flex items-center justify-between group hover:border-brand-500/30 transition-all">
-                                            <code className="text-[11px] text-slate-400 font-mono tracking-tight">{settings.adminWalletAddress || '0x71C7656EC7ab88b098defB751B7401B5f6d8976F'}</code>
-                                            <div className="flex items-center gap-2">
-                                                <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                                                <span className="text-[9px] font-black uppercase tracking-widest text-brand-400 opacity-60 group-hover:opacity-100 transition-opacity">Copy</span>
+                                    {/* System Contracts & Wallets */}
+                                    <div className="space-y-6 pt-4 border-t border-slate-800">
+                                        <div>
+                                            <h3 className="text-sm font-bold text-white mb-2">Smart Contracts & Wallets</h3>
+                                            <p className="text-xs text-slate-400 leading-relaxed">
+                                                These are the official addresses powering your centralized interactions with the Celo blockchain.
+                                            </p>
+                                        </div>
+
+                                        <div className="space-y-4">
+                                            <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 block pl-1">Admin Wallet (Gas Payer)</label>
+                                            <p className="text-[10px] text-slate-400 -mt-3 pl-1 mb-2">Executes all blockchain transactions automatically so students don't have to pay gas fees.</p>
+                                            <div className="p-4 bg-black/40 border border-white/5 rounded-2xl flex items-center justify-between group hover:border-brand-500/30 transition-all">
+                                                <code className="text-[11px] text-slate-400 font-mono tracking-tight">{settings?.adminWalletAddress || '0x6ab220b355DB4F6A220a2C6fA500854cBDdC58e4'}</code>
+                                                <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigator.clipboard.writeText(settings?.adminWalletAddress || '0x6ab220b355DB4F6A220a2C6fA500854cBDdC58e4')}>
+                                                    <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                                                    <span className="text-[9px] font-black uppercase tracking-widest text-brand-400 opacity-60 group-hover:opacity-100 transition-opacity">Copy</span>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div className="space-y-4">
+                                            <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 block pl-1">Grant Treasury Contract</label>
+                                            <p className="text-[10px] text-slate-400 -mt-3 pl-1 mb-2">Holds the locked cUSD balance. Automatically disburses funds to students upon lesson completion.</p>
+                                            <div className="p-4 bg-black/40 border border-white/5 rounded-2xl flex items-center justify-between group hover:border-brand-500/30 transition-all">
+                                                <code className="text-[11px] text-slate-400 font-mono tracking-tight">{settings?.grantDisbursementAddress || '0xb5A1AD12393640745868374170321254210dE4FE'}</code>
+                                                <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigator.clipboard.writeText(settings?.grantDisbursementAddress || '0xb5A1AD12393640745868374170321254210dE4FE')}>
+                                                    <div className="w-1.5 h-1.5 rounded-full bg-indigo-500" />
+                                                    <span className="text-[9px] font-black uppercase tracking-widest text-indigo-400 opacity-60 group-hover:opacity-100 transition-opacity">Copy</span>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div className="space-y-4">
+                                            <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 block pl-1">Credential Registry Contract</label>
+                                            <p className="text-[10px] text-slate-400 -mt-3 pl-1 mb-2">Records the IPFS hashes of student certificates permanently on the blockchain for public verification.</p>
+                                            <div className="p-4 bg-black/40 border border-white/5 rounded-2xl flex items-center justify-between group hover:border-brand-500/30 transition-all">
+                                                <code className="text-[11px] text-slate-400 font-mono tracking-tight">{settings?.credentialRegistryAddress || '0x3C1ec4CBDd8cbAFFa11D3BBc889AB061a65Fe77E'}</code>
+                                                <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigator.clipboard.writeText(settings?.credentialRegistryAddress || '0x3C1ec4CBDd8cbAFFa11D3BBc889AB061a65Fe77E')}>
+                                                    <div className="w-1.5 h-1.5 rounded-full bg-indigo-500" />
+                                                    <span className="text-[9px] font-black uppercase tracking-widest text-indigo-400 opacity-60 group-hover:opacity-100 transition-opacity">Copy</span>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div className="space-y-4">
+                                            <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 block pl-1">cUSD Token (ERC-20)</label>
+                                            <p className="text-[10px] text-slate-400 -mt-3 pl-1 mb-2">The official stablecoin contract used for payouts. 1 cUSD = 1 USD.</p>
+                                            <div className="p-4 bg-black/40 border border-white/5 rounded-2xl flex items-center justify-between group hover:border-brand-500/30 transition-all">
+                                                <code className="text-[11px] text-slate-400 font-mono tracking-tight">{settings?.cUSDAddress || '0x18871DD3fb8F301809294069E791397b2F002cBb'}</code>
+                                                <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigator.clipboard.writeText(settings?.cUSDAddress || '0x18871DD3fb8F301809294069E791397b2F002cBb')}>
+                                                    <div className="w-1.5 h-1.5 rounded-full bg-yellow-500" />
+                                                    <span className="text-[9px] font-black uppercase tracking-widest text-yellow-400 opacity-60 group-hover:opacity-100 transition-opacity">Copy</span>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>

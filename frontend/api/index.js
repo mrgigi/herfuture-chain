@@ -823,7 +823,10 @@ app.get('/api/admin/settings', async (req, res) => {
         const { data, error } = await supabase.from('system_settings').select('*');
         if (error) throw error;
         const s = {
-            adminWalletAddress: process.env.ADMIN_WALLET_ADDRESS || adminWallet.address
+            adminWalletAddress: process.env.ADMIN_WALLET_ADDRESS || adminWallet.address,
+            grantDisbursementAddress: process.env.GRANT_DISBURSEMENT_ADDRESS || '0xb5A1AD12393640745868374170321254210dE4FE',
+            credentialRegistryAddress: process.env.CREDENTIAL_REGISTRY_ADDRESS || '0x3C1ec4CBDd8cbAFFa11D3BBc889AB061a65Fe77E',
+            cUSDAddress: process.env.MOCK_CUSD_ADDRESS || '0x18871DD3fb8F301809294069E791397b2F002cBb'
         };
         data.forEach(i => s[i.key] = i.value);
         res.json(s);
