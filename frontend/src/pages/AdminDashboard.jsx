@@ -1747,12 +1747,12 @@ export default function AdminDashboard() {
                                             Back to Lessons
                                         </button>
                                         <button
-                                            onClick={handleSaveQuizManual}
+                                            onClick={() => handleSaveQuizManual(false)}
                                             disabled={isSavingQuiz}
-                                            className="flex items-center gap-3 px-10 py-5 bg-brand-600 hover:bg-brand-500 text-white rounded-3xl text-[11px] font-black uppercase tracking-widest transition-all shadow-[0_20px_40px_rgba(59,130,246,0.25)] hover:shadow-[0_25px_50px_rgba(59,130,246,0.35)] disabled:opacity-50 group hover:-translate-y-1"
+                                            className="flex items-center gap-3 px-10 py-5 bg-brand-600 hover:bg-brand-500 text-white rounded-3xl text-[11px] font-black uppercase tracking-widest transition-all shadow-[0_20px_40px_rgba(59,130,246,0.25)] hover:shadow-[0_25px_50px_rgba(59,130,246,0.35)] disabled:opacity-50 group hover:-translate-y-1 active:scale-95 active:shadow-none"
                                         >
                                             {isSavingQuiz ? <Loader2 className="w-5 h-5 animate-spin" /> : <ShieldCheck className="w-5 h-5 group-hover:animate-bounce" />}
-                                            Save Quiz
+                                            {isSavingQuiz ? 'Saving...' : 'Save Quiz'}
                                         </button>
                                     </div>
                                 </div>
