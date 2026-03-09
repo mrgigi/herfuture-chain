@@ -251,14 +251,14 @@ app.post('/api/complete-lesson', async (req, res) => {
                             .limit(1);
 
                         if (!existing || existing.length === 0) {
-                            const { error: insErr } = await supabase.from('grants').insert([{ 
-                                participant_id: participantId, 
-                                milestone, 
-                                tx_hash: rec.hash, 
-                                withdrawable_amount: lesson.grant_amount, 
+                            const { error: insErr } = await supabase.from('grants').insert([{
+                                participant_id: participantId,
+                                milestone,
+                                tx_hash: rec.hash,
+                                withdrawable_amount: lesson.grant_amount,
                                 savings_amount: 0,
                                 investment_amount: 0,
-                                lesson_id: lesson.id 
+                                lesson_id: lesson.id
                             }]);
                             if (insErr) {
                                 console.error("[Vercel API] Grant DB Insert Error:", insErr.message);
@@ -519,7 +519,7 @@ app.get('/api/grants/:participantId', async (req, res) => {
             return {
                 ...grant,
                 milestone_name: lesson ? lesson.title : (grant.milestone.startsWith('M_') ? 'Lesson Reward' : `Milestone ${grant.milestone}`),
-                amount: grant.amount || (lesson ? lesson.grant_amount : 0)
+                amount: grant.withdrawable_amount || grant.amount || (lesson ? lesson.grant_amount : 0)
             };
         });
 
