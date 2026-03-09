@@ -114,11 +114,11 @@ async function getGrants(req, res) {
         }
 
         const formattedGrants = grants.map(grant => {
-            const lesson = (lessons || []).find(l => l.track_label === grant.milestone);
+            const lesson = (lessons || []).find(l => l.track_label === grant.milestone || `M_${l.id}` === grant.milestone);
             return {
                 ...grant,
                 milestone_name: lesson ? lesson.title : `Milestone ${grant.milestone}`,
-                amount: lesson ? lesson.grant_amount : 0
+                amount: grant.amount || (lesson ? lesson.grant_amount : 0)
             };
         });
 
@@ -147,19 +147,14 @@ async function getGlobalImpactStats(req, res) {
             .select('*', { count: 'exact', head: true })
             .eq('milestone', '3.6');
 
-        // 4. Calculate total amount (Sum from lessons joined with grants)
+        // 4. Calculate total amount (Sum directly from grants table)
         const { data: grantsData } = await supabase
             .from('grants')
-            .select('milestone');
-
-        const { data: lessons } = await supabase
-            .from('lessons')
-            .select('track_label, grant_amount');
+            .select('amount');
 
         let totalAmount = 0;
         grantsData.forEach(g => {
-            const lesson = lessons.find(l => l.track_label === g.milestone);
-            if (lesson) totalAmount += lesson.grant_amount;
+            totalAmount += (Number(g.amount) || 0);
         });
 
         res.json({
@@ -204,10 +199,10 @@ async function getRecentGrants(req, res) {
             .select('track_label, title, grant_amount');
 
         const formatted = data.map(g => {
-            const lesson = lessons.find(l => l.track_label === g.milestone);
+            const lesson = lessons.find(l => l.track_label === g.milestone || `M_${l.id}` === g.milestone);
             return {
                 student: g.participants ? `${g.participants.first_name || 'Student'} ${g.participants.last_name || ''}`.trim() : 'Anonymous',
-                amount: lesson ? lesson.grant_amount : 0,
+                amount: g.amount || (lesson ? lesson.grant_amount : 0),
                 track: lesson ? lesson.title : g.milestone,
                 tx: g.tx_hash,
                 time: g.created_at
