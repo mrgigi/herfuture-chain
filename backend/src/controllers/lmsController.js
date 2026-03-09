@@ -327,10 +327,10 @@ async function completeLesson(req, res) {
                 // Check if credential already exists to avoid duplicates
                 const { data: existingCert } = await supabase
                     .from('credentials')
-                    .select('id')
+                    .select('credential_id')
                     .eq('participant_id', participantId)
-                    .eq('credential_type', certTitle)
-                    .single();
+                    .eq('skill', certTitle)
+                    .maybeSingle(); // Use maybeSingle to avoid 406 errors on empty
 
                 if (!existingCert && participant && participant.wallet_address) {
                     console.log(`Course fully completed! Issuing certificate: ${certTitle}`);

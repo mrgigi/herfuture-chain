@@ -127,27 +127,38 @@ async function getCredentialsByAddress(req, res) {
             timestamp: new Date(Number(cred.timestamp) * 1000).toISOString()
         }));
 
-        // 2. Fallback to Supabase for demo/mock credentials
-        const { data: dbCerts } = await supabase
-            .from('credentials')
-            .select('*')
-            .eq('recipient_address', address);
+        // 2. Fallback to Supabase for recorded credentials
+        // First find participant by address
+        const { data: participant } = await supabase
+            .from('participants')
+            .select('id')
+            .eq('wallet_address', address)
+            .single();
 
-        if (dbCerts && dbCerts.length > 0) {
-            const mappedDbCerts = dbCerts.map(c => ({
-                id: c.id.toString(),
-                credentialType: c.credential_type,
-                ipfsHash: c.ipfs_hash,
-                timestamp: c.timestamp,
-                isDemo: true
-            }));
-            // Combine and avoid duplicates by IPFS hash
-            const existingHashes = new Set(credentials.map(cr => cr.ipfsHash));
-            mappedDbCerts.forEach(mc => {
-                if (!existingHashes.has(mc.ipfsHash)) {
-                    credentials.push(mc);
-                }
-            });
+        if (participant) {
+            const { data: dbCerts } = await supabase
+                .from('credentials')
+                .select('*')
+                .eq('participant_id', participant.id);
+
+            if (dbCerts && dbCerts.length > 0) {
+                const mappedDbCerts = dbCerts.map(c => ({
+                    id: c.credential_id.toString(),
+                    credentialType: c.skill,
+                    ipfsHash: c.ipfs_hash,
+                    timestamp: c.created_at,
+                    txHash: c.tx_hash,
+                    isDemo: c.tx_hash === 'PENDING_ONCHAIN'
+                }));
+
+                // Combine and avoid duplicates by IPFS hash
+                const existingHashes = new Set(credentials.map(cr => cr.ipfsHash));
+                mappedDbCerts.forEach(mc => {
+                    if (!existingHashes.has(mc.ipfsHash)) {
+                        credentials.push(mc);
+                    }
+                });
+            }
         }
 
         return res.status(200).json(credentials);

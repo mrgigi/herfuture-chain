@@ -11,6 +11,7 @@ const grantDisbursementAddress = process.env.GRANT_DISBURSEMENT_ADDRESS;
 const credentialRegistryAbi = [
     "function issueCredential(address participant, string credentialType, string ipfsHash) public",
     "function getCredentials(address participant) public view returns (tuple(uint256 credentialId, address participant, string credentialType, string ipfsHash, uint256 timestamp)[])",
+    "function getCredential(uint256 credentialId) public view returns (tuple(uint256 credentialId, address participant, string credentialType, string ipfsHash, uint256 timestamp))",
     "function verifyCredential(uint256 credentialId) public view returns (bool)"
 ];
 
