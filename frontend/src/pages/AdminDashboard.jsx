@@ -278,15 +278,41 @@ export default function AdminDashboard() {
         const file = e.target.files[0];
         if (!file) return;
 
-        // In a real app, we'd upload to Supabase Storage. 
-        // For now, we'll use a data URL for the demo/user.
+        const currentTarget = e.target;
         const reader = new FileReader();
-        reader.onloadend = async () => {
-            const base64 = reader.result;
-            // Update local state - DO NOT call API immediately to avoid redundant heavy requests
-            // and potential race conditions. We'll save it when the user clicks "Update Metadata".
-            setEditingCourse({ ...editingCourse, image_url: base64 });
-            showToast("Cover artwork ready. Click Update to save.");
+
+        reader.onloadend = () => {
+            const img = new Image();
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                let width = img.width;
+                let height = img.height;
+                const MAX_DIM = 1200;
+
+                if (width > height && width > MAX_DIM) {
+                    height = Math.round((height * MAX_DIM) / width);
+                    width = MAX_DIM;
+                } else if (height > MAX_DIM) {
+                    width = Math.round((width * MAX_DIM) / height);
+                    height = MAX_DIM;
+                }
+
+                canvas.width = width;
+                canvas.height = height;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, width, height);
+
+                const base64 = canvas.toDataURL('image/jpeg', 0.85);
+
+                setEditingCourse({ ...editingCourse, image_url: base64 });
+                showToast("Cover artwork ready. Click Update to save.");
+                currentTarget.value = ''; // Reset to allow re-selection
+            };
+            img.onerror = () => {
+                showToast("Failed to process image. Please try a standard JPG/PNG.", "error");
+                currentTarget.value = '';
+            };
+            img.src = reader.result;
         };
         reader.readAsDataURL(file);
     };
@@ -1289,7 +1315,7 @@ export default function AdminDashboard() {
                                                     <input
                                                         id="cover-upload"
                                                         type="file"
-                                                        accept="image/*"
+                                                        accept="image/*, image/heic, image/webp, .jpg, .jpeg, .png, .gif, .webp, .heic"
                                                         className="hidden"
                                                         onChange={handleUploadCover}
                                                     />
