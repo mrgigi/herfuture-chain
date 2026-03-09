@@ -251,7 +251,19 @@ app.post('/api/complete-lesson', async (req, res) => {
                             .limit(1);
 
                         if (!existing || existing.length === 0) {
-                            await supabase.from('grants').insert([{ participant_id: participantId, milestone, tx_hash: rec.hash, amount: lesson.grant_amount, lesson_id: lesson.id }]);
+                            const { error: insErr } = await supabase.from('grants').insert([{ 
+                                participant_id: participantId, 
+                                milestone, 
+                                tx_hash: rec.hash, 
+                                withdrawable_amount: lesson.grant_amount, 
+                                savings_amount: 0,
+                                investment_amount: 0,
+                                lesson_id: lesson.id 
+                            }]);
+                            if (insErr) {
+                                console.error("[Vercel API] Grant DB Insert Error:", insErr.message);
+                                throw new Error("Failed to record reward in database: " + insErr.message);
+                            }
                         }
                         grantStatus = 'disbursed';
                     } catch (bcErr) {
@@ -519,27 +531,14 @@ app.get('/api/grants/:participantId', async (req, res) => {
 
 app.get('/api/impact/stats', async (req, res) => {
     try {
-        const { data: grants } = await supabase.from('grants').select('amount');
-        const { count: students } = await supabase.from('participants').select('*', { count: 'exact', head: true });
+        // SUM ACTUAL AMOUNTS FROM DB
+        const { data: allGrants } = await supabase.from('grants').select('withdrawable_amount, savings_amount, investment_amount');
+        const totalImpact = (allGrants || []).reduce((acc, g) => (
+            acc + (Number(g.withdrawable_amount) || 0) + (Number(g.savings_amount) || 0) + (Number(g.investment_amount) || 0)
+        ), 0);
 
-        // Sum actual amounts. If amount is missing (unlikely now), we use 0 to avoid inflation
-        const totalImpact = grants?.reduce((acc, g) => acc + (Number(g.amount) || 0), 0) || 0;
-
-        // FETCH ACTUAL BLOCKCHAIN TREASURY BALANCE
-        const cusdAddress = "0x874069Fa1Eb16D44d622F2e0Ca25eeA172369bC1";
-        const cusdAbi = ["function balanceOf(address) view returns (uint256)"];
-        const provider = new ethers.JsonRpcProvider(process.env.CELO_RPC_URL || "https://alfajores-forno.celo-testnet.org");
-        const cusdContract = new ethers.Contract(cusdAddress, cusdAbi, provider);
-
-        // Check the admin wallet balance (treasury)
-        let treasuryBalance = 0;
-        try {
-            const balance = await cusdContract.balanceOf(process.env.ADMIN_WALLET_ADDRESS || adminWallet.address);
-            treasuryBalance = Number(ethers.formatEther(balance));
-        } catch (balErr) {
-            console.error("[Vercel API] Failed to fetch treasury balance:", balErr.message);
-            treasuryBalance = 100000; // Fallback to placeholder if RPC fails
-        }
+        const baselineTreasury = 100000;
+        const treasuryBalance = Math.max(0, baselineTreasury - totalImpact);
 
         // REAL GRADUATES CALCULATION:
         const { count: realGrads } = await supabase
@@ -575,7 +574,9 @@ app.get('/api/impact/recent-grants', async (req, res) => {
                 id,
                 milestone,
                 tx_hash,
-                amount,
+                withdrawable_amount,
+                savings_amount,
+                investment_amount,
                 created_at,
                 lesson_id,
                 participants (
@@ -606,11 +607,19 @@ app.get('/api/impact/recent-grants', async (req, res) => {
             };
         });
 
+        // Calculate treasury balance (shared logic with /api/impact/stats)
+        const { data: allForTreasury } = await supabase.from('grants').select('withdrawable_amount, savings_amount, investment_amount');
+        const totalDisbursed = (allForTreasury || []).reduce((acc, g) => (
+            acc + (Number(g.withdrawable_amount) || 0) + (Number(g.savings_amount) || 0) + (Number(g.investment_amount) || 0)
+        ), 0);
+        const treasuryBalance = Math.max(0, 100000 - totalDisbursed);
+
         res.json({
             grants: formatted,
             total: count || 0,
             page,
-            limit
+            limit,
+            treasuryBalance: treasuryBalance
         });
     } catch (err) {
         console.error('[Vercel API] recent-grants error:', err);
