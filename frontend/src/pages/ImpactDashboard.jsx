@@ -102,13 +102,34 @@ export default function ImpactDashboard() {
                 {/* Top Stats Row */}
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
                     {[
-                        { label: 'Donor Treasury', val: formatNaira(toNaira(stats.treasuryBalance || 100000)), accent: 'text-amber-400' },
-                        { label: 'Audit Score', val: '99.8%', accent: 'text-brand-400' },
-                        { label: 'Total Disbursed', val: formatNaira(toNaira(stats.totalImpact)), accent: 'text-emerald-400' },
-                        { label: 'Milestones', val: stats.grantsDistributed, accent: 'text-fuchsia-400' },
+                        {
+                            label: 'Donor Treasury',
+                            val: formatNaira(toNaira(stats.treasuryBalance || 100000)),
+                            usd: `$${(stats.treasuryBalance || 100000).toLocaleString()}`,
+                            accent: 'text-amber-400'
+                        },
+                        {
+                            label: 'Audit Score',
+                            val: '99.8%',
+                            accent: 'text-brand-400'
+                        },
+                        {
+                            label: 'Total Disbursed',
+                            val: formatNaira(toNaira(stats.totalImpact)),
+                            usd: `$${(stats.totalImpact || 0).toLocaleString()}`,
+                            accent: 'text-emerald-400'
+                        },
+                        {
+                            label: 'Milestones',
+                            val: stats.grantsDistributed,
+                            accent: 'text-fuchsia-400'
+                        },
                     ].map((s, i) => (
                         <div key={i} className="bg-slate-900 border border-white/5 rounded-2xl p-5">
-                            <div className={`text-2xl font-black mb-1 ${s.accent}`}>{s.val}</div>
+                            <div className={`text-2xl font-black mb-1 flex items-baseline gap-2 ${s.accent}`}>
+                                <span>{s.val}</span>
+                                {s.usd && <span className="text-sm opacity-50 font-medium">({s.usd})</span>}
+                            </div>
                             <div className="text-[10px] text-slate-500 uppercase tracking-widest font-semibold">{s.label}</div>
                         </div>
                     ))}
