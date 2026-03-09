@@ -221,6 +221,13 @@ async function completeLesson(req, res) {
 
         if (error) throw error;
 
+        // Fetch participant wallet info early so it's available for both Grants and Certificates
+        const { data: participant } = await supabase
+            .from('participants')
+            .select('id, wallet_address')
+            .eq('id', participantId)
+            .single();
+
         // Fetch the lesson to see if it has a grant
         const { data: lesson } = await supabase
             .from('lessons')
@@ -242,16 +249,8 @@ async function completeLesson(req, res) {
                 console.log(`[LMS] Grant detected, but disbursement is currently PAUSED. Skipping payout.`);
             } else {
                 console.log(`Grant detected: ${lesson.grant_amount} cUSD. Triggering blockchain payout...`);
+                let txHash = 'PENDING_ONCHAIN';
                 try {
-                    let participant = null;
-                    const { data: pData } = await supabase
-                        .from('participants')
-                        .select('id, wallet_address')
-                        .eq('id', participantId)
-                        .single();
-                    participant = pData;
-
-                    let txHash = 'PENDING_ONCHAIN';
                     if (participant && participant.wallet_address) {
                         const milestone = lesson.track_label || `M_${lesson.id}`;
                         console.log(`Executing Celo transaction for milestone: ${milestone}...`);
@@ -282,8 +281,7 @@ async function completeLesson(req, res) {
                         .insert([{
                             participant_id: participantId,
                             milestone: milestone,
-                            tx_hash: txHash,
-                            amount: lesson.grant_amount
+                            tx_hash: txHash
                         }]);
                 }
             }
@@ -334,8 +332,7 @@ async function completeLesson(req, res) {
                         // 2. Record in DB
                         await supabase.from('credentials').insert([{
                             participant_id: participantId,
-                            wallet_address: participant.wallet_address,
-                            credential_type: certTitle,
+                            skill: certTitle,
                             ipfs_hash: ipfsHash,
                             tx_hash: receipt.hash
                         }]);
@@ -345,8 +342,7 @@ async function completeLesson(req, res) {
                         // Still record to DB so they have it locally
                         await supabase.from('credentials').insert([{
                             participant_id: participantId,
-                            wallet_address: participant.wallet_address,
-                            credential_type: certTitle,
+                            skill: certTitle,
                             ipfs_hash: ipfsHash,
                             tx_hash: 'PENDING_ONCHAIN'
                         }]);
