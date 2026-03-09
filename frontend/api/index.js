@@ -1,7 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import { supabase } from './lib/supabaseService.js';
-import { grantDisbursementContract, credentialRegistryContract } from './lib/blockchainService.js';
+import { grantDisbursementContract, credentialRegistryContract, cUSDContract, grantDisbursementAddress } from './lib/blockchainService.js';
 import { ethers } from 'ethers';
 
 const app = express();
@@ -537,8 +537,18 @@ app.get('/api/impact/stats', async (req, res) => {
             acc + (Number(g.withdrawable_amount) || 0) + (Number(g.savings_amount) || 0) + (Number(g.investment_amount) || 0)
         ), 0);
 
-        const baselineTreasury = 100000;
-        const treasuryBalance = Math.max(0, baselineTreasury - totalImpact);
+        // Fetch Live On-Chain cUSD Balance
+        let treasuryBalanceStr = "0.00";
+        try {
+            const balanceWei = await cUSDContract.balanceOf(grantDisbursementAddress);
+            treasuryBalanceStr = ethers.formatUnits(balanceWei, 18);
+        } catch (chainErr) {
+            console.error("[Vercel API] Failed to fetch on-chain cUSD balance:", chainErr.message);
+            // Fallback just in case
+            treasuryBalanceStr = Math.max(0, 100000 - totalImpact).toString();
+        }
+
+        const treasuryBalance = parseFloat(treasuryBalanceStr);
 
         // REAL GRADUATES CALCULATION:
         const { count: realGrads } = await supabase
@@ -607,12 +617,22 @@ app.get('/api/impact/recent-grants', async (req, res) => {
             };
         });
 
-        // Calculate treasury balance (shared logic with /api/impact/stats)
-        const { data: allForTreasury } = await supabase.from('grants').select('withdrawable_amount, savings_amount, investment_amount');
-        const totalDisbursed = (allForTreasury || []).reduce((acc, g) => (
-            acc + (Number(g.withdrawable_amount) || 0) + (Number(g.savings_amount) || 0) + (Number(g.investment_amount) || 0)
-        ), 0);
-        const treasuryBalance = Math.max(0, 100000 - totalDisbursed);
+        // Calculate treasury balance dynamically from the blockchain
+        let treasuryBalanceStr = "0.00";
+        try {
+            const balanceWei = await cUSDContract.balanceOf(grantDisbursementAddress);
+            treasuryBalanceStr = ethers.formatUnits(balanceWei, 18);
+        } catch (chainErr) {
+            console.error("[Vercel API] Failed to fetch on-chain cUSD balance for recent-grants:", chainErr.message);
+            // Fallback
+            const { data: allForTreasury } = await supabase.from('grants').select('withdrawable_amount, savings_amount, investment_amount');
+            const totalDisbursed = (allForTreasury || []).reduce((acc, g) => (
+                acc + (Number(g.withdrawable_amount) || 0) + (Number(g.savings_amount) || 0) + (Number(g.investment_amount) || 0)
+            ), 0);
+            treasuryBalanceStr = Math.max(0, 100000 - totalDisbursed).toString();
+        }
+
+        const treasuryBalance = parseFloat(treasuryBalanceStr);
 
         res.json({
             grants: formatted,

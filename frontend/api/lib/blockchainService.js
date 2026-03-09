@@ -5,6 +5,12 @@ const adminWallet = new ethers.Wallet(process.env.ADMIN_PRIVATE_KEY || '0x000000
 
 const credentialRegistryAddress = process.env.CREDENTIAL_REGISTRY_ADDRESS;
 const grantDisbursementAddress = process.env.GRANT_DISBURSEMENT_ADDRESS;
+const cUSDAddress = process.env.MOCK_CUSD_ADDRESS || "0x18871DD3fb8F301809294069E791397b2F002cBb";
+
+const erc20Abi = [
+    "function balanceOf(address owner) view returns (uint256)",
+    "function decimals() view returns (uint8)"
+];
 
 const credentialRegistryAbi = [
     "function issueCredential(address participant, string credentialType, string ipfsHash) public",
@@ -31,4 +37,10 @@ export const grantDisbursementContract = new ethers.Contract(
     adminWallet
 );
 
-export { provider, adminWallet };
+export const cUSDContract = new ethers.Contract(
+    cUSDAddress,
+    erc20Abi,
+    provider
+);
+
+export { provider, adminWallet, grantDisbursementAddress };
