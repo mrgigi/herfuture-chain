@@ -30,6 +30,8 @@ export default function LessonPlayer() {
     const [lessonCompleted, setLessonCompleted] = useState(false);
     const [grantStatus, setGrantStatus] = useState(null); // 'disbursed' | 'paused' | null
     const [txHash, setTxHash] = useState(null);
+    const [submitting, setSubmitting] = useState(false);
+    const [submitError, setSubmitError] = useState(null);
 
     const triggerCelebration = () => {
         const duration = 3 * 1000;
@@ -104,6 +106,26 @@ export default function LessonPlayer() {
         }
     };
 
+    const submitProgress = async (finalScore) => {
+        setSubmitting(true);
+        setSubmitError(null);
+        try {
+            const phone = localStorage.getItem('userPhone');
+            const participant = await getParticipant(phone);
+            const scorePercentage = totalQuestions > 0 ? Math.round((finalScore / totalQuestions) * 100) : 100;
+            const res = await submitLessonProgress(participant.id, lessonId, scorePercentage);
+            setGrantStatus(res.grantStatus);
+            setTxHash(res.txHash);
+            triggerCelebration();
+            setLessonCompleted(true);
+        } catch (err) {
+            console.error("Failed to submit progress:", err);
+            setSubmitError(err.message || 'Unable to record your reward. Please try again.');
+        } finally {
+            setSubmitting(false);
+        }
+    };
+
     const handleNextQuestion = async () => {
         const nextIndex = currentQuestionIndex + 1;
 
@@ -116,20 +138,7 @@ export default function LessonPlayer() {
             // Must score 100% to pass — scales to any number of questions
             const passed = finalScore === totalQuestions;
             if (passed) {
-                setLoading(true);
-                try {
-                    const phone = localStorage.getItem('userPhone');
-                    const participant = await getParticipant(phone);
-                    const res = await submitLessonProgress(participant.id, lessonId, Math.round((finalScore / totalQuestions) * 100));
-                    setGrantStatus(res.grantStatus);
-                    setTxHash(res.txHash);
-                    triggerCelebration();
-                    setLessonCompleted(true);
-                } catch (err) {
-                    console.error("Failed to submit progress:", err);
-                } finally {
-                    setLoading(false);
-                }
+                submitProgress(finalScore);
             }
         } else {
             // Move to next question
@@ -145,20 +154,7 @@ export default function LessonPlayer() {
     };
 
     const handleClaimWithoutQuiz = async () => {
-        setLoading(true);
-        try {
-            const phone = localStorage.getItem('userPhone');
-            const participant = await getParticipant(phone);
-            const res = await submitLessonProgress(participant.id, lessonId, 100);
-            setGrantStatus(res.grantStatus);
-            setTxHash(res.txHash);
-            triggerCelebration();
-            setLessonCompleted(true);
-        } catch (err) {
-            console.error("Failed to claim grant:", err);
-        } finally {
-            setLoading(false);
-        }
+        submitProgress(100);
     };
 
     // ─── Lesson Complete Screen ───────────────────────────────────────────────
@@ -213,8 +209,48 @@ export default function LessonPlayer() {
         );
     }
 
-    // ─── Quiz Finished, Did Not Pass Screen ──────────────────────────────────
+    // ─── Quiz Finished Screen (Pass with Error, or Did Not Pass) ──────────────
     if (quizFinished && !lessonCompleted) {
+        const passed = score === totalQuestions;
+
+        if (passed) {
+            return (
+                <div className="min-h-screen bg-[#0A0F1C] flex items-center justify-center p-6 relative overflow-hidden">
+                    <div className="max-w-sm w-full glass-panel p-10 rounded-[40px] border border-white/10 relative z-10 text-center">
+                        {submitting ? (
+                            <>
+                                <div className="w-20 h-20 bg-brand-500/10 rounded-3xl flex items-center justify-center mx-auto mb-6">
+                                    <div className="h-8 w-8 border-4 border-brand-500/30 border-t-brand-500 rounded-full animate-spin shadow-lg shadow-brand-500/20" />
+                                </div>
+                                <h2 className="text-2xl font-black text-white mb-3">Recording Progress...</h2>
+                                <p className="text-slate-400 text-sm mb-3">Please wait while we secure your reward.</p>
+                            </>
+                        ) : submitError ? (
+                            <>
+                                <div className="w-20 h-20 bg-red-500/10 rounded-3xl flex items-center justify-center mx-auto mb-6 text-4xl shadow-xl shadow-red-500/20 border border-red-500/20">
+                                    ⚠️
+                                </div>
+                                <h2 className="text-2xl font-black text-white mb-3 tracking-tight">Submission Failed</h2>
+                                <p className="text-red-400 text-sm mb-6 leading-relaxed font-medium pb-2 border-b border-white/5">{submitError}</p>
+                                <button
+                                    onClick={() => submitProgress(score)}
+                                    className="w-full py-4 bg-red-500 hover:bg-red-400 text-white rounded-2xl font-black uppercase tracking-widest text-sm transition-all shadow-xl shadow-red-500/20"
+                                >
+                                    Retry Claim Reward
+                                </button>
+                                <button
+                                    onClick={() => setQuizFinished(false)}
+                                    className="w-full mt-4 text-xs font-bold text-slate-500 hover:text-white transition-colors py-2"
+                                >
+                                    ← Back to Video
+                                </button>
+                            </>
+                        ) : null}
+                    </div>
+                </div>
+            );
+        }
+
         // Tier the message based on how many they got right
         const isZero = score === 0;
         const emoji = isZero ? '😅' : '💪';
@@ -231,6 +267,7 @@ export default function LessonPlayer() {
             setSelectedAnswer(null);
             setQuestionResult(null);
             setQuizFinished(false);
+            setSubmitError(null);
         };
 
         return (
@@ -385,7 +422,7 @@ export default function LessonPlayer() {
                                         {!questionResult ? (
                                             <button
                                                 onClick={handleSubmitAnswer}
-                                                disabled={!selectedAnswer || loading}
+                                                disabled={!selectedAnswer || submitting}
                                                 className="w-full py-4 rounded-2xl bg-brand-500 hover:bg-brand-400 text-white font-black uppercase tracking-wider text-xs shadow-xl shadow-brand-500/20 transition-all disabled:opacity-40"
                                             >
                                                 {!selectedAnswer ? 'Select an Answer' : 'Submit Answer'}
@@ -393,10 +430,10 @@ export default function LessonPlayer() {
                                         ) : (
                                             <button
                                                 onClick={handleNextQuestion}
-                                                disabled={loading}
+                                                disabled={submitting}
                                                 className="w-full py-4 rounded-2xl bg-brand-500 hover:bg-brand-400 text-white font-black uppercase tracking-wider text-xs shadow-xl shadow-brand-500/20 transition-all flex items-center justify-center gap-2"
                                             >
-                                                {currentQuestionIndex + 1 >= totalQuestions ? (loading ? 'Processing...' : 'See Results') : 'Next Question'}
+                                                {currentQuestionIndex + 1 >= totalQuestions ? (submitting ? 'Processing...' : 'See Results') : 'Next Question'}
                                                 <ArrowRight className="w-4 h-4" />
                                             </button>
                                         )}
@@ -410,8 +447,15 @@ export default function LessonPlayer() {
                                 // No quiz found
                                 <div className="text-center">
                                     <p className="text-slate-500 mb-6">No quiz found for this lesson. You can claim your reward!</p>
-                                    <button onClick={handleClaimWithoutQuiz} disabled={loading} className="btn-primary px-8 py-4 flex items-center gap-2 justify-center mx-auto">
-                                        {loading ? <div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : 'Claim My Reward'}
+
+                                    {submitError && (
+                                        <div className="mb-4 p-3 bg-red-500/10 border border-red-500/20 text-red-400 text-sm rounded-xl font-medium shadow-md">
+                                            {submitError}
+                                        </div>
+                                    )}
+
+                                    <button onClick={handleClaimWithoutQuiz} disabled={submitting} className="btn-primary px-8 py-4 flex items-center gap-2 justify-center mx-auto transition-all w-full max-w-[280px]">
+                                        {submitting ? <div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : 'Claim My Reward'}
                                     </button>
                                 </div>
                             )}
