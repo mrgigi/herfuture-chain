@@ -277,13 +277,13 @@ async function completeLesson(req, res) {
                 if (participant && participant.id) {
                     const milestone = lesson.track_label || `M_${lesson.id}`;
 
-                    // Triple-split logic (70/20/10)
+                    // Consolidated Grant Logic (100% to withdrawable)
                     const totalAmount = Number(lesson.grant_amount) || 0;
-                    const withdrawable = totalAmount * 0.7;
-                    const savings = totalAmount * 0.2;
-                    const investment = totalAmount * 0.1;
+                    const withdrawable = totalAmount;
+                    const savings = 0;
+                    const investment = 0;
 
-                    console.log(`[LMS] Recording split grant: W:${withdrawable}, S:${savings}, I:${investment}`);
+                    console.log(`[LMS] Recording consolidated grant: ${totalAmount} cUSD`);
 
                     const { error: grantInsertError } = await supabase
                         .from('grants')
@@ -400,37 +400,10 @@ async function getProgressOverview(req, res) {
 
         const completedLessonIds = new Set(progress?.map(p => p.lesson_id) || []);
 
-        // Calculate Total Earned from actual grants table split columns
-        const { data: userGrants } = await supabase
-            .from('grants')
-            .select('withdrawable_amount, savings_amount, investment_amount')
-            .eq('participant_id', participantId);
-
-        let totalWithdrawable = 0;
-        let totalSavings = 0;
-        let totalInvestment = 0;
-
-        if (userGrants && userGrants.length > 0) {
-            userGrants.forEach(g => {
-                totalWithdrawable += (Number(g.withdrawable_amount) || 0);
-                totalSavings += (Number(g.savings_amount) || 0);
-                totalInvestment += (Number(g.investment_amount) || 0);
-            });
-        }
-
-        // If even with grant records, the split total is 0, 
-        // fallback to calculating from lessons to support legacy completions
-        if (totalWithdrawable + totalSavings + totalInvestment === 0) {
-            const rawTotal = lessons
-                .filter(l => completedLessonIds.has(l.id))
-                .reduce((acc, l) => acc + (l.grant_amount || 0), 0);
-
-            totalWithdrawable = rawTotal * 0.7;
-            totalSavings = rawTotal * 0.2;
-            totalInvestment = rawTotal * 0.1;
-        }
-
-        const totalEarned = totalWithdrawable + totalSavings + totalInvestment;
+        // Calculate Total Earned
+        const totalEarned = lessons
+            .filter(l => completedLessonIds.has(l.id))
+            .reduce((acc, l) => acc + (l.grant_amount || 0), 0);
 
         // Find Upcoming Reward
         // Sort lessons by track_number (from course) then sequence_number to find the "next" one
@@ -464,9 +437,6 @@ async function getProgressOverview(req, res) {
             totalModules: lessons?.length || 0,
             percentage: lessons?.length ? Math.round((progress?.length / lessons.length) * 100) : 0,
             totalEarned,
-            withdrawableTotal: totalWithdrawable,
-            savingsTotal: totalSavings,
-            investmentTotal: totalInvestment,
             upcomingReward,
             perCourseProgress
         });

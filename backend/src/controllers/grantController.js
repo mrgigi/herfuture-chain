@@ -55,10 +55,10 @@ async function releaseGrant(req, res) {
         const receiptRelease = await txRelease.wait();
 
         // 4. Document grant state to Supabase table
-        const totalAmount = 30; // Default if not otherwise known
-        const withdrawable = totalAmount * 0.7;
-        const savings = totalAmount * 0.2;
-        const investment = totalAmount * 0.1;
+        const totalAmount = 30; // Default
+        const withdrawable = totalAmount;
+        const savings = 0;
+        const investment = 0;
 
         const { error: insertError } = await supabase
             .from('grants')
@@ -123,7 +123,7 @@ async function getGrants(req, res) {
         const formattedGrants = grants.map(grant => {
             const lesson = (lessons || []).find(l => l.track_label === grant.milestone || `M_${l.id}` === grant.milestone);
 
-            // Calculate total from split columns
+            // Calculate total (Summing all for compatibility, but future will be 100% in withdrawable)
             const calculatedAmount = (Number(grant.withdrawable_amount) || 0) +
                 (Number(grant.savings_amount) || 0) +
                 (Number(grant.investment_amount) || 0);
@@ -160,7 +160,7 @@ async function getGlobalImpactStats(req, res) {
             .select('*', { count: 'exact', head: true })
             .eq('milestone', '3.6');
 
-        // 4. Calculate total amount (Sum directly from grants table split columns)
+        // 4. Calculate total amount (Summing all buckets for backward compatibility)
         const { data: grantsData } = await supabase
             .from('grants')
             .select('withdrawable_amount, savings_amount, investment_amount');
@@ -220,7 +220,7 @@ async function getRecentGrants(req, res) {
         const formatted = data.map(g => {
             const lesson = lessons.find(l => l.track_label === g.milestone || `M_${l.id}` === g.milestone);
 
-            // Calculate total from split columns
+            // Calculate total (Summing all buckets for backward compatibility)
             const calculatedAmount = (Number(g.withdrawable_amount) || 0) +
                 (Number(g.savings_amount) || 0) +
                 (Number(g.investment_amount) || 0);
