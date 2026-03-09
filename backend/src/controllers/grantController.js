@@ -55,13 +55,20 @@ async function releaseGrant(req, res) {
         const receiptRelease = await txRelease.wait();
 
         // 4. Document grant state to Supabase table
+        const totalAmount = 30; // Default if not otherwise known
+        const withdrawable = totalAmount * 0.7;
+        const savings = totalAmount * 0.2;
+        const investment = totalAmount * 0.1;
+
         const { error: insertError } = await supabase
             .from('grants')
             .insert([{
                 participant_id: participant.id,
                 milestone: milestone,
+                withdrawable_amount: withdrawable,
+                savings_amount: savings,
+                investment_amount: investment,
                 tx_hash: receiptRelease.hash
-                // amount would typically be parsed back from contract events or defined config
             }]);
 
         if (insertError) {
@@ -115,10 +122,16 @@ async function getGrants(req, res) {
 
         const formattedGrants = grants.map(grant => {
             const lesson = (lessons || []).find(l => l.track_label === grant.milestone || `M_${l.id}` === grant.milestone);
+
+            // Calculate total from split columns
+            const calculatedAmount = (Number(grant.withdrawable_amount) || 0) +
+                (Number(grant.savings_amount) || 0) +
+                (Number(grant.investment_amount) || 0);
+
             return {
                 ...grant,
                 milestone_name: lesson ? lesson.title : `Milestone ${grant.milestone}`,
-                amount: grant.amount || (lesson ? lesson.grant_amount : 0)
+                amount: calculatedAmount || (lesson ? lesson.grant_amount : 0)
             };
         });
 
@@ -147,18 +160,24 @@ async function getGlobalImpactStats(req, res) {
             .select('*', { count: 'exact', head: true })
             .eq('milestone', '3.6');
 
-        // 4. Calculate total amount (Sum directly from grants table)
+        // 4. Calculate total amount (Sum directly from grants table split columns)
         const { data: grantsData } = await supabase
             .from('grants')
-            .select('amount');
+            .select('withdrawable_amount, savings_amount, investment_amount');
 
         let totalAmount = 0;
         grantsData.forEach(g => {
-            totalAmount += (Number(g.amount) || 0);
+            totalAmount += (Number(g.withdrawable_amount) || 0) +
+                (Number(g.savings_amount) || 0) +
+                (Number(g.investment_amount) || 0);
         });
+
+        const baselineTreasury = 100000;
+        const treasuryBalance = Math.max(0, baselineTreasury - totalAmount);
 
         res.json({
             totalImpact: totalAmount,
+            treasuryBalance: treasuryBalance,
             grantsDistributed: grantsCount || 0,
             graduates: graduatesCount || 0,
             countries: 1, // Nigeria
@@ -200,9 +219,15 @@ async function getRecentGrants(req, res) {
 
         const formatted = data.map(g => {
             const lesson = lessons.find(l => l.track_label === g.milestone || `M_${l.id}` === g.milestone);
+
+            // Calculate total from split columns
+            const calculatedAmount = (Number(g.withdrawable_amount) || 0) +
+                (Number(g.savings_amount) || 0) +
+                (Number(g.investment_amount) || 0);
+
             return {
                 student: g.participants ? `${g.participants.first_name || 'Student'} ${g.participants.last_name || ''}`.trim() : 'Anonymous',
-                amount: g.amount || (lesson ? lesson.grant_amount : 0),
+                amount: calculatedAmount || (lesson ? lesson.grant_amount : 0),
                 track: lesson ? lesson.title : g.milestone,
                 tx: g.tx_hash,
                 time: g.created_at

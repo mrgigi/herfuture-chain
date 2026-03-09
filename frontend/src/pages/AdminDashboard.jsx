@@ -783,7 +783,9 @@ export default function AdminDashboard() {
                                                 <DollarSign className="w-8 h-8 text-amber-400" />
                                             </div>
                                             <div>
-                                                <div className="text-3xl font-black text-white">$100,000.00</div>
+                                                <div className="text-3xl font-black text-white">
+                                                    ${(grantsData?.data?.treasuryBalance || 100000).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                </div>
                                                 <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Available cUSD Reserve</div>
                                             </div>
                                         </div>

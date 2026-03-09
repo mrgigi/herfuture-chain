@@ -276,13 +276,29 @@ async function completeLesson(req, res) {
                 // even if the actual blockchain push is pending gas top-up
                 if (participant && participant.id) {
                     const milestone = lesson.track_label || `M_${lesson.id}`;
-                    await supabase
+
+                    // Triple-split logic (70/20/10)
+                    const totalAmount = Number(lesson.grant_amount) || 0;
+                    const withdrawable = totalAmount * 0.7;
+                    const savings = totalAmount * 0.2;
+                    const investment = totalAmount * 0.1;
+
+                    console.log(`[LMS] Recording split grant: W:${withdrawable}, S:${savings}, I:${investment}`);
+
+                    const { error: grantInsertError } = await supabase
                         .from('grants')
                         .insert([{
                             participant_id: participantId,
                             milestone: milestone,
+                            withdrawable_amount: withdrawable,
+                            savings_amount: savings,
+                            investment_amount: investment,
                             tx_hash: txHash
                         }]);
+
+                    if (grantInsertError) {
+                        console.error("[LMS] Failed to insert grant record:", grantInsertError.message);
+                    }
                 }
             }
         }
