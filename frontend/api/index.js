@@ -758,10 +758,9 @@ Format:
 [{"question": "...", "options": ["A", "B", "C", "D"], "answer": "A"}]`;
 
         const modelsToTry = [
-            'gemini-flash-latest',
             'gemini-1.5-flash',
-            'gemini-1.5-flash-latest',
-            'gemini-pro'
+            'gemini-1.5-flash-8b',
+            'gemini-1.5-pro'
         ];
 
         let response;
