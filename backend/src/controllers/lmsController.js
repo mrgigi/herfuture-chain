@@ -243,13 +243,15 @@ async function completeLesson(req, res) {
             } else {
                 console.log(`Grant detected: ${lesson.grant_amount} cUSD. Triggering blockchain payout...`);
                 try {
-                    // Fetch participant wallet
-                    const { data: participant } = await supabase
+                    let participant = null;
+                    const { data: pData } = await supabase
                         .from('participants')
-                        .select('wallet_address')
+                        .select('id, wallet_address')
                         .eq('id', participantId)
                         .single();
+                    participant = pData;
 
+                    let txHash = 'PENDING_ONCHAIN';
                     if (participant && participant.wallet_address) {
                         const milestone = lesson.track_label || `M_${lesson.id}`;
                         console.log(`Executing Celo transaction for milestone: ${milestone}...`);
@@ -262,21 +264,93 @@ async function completeLesson(req, res) {
 
                         const txRelease = await grantDisbursementContract.releaseGrant(participant.wallet_address);
                         const receipt = await txRelease.wait();
+                        txHash = receipt.hash;
 
-                        console.log(`Grant dispersed! Tx: ${receipt.hash}`);
-
-                        // Log to grants table
-                        await supabase
-                            .from('grants')
-                            .insert([{
-                                participant_id: participantId,
-                                milestone: milestone,
-                                tx_hash: receipt.hash
-                            }]);
+                        console.log(`Grant dispersed! Tx: ${txHash}`);
                     }
                 } catch (payoutError) {
-                    console.error("Blockchain payout failed:", payoutError.message);
+                    console.error("Blockchain payout failed due to low gas or contract error:", payoutError.message);
                     // We still report lesson completion success even if payout fails (for dashboard visibility)
+                }
+
+                // ALWAYS record to grants table so the student sees they earned it, 
+                // even if the actual blockchain push is pending gas top-up
+                if (participant && participant.id) {
+                    const milestone = lesson.track_label || `M_${lesson.id}`;
+                    await supabase
+                        .from('grants')
+                        .insert([{
+                            participant_id: participantId,
+                            milestone: milestone,
+                            tx_hash: txHash,
+                            amount: lesson.grant_amount
+                        }]);
+                }
+            }
+        }
+
+        // --- Certificate Issuance Logic ---
+        // After completing a lesson, check if the entire COURSE is now complete
+        const { data: courseLessons } = await supabase
+            .from('lessons')
+            .select('id')
+            .eq('course_id', lesson.course_id);
+
+        if (courseLessons && courseLessons.length > 0) {
+            const courseLessonIds = courseLessons.map(l => l.id);
+            const { data: completedInThisCourse } = await supabase
+                .from('student_progress')
+                .select('lesson_id')
+                .eq('participant_id', participantId)
+                .in('lesson_id', courseLessonIds)
+                .eq('status', 'completed');
+
+            // If the user has completed all lessons in this course
+            if (completedInThisCourse && completedInThisCourse.length === courseLessonIds.length) {
+                const { data: courseData } = await supabase.from('courses').select('title').eq('id', lesson.course_id).single();
+                const certTitle = courseData ? `Certified in ${courseData.title}` : 'Program Completion Certificate';
+
+                // Check if credential already exists to avoid duplicates
+                const { data: existingCert } = await supabase
+                    .from('credentials')
+                    .select('id')
+                    .eq('participant_id', participantId)
+                    .eq('credential_type', certTitle)
+                    .single();
+
+                if (!existingCert && participant && participant.wallet_address) {
+                    console.log(`Course fully completed! Issuing certificate: ${certTitle}`);
+                    const ipfsHash = "QmPlaceholderForNow"; // Placeholder or call IPFS service
+                    try {
+                        // 1. Issue on Blockchain
+                        const { credentialRegistryContract } = require('../services/blockchainService');
+                        const tx = await credentialRegistryContract.issueCredential(
+                            participant.wallet_address,
+                            certTitle,
+                            ipfsHash
+                        );
+                        const receipt = await tx.wait();
+
+                        // 2. Record in DB
+                        await supabase.from('credentials').insert([{
+                            participant_id: participantId,
+                            wallet_address: participant.wallet_address,
+                            credential_type: certTitle,
+                            ipfs_hash: ipfsHash,
+                            tx_hash: receipt.hash
+                        }]);
+                        console.log(`Certificate issued successfully!`);
+                    } catch (certError) {
+                        console.error("Certificate blockchain issuance failed:", certError.message);
+                        // Still record to DB so they have it locally
+                        await supabase.from('credentials').insert([{
+                            participant_id: participantId,
+                            wallet_address: participant.wallet_address,
+                            credential_type: certTitle,
+                            ipfs_hash: ipfsHash,
+                            tx_hash: 'PENDING_ONCHAIN'
+                        }]);
+                    }
                 }
             }
         }
