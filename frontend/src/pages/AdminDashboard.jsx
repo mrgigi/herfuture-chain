@@ -185,7 +185,7 @@ export default function AdminDashboard() {
     const saveCourse = async () => {
         setIsSavingMetadata(true);
         try {
-            // 1. Save Course Metadata
+            // 1. Save Course Metadata ONLY
             await updateCourseDetails(editingCourse.id, {
                 title: editingCourse.title,
                 learning_outcome: editingCourse.learning_outcome,
@@ -194,32 +194,11 @@ export default function AdminDashboard() {
                 track_number: parseInt(editingCourse.track_number) || 1
             });
 
-            // 2. Bulk Save Syllabus (Modules & Lessons)
-            // This ensures anything currently in the UI state is flushed to the DB
-            const syllabusPromises = [];
-
-            courseModules.forEach(mod => {
-                // Save Module
-                syllabusPromises.push(updateModule(mod.id, { title: mod.title }));
-
-                // Save Lessons
-                mod.lessons.forEach(lesson => {
-                    syllabusPromises.push(updateLesson(lesson.id, {
-                        title: lesson.title,
-                        video_url: lesson.video_url,
-                        content: lesson.content,
-                        grant_amount: lesson.grant_amount
-                    }));
-                });
-            });
-
-            await Promise.all(syllabusPromises);
-
             queryClient.setQueryData(['admin-courses'], prev => prev.map(c => c.id === editingCourse.id ? editingCourse : c));
-            showToast("Curriculum and metadata synchronized", "success");
+            showToast("Metadata updated successfully!", "success");
         } catch (err) {
-            console.error("Full save error:", err);
-            const errorMsg = err.response?.data?.error || "Full synchronized save failed";
+            console.error("Metadata save error:", err);
+            const errorMsg = err.response?.data?.error || "Metadata update failed";
             showToast(errorMsg, "error");
         } finally {
             setIsSavingMetadata(false);
@@ -461,16 +440,20 @@ export default function AdminDashboard() {
 
     const handleSaveQuizManual = async (isSilent = false) => {
         if (!currentLessonForQuiz) return;
+
+        // Prevent double-saves if already loading
+        if (!isSilent && isSavingQuiz) return;
+
         if (!isSilent) setIsSavingQuiz(true);
         try {
             await saveQuiz(currentLessonForQuiz.id, quizData);
             if (!isSilent) {
-                setQuizEditorOpen(false);
-                alert("Quiz saved successfully!");
+                showToast("Quiz saved successfully!", "success");
+                setTimeout(() => setQuizEditorOpen(false), 500);
             }
         } catch (err) {
             console.error("Save quiz error:", err);
-            if (!isSilent) alert("Failed to save quiz");
+            if (!isSilent) showToast("Failed to save quiz", "error");
         } finally {
             if (!isSilent) setIsSavingQuiz(false);
         }
