@@ -78,12 +78,7 @@ export default function Dashboard() {
                             secondary: `${formatCUSD(totalGrantsReceived)} cUSD`,
                             icon: <Wallet className="w-4 h-4 text-emerald-400" />,
                             badge: 'Verified',
-                            badgeColor: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
-                            breakdown: [
-                                { label: 'Withdrawable (70%)', val: progress.withdrawableTotal || 0 },
-                                { label: 'Savings (20%)', val: progress.savingsTotal || 0 },
-                                { label: 'Investment (10%)', val: progress.investmentTotal || 0 },
-                            ]
+                            badgeColor: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
                         },
                         {
                             label: 'Upcoming Reward',
@@ -108,17 +103,6 @@ export default function Dashboard() {
                                 <div className="text-3xl font-black text-white tracking-tight">{stat.value}</div>
                                 <div className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">{stat.secondary}</div>
                             </div>
-
-                            {stat.breakdown && (
-                                <div className="mt-4 pt-4 border-t border-white/5 space-y-2">
-                                    {stat.breakdown.map((b, j) => (
-                                        <div key={j} className="flex justify-between items-center px-1">
-                                            <span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">{b.label}</span>
-                                            <span className="text-[9px] font-black text-emerald-400 uppercase tracking-tighter">{formatCUSD(b.val)}</span>
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
                         </div>
                     ))}
                 </div>

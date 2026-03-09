@@ -96,52 +96,32 @@ export default function Grants() {
                             </div>
 
                             <div className="col-span-6 sm:col-span-3">
-                                <h3 className="text-sm font-bold text-white truncate group-hover:text-brand-400 transition-colors uppercase tracking-tight">{grant.milestone_name}</h3>
-                                <div className="flex items-center gap-2 mt-1 sm:hidden">
-                                    <Calendar className="w-3 h-3 text-slate-600" />
-                                    <span className="text-[9px] text-slate-500 font-mono">{new Date(grant.created_at).toLocaleDateString('en-GB')}</span>
-                                </div>
+                                <h3 className="text-sm font-bold text-white truncate group-hover:text-brand-400 transition-colors">{grant.milestone_name}</h3>
                             </div>
 
-                            <div className="col-span-3 sm:col-span-2 flex flex-col items-start justify-center">
+                            <div className="col-span-3 sm:col-span-2 flex flex-col items-start gap-0.5">
                                 <span className="text-emerald-400 font-black text-sm">
                                     {formatNaira(toNaira(grant.amount))}
                                 </span>
                                 <span className="text-[10px] font-bold text-slate-500">
-                                    {formatCUSD(grant.amount)}
+                                    {formatCUSD(grant.amount)} cUSD
                                 </span>
                             </div>
 
-                            {/* Breakdown Column (Desktop Only) */}
-                            <div className="col-span-3 hidden md:flex flex-col gap-1 justify-center border-l border-white/5 pl-4">
-                                <div className="flex justify-between items-center w-full max-w-[140px]">
-                                    <span className="text-[8px] font-bold text-slate-600 uppercase tracking-widest">Withdrawable</span>
-                                    <span className="text-[9px] font-black text-slate-300 tracking-tighter">{formatCUSD(grant.withdrawable_amount || 0)}</span>
-                                </div>
-                                <div className="flex justify-between items-center w-full max-w-[140px]">
-                                    <span className="text-[8px] font-bold text-slate-600 uppercase tracking-widest">Savings</span>
-                                    <span className="text-[9px] font-black text-slate-300 tracking-tighter">{formatCUSD(grant.savings_amount || 0)}</span>
-                                </div>
-                                <div className="flex justify-between items-center w-full max-w-[140px]">
-                                    <span className="text-[8px] font-bold text-slate-600 uppercase tracking-widest">Investment</span>
-                                    <span className="text-[9px] font-black text-slate-300 tracking-tighter">{formatCUSD(grant.investment_amount || 0)}</span>
-                                </div>
-                            </div>
-
-                            <div className="col-span-3 sm:col-span-2 hidden sm:flex items-center gap-2 text-xs font-medium text-slate-500 font-mono">
-                                <Calendar className="w-3.5 h-3.5 text-slate-700" />
+                            <div className="col-span-4 sm:col-span-3 hidden sm:flex items-center gap-2 text-xs font-medium text-slate-400 font-mono">
+                                <Calendar className="w-3.5 h-3.5 text-slate-600" />
                                 {new Date(grant.created_at).toLocaleDateString('en-GB')}
                             </div>
 
-                            <div className="col-span-3 sm:col-span-1 text-right flex justify-end">
+                            <div className="col-span-3 text-right flex justify-end">
                                 <a
                                     href={`https://celoscan.io/tx/${grant.tx_hash}`}
                                     target="_blank"
                                     rel="noreferrer"
-                                    className="w-10 h-10 flex items-center justify-center rounded-xl bg-slate-950 text-slate-500 hover:bg-brand-500 hover:text-white transition-all active:scale-95 border border-slate-800 hover:border-brand-500 shadow-lg hover:shadow-brand-500/20"
-                                    title="Verify on Explorer"
+                                    className="flex items-center gap-2 text-[10px] font-black px-4 py-2 rounded-xl bg-slate-950 text-slate-300 hover:bg-brand-500 hover:text-white transition-all active:scale-95 border border-slate-800 hover:border-brand-500 uppercase tracking-widest"
                                 >
-                                    <ExternalLink className="w-4 h-4" />
+                                    <span className="hidden sm:inline">Check Record</span>
+                                    <ExternalLink className="w-3 h-3" />
                                 </a>
                             </div>
                         </div>
