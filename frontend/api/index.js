@@ -688,7 +688,8 @@ Format:
                         contents: [{ parts: [{ text: prompt }] }],
                         generationConfig: {
                             temperature: 0.7,
-                            maxOutputTokens: 1200
+                            maxOutputTokens: 1200,
+                            responseMimeType: 'application/json'
                         }
                     })
                 });
@@ -729,14 +730,34 @@ Format:
 
         let quiz;
         try {
-            const cleaned = raw.replace(/```json|```/g, '').trim();
+            const cleaned = raw.replace(/```(?:json)?\s*|\s*```/ig, '').trim();
             quiz = JSON.parse(cleaned);
         } catch (e) {
-            const jsonMatch = raw.match(/\[.*\]/s);
-            if (jsonMatch) {
-                quiz = JSON.parse(jsonMatch[0]);
-            } else {
-                throw new Error('Unable to parse quiz JSON from Gemini response');
+            console.warn("[Vercel API] First JSON parse failed, attempting extraction...");
+            try {
+                // Try array match first
+                const arrayMatch = raw.match(/\[[\s\S]*\]/);
+                if (arrayMatch) {
+                    quiz = JSON.parse(arrayMatch[0]);
+                } else {
+                    // Try object match
+                    const objectMatch = raw.match(/\{[\s\S]*\}/);
+                    if (objectMatch) {
+                        const parsedObj = JSON.parse(objectMatch[0]);
+                        // find the first array inside the object
+                        const arrayVal = Object.values(parsedObj).find(val => Array.isArray(val));
+                        if (arrayVal) {
+                            quiz = arrayVal;
+                        } else {
+                            throw new Error('No array found inside returned JSON object');
+                        }
+                    } else {
+                        throw new Error('Unable to parse active JSON structure from Gemini response');
+                    }
+                }
+            } catch (fallbackError) {
+                console.error("[Vercel API] Extraction failed. Raw text was:", raw);
+                return res.status(502).json({ error: `AI generated unreadable text. Please try again. Raw: ${raw.substring(0, 100)}...` });
             }
         }
 
