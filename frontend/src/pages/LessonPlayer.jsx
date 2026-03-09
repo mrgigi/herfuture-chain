@@ -181,7 +181,7 @@ export default function LessonPlayer() {
                             <div className="text-[10px] font-black text-brand-400 uppercase tracking-[0.3em]">Reward Earned</div>
                             {txHash && (
                                 <a
-                                    href={`https://celoscan.io/tx/${txHash}`}
+                                    href={`https://sepolia.celoscan.io/tx/${txHash}`}
                                     target="_blank"
                                     rel="noreferrer"
                                     className="text-[10px] font-black text-emerald-400 hover:text-emerald-300 flex items-center gap-1.5 uppercase transition-colors"

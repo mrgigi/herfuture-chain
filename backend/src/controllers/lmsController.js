@@ -249,7 +249,8 @@ async function completeLesson(req, res) {
                 console.log(`[LMS] Grant detected, but disbursement is currently PAUSED. Skipping payout.`);
             } else {
                 console.log(`Grant detected: ${lesson.grant_amount} cUSD. Triggering blockchain payout...`);
-                let txHash = 'PENDING_ONCHAIN';
+                let txHash = null;
+                let grantStatus = 'disbursed';
                 try {
                     if (participant && participant.wallet_address) {
                         const milestone = lesson.track_label || `M_${lesson.id}`;
@@ -266,9 +267,14 @@ async function completeLesson(req, res) {
                         txHash = receipt.hash;
 
                         console.log(`Grant dispersed! Tx: ${txHash}`);
+                    } else {
+                        console.warn(`[LMS] Participant wallet address missing for ${participantId}. Payout skipped.`);
+                        grantStatus = 'failed_no_wallet';
                     }
                 } catch (payoutError) {
                     console.error("Blockchain payout failed due to low gas or contract error:", payoutError.message);
+                    txHash = 'PENDING_ONCHAIN';
+                    grantStatus = 'failed_blockchain';
                     // We still report lesson completion success even if payout fails (for dashboard visibility)
                 }
 
@@ -298,6 +304,7 @@ async function completeLesson(req, res) {
 
                     if (grantInsertError) {
                         console.error("[LMS] Failed to insert grant record:", grantInsertError.message);
+                        throw new Error(`Failed to record reward in database: ${grantInsertError.message}`);
                     }
                 }
             }
@@ -367,7 +374,13 @@ async function completeLesson(req, res) {
             }
         }
 
-        res.json({ message: "Lesson completed!", data, grant_triggered: !!(lesson && lesson.grant_amount > 0) });
+        res.json({
+            message: "Lesson completed!",
+            data,
+            grant_triggered: !!(lesson && lesson.grant_amount > 0),
+            txHash: typeof txHash !== 'undefined' ? txHash : null,
+            grantStatus: typeof grantStatus !== 'undefined' ? grantStatus : null
+        });
     } catch (error) {
         console.error("completeLesson error:", error);
         res.status(500).json({ error: error.message });

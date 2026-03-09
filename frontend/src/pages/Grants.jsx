@@ -115,7 +115,7 @@ export default function Grants() {
 
                             <div className="col-span-3 text-right flex justify-end">
                                 <a
-                                    href={`https://celoscan.io/tx/${grant.tx_hash}`}
+                                    href={`https://sepolia.celoscan.io/tx/${grant.tx_hash}`}
                                     target="_blank"
                                     rel="noreferrer"
                                     className="flex items-center gap-2 text-[10px] font-black px-4 py-2 rounded-xl bg-slate-950 text-slate-300 hover:bg-brand-500 hover:text-white transition-all active:scale-95 border border-slate-800 hover:border-brand-500 uppercase tracking-widest"
