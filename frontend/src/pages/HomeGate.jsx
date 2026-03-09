@@ -6,12 +6,12 @@ export default function HomeGate() {
     const navigate = useNavigate();
 
     const partners = [
-        "Empower Afriq Foundation",
-        "A+ Agency",
         "Gigimobile Tech",
-        "Celo Foundation",
-        "Blockchain for Social Good",
-        "Lagos Tech Hub"
+        "Empower Afriq Foundation",
+        "Yunometa",
+        "India Blockchain Alliance",
+        "GWBA",
+        "Credentia"
     ];
 
     return (
