@@ -441,6 +441,24 @@ export default function AdminDashboard() {
     const handleSaveQuizManual = async (isSilent = false) => {
         if (!currentLessonForQuiz) return;
 
+        // Validation: Must have at least one question
+        if (!quizData || quizData.length === 0) {
+            if (!isSilent) showToast("Please add at least one question.", "error");
+            return;
+        }
+
+        // Validation: Every question must be fully filled out
+        const isValid = quizData.every(q =>
+            q.question?.trim() !== "" &&
+            q.options?.every(opt => opt?.trim() !== "") &&
+            q.answer?.trim() !== ""
+        );
+
+        if (!isValid) {
+            if (!isSilent) showToast("Please fill out all questions, options, and select correct answers.", "error");
+            return;
+        }
+
         // Prevent double-saves if already loading
         if (!isSilent && isSavingQuiz) return;
 
