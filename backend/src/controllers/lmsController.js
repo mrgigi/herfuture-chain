@@ -400,10 +400,23 @@ async function getProgressOverview(req, res) {
 
         const completedLessonIds = new Set(progress?.map(p => p.lesson_id) || []);
 
-        // Calculate Total Earned
-        const totalEarned = lessons
-            .filter(l => completedLessonIds.has(l.id))
-            .reduce((acc, l) => acc + (l.grant_amount || 0), 0);
+        // Calculate Total Earned from actual grants table split columns
+        const { data: userGrants } = await supabase
+            .from('grants')
+            .select('withdrawable_amount, savings_amount, investment_amount')
+            .eq('participant_id', participantId);
+
+        let totalWithdrawable = 0;
+        let totalSavings = 0;
+        let totalInvestment = 0;
+
+        (userGrants || []).forEach(g => {
+            totalWithdrawable += (Number(g.withdrawable_amount) || 0);
+            totalSavings += (Number(g.savings_amount) || 0);
+            totalInvestment += (Number(g.investment_amount) || 0);
+        });
+
+        const totalEarned = totalWithdrawable + totalSavings + totalInvestment;
 
         // Find Upcoming Reward
         // Sort lessons by track_number (from course) then sequence_number to find the "next" one
@@ -437,6 +450,9 @@ async function getProgressOverview(req, res) {
             totalModules: lessons?.length || 0,
             percentage: lessons?.length ? Math.round((progress?.length / lessons.length) * 100) : 0,
             totalEarned,
+            withdrawableTotal: totalWithdrawable,
+            savingsTotal: totalSavings,
+            investmentTotal: totalInvestment,
             upcomingReward,
             perCourseProgress
         });
