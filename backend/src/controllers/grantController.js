@@ -202,6 +202,9 @@ async function getRecentGrants(req, res) {
                 milestone,
                 tx_hash,
                 created_at,
+                withdrawable_amount,
+                savings_amount,
+                investment_amount,
                 participants (
                     first_name,
                     last_name
@@ -234,11 +237,27 @@ async function getRecentGrants(req, res) {
             };
         });
 
+        // Calculate treasury balance (shared logic with getGlobalImpactStats)
+        const { data: allGrants } = await supabase
+            .from('grants')
+            .select('withdrawable_amount, savings_amount, investment_amount');
+
+        let totalAmountDisbursed = 0;
+        (allGrants || []).forEach(g => {
+            totalAmountDisbursed += (Number(g.withdrawable_amount) || 0) +
+                (Number(g.savings_amount) || 0) +
+                (Number(g.investment_amount) || 0);
+        });
+
+        const baselineTreasury = 100000;
+        const treasuryBalance = Math.max(0, baselineTreasury - totalAmountDisbursed);
+
         res.json({
             grants: formatted,
             total: count,
             page,
-            limit
+            limit,
+            treasuryBalance: treasuryBalance
         });
     } catch (error) {
         res.status(500).json({ error: error.message });
