@@ -385,10 +385,23 @@ async function getAllParticipantsWithProgress(req, res) {
 
         if (error) throw error;
 
-        // Total modules count for percentage calculation
-        const { count: totalModules } = await supabase
-            .from('lessons')
-            .select('*', { count: 'exact', head: true });
+        // Find all published course IDs
+        const { data: publishedCourses } = await supabase
+            .from('courses')
+            .select('id')
+            .eq('is_published', true);
+
+        const publishedCourseIds = (publishedCourses || []).map(c => c.id);
+
+        // Total modules (lessons) count from published courses only
+        let totalModules = 0;
+        if (publishedCourseIds.length > 0) {
+            const { count } = await supabase
+                .from('lessons')
+                .select('*', { count: 'exact', head: true })
+                .in('course_id', publishedCourseIds);
+            totalModules = count || 0;
+        }
 
         // Format participants with progress stats
         const formatted = participants.map(p => {

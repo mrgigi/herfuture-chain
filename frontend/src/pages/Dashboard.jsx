@@ -57,8 +57,8 @@ export default function Dashboard() {
     const nextMilestoneAmount = progress.upcomingReward ?? 30;
     const buttonText = progress.completedCount === 0 ? "Get Started" : "Resume Learning";
 
-    const activePath = (progress.perCourseProgress || []).find(p => p.completed > 0 && p.completed < p.total)
-        || (progress.perCourseProgress || []).find(p => p.completed === 0);
+    const activePath = (progress.perCourseProgress || []).find(p => p.completed > 0 && p.completed < p.total);
+
 
     return (
         <div className="p-4 md:p-8 pb-32">
@@ -116,21 +116,21 @@ export default function Dashboard() {
                             {/* Progress Circle */}
                             <div className="relative flex-shrink-0">
                                 <div className="absolute -inset-10 flex items-center justify-center text-[160px] font-black text-white/5 pointer-events-none select-none">
-                                    {activePath ? activePath.percentage : progress.percentage}%
+                                    {progress.percentage}%
                                 </div>
                                 <div className="w-32 h-32 rounded-[36px] bg-gradient-to-br from-fuchsia-500 to-magenta-600 flex items-center justify-center text-4xl font-black text-white shadow-2xl shadow-fuchsia-500/40 relative z-10 -rotate-3 group-hover:rotate-0 transition-all duration-500">
-                                    {activePath ? activePath.percentage : progress.percentage}%
+                                    {progress.percentage}%
                                 </div>
                             </div>
 
                             <div className="flex-1 text-center md:text-left">
                                 <div className="flex items-center gap-3 mb-4 justify-center md:justify-start">
                                     <span className="text-[11px] font-black uppercase tracking-widest text-fuchsia-400">
-                                        {activePath ? activePath.title : 'Global Progress'}
+                                        Global Progress
                                     </span>
                                     <div className="w-1.5 h-1.5 rounded-full bg-slate-700" />
                                     <span className="text-[11px] font-black uppercase tracking-widest text-slate-500">
-                                        {activePath ? `${activePath.completed}/${activePath.total}` : progress.completedCount} Lessons Finished
+                                        {progress.completedCount} / {progress.totalModules} Lessons Finished
                                     </span>
                                 </div>
                                 <h2 className="text-4xl md:text-5xl font-black text-white mb-6 tracking-tighter leading-none">
