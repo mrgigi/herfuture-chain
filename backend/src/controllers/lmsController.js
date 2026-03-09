@@ -410,11 +410,25 @@ async function getProgressOverview(req, res) {
         let totalSavings = 0;
         let totalInvestment = 0;
 
-        (userGrants || []).forEach(g => {
-            totalWithdrawable += (Number(g.withdrawable_amount) || 0);
-            totalSavings += (Number(g.savings_amount) || 0);
-            totalInvestment += (Number(g.investment_amount) || 0);
-        });
+        if (userGrants && userGrants.length > 0) {
+            userGrants.forEach(g => {
+                totalWithdrawable += (Number(g.withdrawable_amount) || 0);
+                totalSavings += (Number(g.savings_amount) || 0);
+                totalInvestment += (Number(g.investment_amount) || 0);
+            });
+        }
+
+        // If even with grant records, the split total is 0, 
+        // fallback to calculating from lessons to support legacy completions
+        if (totalWithdrawable + totalSavings + totalInvestment === 0) {
+            const rawTotal = lessons
+                .filter(l => completedLessonIds.has(l.id))
+                .reduce((acc, l) => acc + (l.grant_amount || 0), 0);
+
+            totalWithdrawable = rawTotal * 0.7;
+            totalSavings = rawTotal * 0.2;
+            totalInvestment = rawTotal * 0.1;
+        }
 
         const totalEarned = totalWithdrawable + totalSavings + totalInvestment;
 
