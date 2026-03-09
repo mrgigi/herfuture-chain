@@ -274,7 +274,70 @@ app.post('/api/complete-lesson', async (req, res) => {
                 grantStatus = 'paused';
             }
         }
-        res.json({ success: true, grantStatus, txHash });
+
+        // --- CREDENTIAL MINTING LOGIC ---
+        // Verify if the student just finished all lessons in this specific course
+        let credentialIssued = false;
+        if (lesson && lesson.course_id) {
+            const { data: courseLessons } = await supabase.from('lessons').select('id').eq('course_id', lesson.course_id);
+            if (courseLessons && courseLessons.length > 0) {
+                const courseLessonIds = courseLessons.map(l => l.id);
+                const { data: completedInThisCourse } = await supabase
+                    .from('student_progress')
+                    .select('lesson_id')
+                    .eq('participant_id', participantId)
+                    .in('lesson_id', courseLessonIds)
+                    .eq('status', 'completed');
+
+                if (completedInThisCourse && completedInThisCourse.length === courseLessonIds.length) {
+                    const { data: courseData } = await supabase.from('courses').select('title').eq('id', lesson.course_id).single();
+                    const certTitle = courseData ? `Certified in ${courseData.title}` : 'Program Completion Certificate';
+
+                    const { data: existingCert } = await supabase
+                        .from('credentials')
+                        .select('credential_id')
+                        .eq('participant_id', participantId)
+                        .eq('skill', certTitle)
+                        .maybeSingle();
+
+                    if (!existingCert) {
+                        const { data: p } = await supabase.from('participants').select('wallet_address').eq('id', participantId).single();
+                        if (p?.wallet_address) {
+                            console.log(`[Vercel API] Course fully completed! Issuing certificate: ${certTitle}`);
+                            const ipfsHash = "QmPlaceholderForNow";
+                            try {
+                                const txCert = await credentialRegistryContract.issueCredential(
+                                    p.wallet_address,
+                                    certTitle,
+                                    ipfsHash
+                                );
+                                const receipt = await txCert.wait();
+
+                                await supabase.from('credentials').insert([{
+                                    participant_id: participantId,
+                                    skill: certTitle,
+                                    ipfs_hash: ipfsHash,
+                                    tx_hash: receipt.hash
+                                }]);
+                                console.log(`[Vercel API] Certificate minted successfully on-chain!`);
+                                credentialIssued = true;
+                            } catch (certError) {
+                                console.error("[Vercel API] Certificate blockchain issuance failed:", certError.message);
+                                await supabase.from('credentials').insert([{
+                                    participant_id: participantId,
+                                    skill: certTitle,
+                                    ipfs_hash: ipfsHash,
+                                    tx_hash: 'PENDING_ONCHAIN'
+                                }]);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        // ---------------------------------
+
+        res.json({ success: true, grantStatus, txHash, credentialIssued });
     } catch (err) {
         console.error("[Vercel API] Error:", err.message);
         res.status(500).json({ error: err.message });
@@ -556,15 +619,19 @@ app.get('/api/impact/stats', async (req, res) => {
             .select('participant_id', { count: 'exact', head: true })
             .eq('status', 'completed');
 
-        const estimatedGrads = Math.floor((realGrads || 0) / 10) || (students > 0 ? 1 : 0);
+        const { count: totalStudents } = await supabase
+            .from('participants')
+            .select('*', { count: 'exact', head: true });
+
+        const estimatedGrads = Math.floor((realGrads || 0) / 10) || (totalStudents > 0 ? 1 : 0);
 
         res.json({
             totalImpact,
             treasuryBalance,
-            grantsDistributed: grants?.length || 0,
+            grantsDistributed: allGrants?.length || 0,
             graduates: estimatedGrads || 0,
             countries: 1,
-            participants: students || 0
+            participants: totalStudents || 0
         });
     } catch (err) {
         res.status(500).json({ error: err.message });
