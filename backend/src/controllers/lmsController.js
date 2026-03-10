@@ -235,7 +235,11 @@ async function completeLesson(req, res) {
             .eq('id', lessonId)
             .single();
 
-        if (lesson && lesson.grant_amount > 0) {
+        if (lesson && Number(lesson.grant_amount) > 0) {
+            // Determine milestone label - robust fallback
+            const milestone = lesson.track_label || `M_${lesson.id}`;
+            const totalAmount = Number(lesson.grant_amount) || 0;
+
             // Check if grant disbursement is active in system settings
             const { data: settingsData } = await supabase
                 .from('system_settings')
@@ -248,12 +252,11 @@ async function completeLesson(req, res) {
             if (!isDisbursementActive) {
                 console.log(`[LMS] Grant detected, but disbursement is currently PAUSED. Skipping payout.`);
             } else {
-                console.log(`Grant detected: ${lesson.grant_amount} cUSD. Triggering blockchain payout...`);
+                console.log(`Grant detected: ${totalAmount} cUSD. Triggering blockchain payout...`);
                 let txHash = null;
                 let grantStatus = 'disbursed';
                 try {
                     if (participant && participant.wallet_address) {
-                        const milestone = lesson.track_label || `M_${lesson.id}`;
                         console.log(`Executing Celo transaction for milestone: ${milestone}...`);
 
                         // Blockchain logic: 
@@ -281,15 +284,12 @@ async function completeLesson(req, res) {
                 // ALWAYS record to grants table so the student sees they earned it, 
                 // even if the actual blockchain push is pending gas top-up
                 if (participant && participant.id) {
-                    const milestone = lesson.track_label || `M_${lesson.id}`;
-
                     // Consolidated Grant Logic (100% to withdrawable)
-                    const totalAmount = Number(lesson.grant_amount) || 0;
                     const withdrawable = totalAmount;
                     const savings = 0;
                     const investment = 0;
 
-                    console.log(`[LMS] Recording consolidated grant: ${totalAmount} cUSD`);
+                    console.log(`[LMS] Recording consolidated grant: ${totalAmount} cUSD for milestone: ${milestone}`);
 
                     const { error: grantInsertError } = await supabase
                         .from('grants')
