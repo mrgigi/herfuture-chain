@@ -729,7 +729,7 @@ app.post('/api/sync-milestones', async (req, res) => {
         for (const lesson of lessons) {
             const milestoneName = `L_${lesson.id}`;
             // Convert amount to Celo decimals (18)
-            const amountInWei = ethers.utils.parseUnits(lesson.grant_amount.toString(), 18);
+            const amountInWei = ethers.parseUnits(lesson.grant_amount.toString(), 18);
 
             try {
                 console.log(`[Vercel API] Syncing milestone: ${milestoneName} (${lesson.title}) -> $${lesson.grant_amount}`);
