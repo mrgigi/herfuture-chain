@@ -13,26 +13,26 @@ const ModuleAccordion = ({ module, index, navigate, formatNaira, toNaira }) => {
     const hasMultipleLessons = lessons.length > 1;
 
     return (
-        <div className="glass-panel rounded-[32px] border border-white/5 overflow-hidden mb-6 transition-all hover:border-brand-500/20 shadow-2xl shadow-black/20">
+        <div className="bg-white dark:bg-white/[0.03] border border-slate-200 dark:border-white/5 overflow-hidden mb-6 transition-all hover:border-brand-500/20 shadow-xl dark:shadow-2xl dark:shadow-black/20 rounded-[32px]">
             {/* Module Header */}
             <div
                 onClick={() => hasMultipleLessons && setIsOpen(!isOpen)}
-                className={`p-6 flex items-center justify-between cursor-pointer transition-colors ${isOpen ? 'bg-white/[0.03]' : 'hover:bg-white/[0.01]'}`}
+                className={`p-6 flex items-center justify-between cursor-pointer transition-colors ${isOpen ? 'bg-slate-50 dark:bg-white/[0.03]' : 'hover:bg-slate-50 dark:hover:bg-white/[0.01]'}`}
             >
                 <div className="flex items-center gap-5">
-                    <div className="w-12 h-12 rounded-2xl bg-brand-500/10 border border-brand-500/20 flex items-center justify-center text-brand-400 font-black text-lg">
+                    <div className="w-12 h-12 rounded-2xl bg-brand-500/10 border border-brand-500/20 flex items-center justify-center text-brand-600 dark:text-brand-400 font-black text-lg">
                         {index + 1}
                     </div>
                     <div>
-                        <h3 className="text-lg font-black text-white tracking-tight">{module.title || 'Untitled Lesson'}</h3>
-                        <p className="text-[10px] tracking-wider font-bold text-slate-500 mt-0.5">
+                        <h3 className="text-lg font-black text-slate-900 dark:text-white tracking-tight italic uppercase">{module.title || 'Untitled Lesson'}</h3>
+                        <p className="text-[10px] tracking-wider font-black text-slate-500 dark:text-slate-500 mt-0.5 uppercase">
                             {lessons.length} {lessons.length === 1 ? 'Lesson' : 'Lessons'} • {completedCount} Done
                         </p>
                     </div>
                 </div>
 
                 {hasMultipleLessons ? (
-                    <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center text-slate-400">
+                    <div className="w-8 h-8 rounded-full bg-slate-100 dark:bg-white/5 flex items-center justify-center text-slate-500 dark:text-slate-400">
                         {isOpen ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
                     </div>
                 ) : lessons[0] ? (
@@ -57,25 +57,25 @@ const ModuleAccordion = ({ module, index, navigate, formatNaira, toNaira }) => {
                             key={lesson.id}
                             onClick={() => !lesson.locked && navigate(`/lesson/${lesson.id}`)}
                             className={`p-4 rounded-2xl border transition-all flex items-center justify-between group ${lesson.locked
-                                ? 'bg-black/20 border-white/2 cursor-not-allowed opacity-40'
-                                : 'bg-white/[0.02] border-white/5 hover:border-brand-500/40 hover:bg-white/[0.04] cursor-pointer'}`}
+                                ? 'bg-slate-50 dark:bg-black/20 border-slate-100 dark:border-white/2 cursor-not-allowed opacity-40'
+                                : 'bg-white dark:bg-white/[0.02] border-slate-200 dark:border-white/5 hover:border-brand-500/40 dark:hover:bg-white/[0.04] cursor-pointer shadow-sm dark:shadow-none'}`}
                         >
                             <div className="flex items-center gap-4">
-                                <div className={`w-8 h-8 rounded-xl flex items-center justify-center ${lesson.completed ? 'bg-emerald-500/20 text-emerald-400' : 'bg-white/5 text-slate-50'}`}>
+                                <div className={`w-8 h-8 rounded-xl flex items-center justify-center ${lesson.completed ? 'bg-emerald-500/10 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400' : 'bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-slate-50'}`}>
                                     {lesson.completed ? <CheckCircle className="w-4 h-4" /> : lesson.locked ? <Lock className="w-3.5 h-3.5" /> : <BookOpen className="w-4 h-4" />}
                                 </div>
                                 <div>
-                                    <h4 className="text-sm font-bold text-white group-hover:text-brand-400 transition-colors tracking-tight">{lesson.title}</h4>
+                                    <h4 className="text-sm font-black text-slate-900 dark:text-white group-hover:text-brand-600 dark:group-hover:text-brand-400 transition-colors tracking-tight italic uppercase">{lesson.title}</h4>
                                     <div className="flex items-center gap-3 mt-0.5">
                                         {lesson.completed && (
-                                            <span className="flex items-center gap-1 text-[9px] font-bold text-emerald-400 tracking-wider">
+                                            <span className="flex items-center gap-1 text-[9px] font-black text-emerald-600 dark:text-emerald-400 tracking-wider uppercase">
                                                 <CheckCircle className="w-2.5 h-2.5" /> Done
                                             </span>
                                         )}
                                         {lesson.grant_amount > 0 && (
-                                            <span className="flex items-center gap-1 text-[9px] font-bold text-emerald-500 tracking-wider whitespace-nowrap">
+                                            <span className="flex items-center gap-1 text-[9px] font-black text-emerald-600 dark:text-emerald-500 tracking-wider whitespace-nowrap uppercase">
                                                 {formatNaira(toNaira(lesson.grant_amount))}
-                                                <span className="text-slate-600 font-normal">({lesson.grant_amount} cUSD)</span>
+                                                <span className="text-slate-400 dark:text-slate-600 font-bold">({lesson.grant_amount} cUSD)</span>
                                             </span>
                                         )}
                                     </div>
@@ -124,16 +124,16 @@ export default function CourseDetail() {
     if (loading) return <LoadingScreen message="Designing Learning Path..." />;
 
     return (
-        <div className="min-h-screen relative pb-32 transition-all duration-300">
+        <div className="min-h-screen bg-slate-50 dark:bg-black/20 relative pb-32 transition-all duration-300">
             {/* Header Background Glow */}
-            <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-brand-500/5 blur-[120px] rounded-full -translate-y-1/2 translate-x-1/2 pointer-events-none" />
+            <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-brand-500/5 blur-[120px] rounded-full -translate-y-1/2 translate-x-1/2 pointer-events-none transition-colors" />
 
             <div className="relative z-10 p-6 md:p-10 max-w-5xl mx-auto">
                 {/* Navigation */}
                 <div className="flex justify-between items-center mb-10">
                     <button
                         onClick={() => navigate('/courses')}
-                        className="flex items-center gap-2 group text-[10px] font-black uppercase tracking-widest text-slate-500 hover:text-white transition-all bg-white/5 px-4 py-2 rounded-full border border-white/5 hover:border-white/10"
+                        className="flex items-center gap-2 group text-[10px] font-black uppercase tracking-widest text-slate-500 dark:text-slate-500 hover:text-slate-900 dark:hover:text-white transition-all bg-white/50 dark:bg-white/5 px-4 py-2 rounded-full border border-slate-200 dark:border-white/5 hover:border-slate-300 dark:hover:border-white/10"
                     >
                         <ChevronLeft className="w-3 h-3 group-hover:-translate-x-1 transition-transform" />
                         Academy Dashboard
@@ -143,12 +143,11 @@ export default function CourseDetail() {
                 {/* Course Intro */}
                 <div className="mb-12">
                     <div className="flex items-center gap-3 mb-4">
-                        <span className="px-3 py-1 bg-brand-500/10 text-brand-400 text-[10px] font-black uppercase tracking-widest rounded-full border border-brand-500/20">Learning Path</span>
+                        <span className="px-3 py-1 bg-brand-500/10 text-brand-600 dark:text-brand-400 text-[10px] font-black uppercase tracking-widest rounded-full border border-brand-500/20">Learning Path</span>
                     </div>
-                    <h1 className="text-4xl md:text-5xl font-black text-white tracking-tighter mb-4 leading-none">
-                        Program Syllabus
+                    <h1 className="text-4xl md:text-5xl font-black text-slate-900 dark:text-white tracking-tighter mb-4 leading-none uppercase italic">
+                        Program Syllabus.
                     </h1>
-
                 </div>
 
                 {/* Modules Grid */}
@@ -165,12 +164,12 @@ export default function CourseDetail() {
                             />
                         ))
                     ) : (
-                        <div className="glass-panel p-12 rounded-[40px] border border-white/5 flex flex-col items-center text-center">
-                            <div className="w-16 h-16 rounded-full bg-slate-800/50 flex items-center justify-center mb-6">
-                                <Sparkles className="w-8 h-8 text-slate-600" />
+                        <div className="bg-white dark:bg-black/40 p-12 rounded-[40px] border border-slate-200 dark:border-white/5 flex flex-col items-center text-center shadow-xl dark:shadow-none">
+                            <div className="w-16 h-16 rounded-full bg-slate-100 dark:bg-slate-800/50 flex items-center justify-center mb-6">
+                                <Sparkles className="w-8 h-8 text-slate-400 dark:text-slate-600" />
                             </div>
-                            <h3 className="text-xl font-bold text-white mb-2">Lessons Pending</h3>
-                            <p className="text-slate-500 text-sm max-w-xs">Our instructors are currently refining the material for this track. Check back soon!</p>
+                            <h3 className="text-xl font-black text-slate-900 dark:text-white mb-2 uppercase italic">Lessons Pending.</h3>
+                            <p className="text-slate-500 dark:text-slate-500 text-sm max-w-xs font-medium">Our instructors are currently refining the material for this track. Check back soon!</p>
                         </div>
                     )}
                 </div>

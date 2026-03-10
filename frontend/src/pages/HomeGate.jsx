@@ -15,14 +15,15 @@ export default function HomeGate() {
     ];
 
     return (
-        <div className="flex flex-col min-h-screen bg-[#060914] text-slate-100 font-sans overflow-x-hidden relative">
+        <div className="flex flex-col min-h-screen bg-slate-50 dark:bg-[#060914] text-slate-900 dark:text-slate-100 font-sans overflow-x-hidden relative transition-colors duration-300">
             {/* Ambient Background */}
             <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-brand-600/10 blur-[120px] pointer-events-none" />
             <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full bg-indigo-600/10 blur-[120px] pointer-events-none" />
 
             <nav className="relative z-50 px-6 py-8 flex justify-between items-center w-full max-w-7xl mx-auto">
                 <div className="flex items-center gap-2 cursor-pointer transition-transform active:scale-95 h-12" onClick={() => navigate('/')}>
-                    <img src="/images/logo.svg" alt="HerFuture Chain Logo" className="h-full w-auto" />
+                    <img src="/images/logo.svg" alt="HerFuture Chain Logo" className="h-full w-auto hidden dark:block" />
+                    <img src="/images/logo.svg" alt="HerFuture Chain Logo" className="h-full w-auto block dark:hidden invert" />
                 </div>
 
                 {/* Navigation Menu */}
@@ -48,7 +49,7 @@ export default function HomeGate() {
             <div className="flex-grow flex flex-col items-center justify-center px-6 py-12 relative z-10">
                 <div className="max-w-6xl w-full text-center mb-16 px-4">
                     <h1 className="text-3xl sm:text-4xl md:text-7xl lg:text-8xl font-black mb-6 tracking-tighter leading-tight md:whitespace-nowrap">
-                        Choose Your <span className="bg-gradient-to-r from-brand-400 via-emerald-400 to-fuchsia-400 bg-clip-text text-transparent">Journey.</span>
+                        Choose Your <span className="bg-gradient-to-r from-brand-400 via-emerald-400 to-brand-400 bg-clip-text text-transparent">Journey.</span>
                     </h1>
                 </div>
 
@@ -71,7 +72,7 @@ export default function HomeGate() {
                             </div>
 
                             <h2 className="text-4xl font-black mb-3 text-white">I am a Student</h2>
-                            <p className="text-slate-200 text-lg leading-relaxed mb-8 font-medium">
+                            <p className="text-white md:text-slate-200 text-lg leading-relaxed mb-8 font-medium">
                                 Build digital skills, earn rewards, and secure your future.
                             </p>
 
@@ -99,7 +100,7 @@ export default function HomeGate() {
                             </div>
 
                             <h2 className="text-4xl font-black mb-3 text-white">Join our Ecosystem</h2>
-                            <p className="text-slate-200 text-lg leading-relaxed mb-8 font-medium">
+                            <p className="text-white md:text-slate-200 text-lg leading-relaxed mb-8 font-medium">
                                 Partner with us, fork the protocol, or donate to accelerate impact.
                             </p>
 
@@ -115,8 +116,8 @@ export default function HomeGate() {
                     <p className="text-center text-[10px] font-black uppercase tracking-[0.4em] text-slate-600 mb-10">TRUSTED BY OUR GLOBAL PARTNERS</p>
 
                     {/* Gradient fade on edges for smooth scrolling effect */}
-                    <div className="absolute left-0 top-0 bottom-0 w-8 md:w-32 bg-gradient-to-r from-[#060914] to-transparent z-10 pointer-events-none" />
-                    <div className="absolute right-0 top-0 bottom-0 w-8 md:w-32 bg-gradient-to-l from-[#060914] to-transparent z-10 pointer-events-none" />
+                    <div className="absolute left-0 top-0 bottom-0 w-8 md:w-32 bg-gradient-to-r from-slate-50 dark:from-[#060914] to-transparent z-10 pointer-events-none" />
+                    <div className="absolute right-0 top-0 bottom-0 w-8 md:w-32 bg-gradient-to-l from-slate-50 dark:from-[#060914] to-transparent z-10 pointer-events-none" />
 
                     <div className="flex gap-8 md:gap-12 items-center w-max animate-infinite-scroll pl-4 md:pl-0">
                         {[...partners, ...partners].map((partner, i) => (

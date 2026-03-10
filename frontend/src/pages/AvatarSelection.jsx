@@ -21,10 +21,10 @@ export default function AvatarSelection() {
     };
 
     return (
-        <div className="min-h-screen bg-[#060912] flex items-center justify-center p-6 bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-fuchsia-900/20 via-slate-950 to-slate-950">
+        <div className="min-h-screen bg-slate-50 dark:bg-transparent transition-colors duration-300 flex items-center justify-center p-6 bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-fuchsia-900/10 dark:from-fuchsia-900/20 via-transparent to-transparent">
             <div className="max-w-2xl w-full">
                 <div className="text-center mb-12">
-                    <h1 className="text-4xl font-black text-white mb-2 tracking-tighter">Choose your Profile Picture</h1>
+                    <h1 className="text-4xl font-black text-slate-900 dark:text-white mb-2 tracking-tighter">Choose your Profile Picture</h1>
                     <p className="text-slate-500 text-sm font-medium">Pick an avatar to represent you.</p>
                 </div>
 
@@ -36,9 +36,9 @@ export default function AvatarSelection() {
                             className={`relative cursor-pointer group transition-all duration-500 ${selected?.id === avatar.id ? 'scale-105' : 'hover:scale-102'
                                 }`}
                         >
-                            <div className={`aspect-square rounded-full overflow-hidden border-2 transition-all duration-500 bg-slate-900/50 backdrop-blur-xl ${selected?.id === avatar.id
+                            <div className={`aspect-square rounded-full overflow-hidden border-2 transition-all duration-500 bg-white dark:bg-slate-900/50 backdrop-blur-xl ${selected?.id === avatar.id
                                 ? 'border-brand-500 shadow-[0_0_40px_rgba(217,70,239,0.3)] bg-brand-500/10'
-                                : 'border-white/10 group-hover:border-white/30'
+                                : 'border-slate-200 dark:border-white/10 group-hover:border-brand-500/30'
                                 }`}>
                                 <img src={avatar.url} alt="Avatar" className="w-full h-full object-cover" />
                             </div>
@@ -57,7 +57,7 @@ export default function AvatarSelection() {
                     disabled={!selected}
                     className={`w-full py-5 rounded-[20px] font-black uppercase tracking-[0.2em] text-xs transition-all flex items-center justify-center gap-3 ${selected
                         ? 'bg-brand-500 text-white shadow-2xl shadow-brand-500/40 scale-100 hover:-translate-y-1 active:scale-95'
-                        : 'bg-slate-800 text-slate-500 cursor-not-allowed opacity-50'
+                        : 'bg-slate-200 dark:bg-slate-800 text-slate-500 cursor-not-allowed opacity-50'
                         }`}
                 >
                     Continue to Dashboard <ArrowRight className="w-4 h-4" />

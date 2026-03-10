@@ -63,7 +63,7 @@ export default function Dashboard() {
 
 
     return (
-        <div className="p-4 md:p-8 pb-32">
+        <div className="p-4 md:p-8 pb-32 bg-slate-50 dark:bg-transparent min-h-screen transition-colors duration-300">
             <div className="max-w-7xl mx-auto space-y-8">
                 {error && (
                     <div className="p-4 bg-red-100 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20 rounded-2xl text-red-600 dark:text-red-400 text-xs font-bold uppercase tracking-wider text-center">
@@ -111,23 +111,23 @@ export default function Dashboard() {
 
                 <div className="space-y-8">
                     {/* Active Module Hero */}
-                    <div className="relative group overflow-hidden rounded-[40px] p-1 bg-gradient-to-tr from-fuchsia-100/50 to-magenta-100/50 dark:from-fuchsia-500/20 dark:to-magenta-500/20 border border-slate-200 dark:border-white/5 shadow-lg dark:shadow-none">
+                    <div className="relative group overflow-hidden rounded-[40px] p-1 bg-gradient-to-tr from-brand-100/50 to-brand-100/50 dark:from-brand-500/20 dark:to-brand-500/20 border border-slate-200 dark:border-white/5 shadow-lg dark:shadow-none">
                         <div className="bg-white/90 dark:bg-[#0D121F]/90 backdrop-blur-3xl rounded-[38px] p-8 md:p-12 flex flex-col md:flex-row items-center gap-10 relative overflow-hidden shadow-inner dark:shadow-none">
-                            <div className="absolute top-0 right-0 w-96 h-96 bg-fuchsia-500/5 blur-[100px] rounded-full -translate-y-1/2 translate-x-1/2 group-hover:bg-fuchsia-500/10 transition-colors pointer-events-none" />
+                            <div className="absolute top-0 right-0 w-96 h-96 bg-brand-500/5 blur-[100px] rounded-full -translate-y-1/2 translate-x-1/2 group-hover:bg-brand-500/10 transition-colors pointer-events-none" />
 
                             {/* Progress Circle */}
                             <div className="relative flex-shrink-0">
                                 <div className="absolute -inset-10 flex items-center justify-center text-[160px] font-black text-slate-900/5 dark:text-white/5 pointer-events-none select-none">
                                     {progress.percentage}%
                                 </div>
-                                <div className="w-32 h-32 rounded-[36px] bg-gradient-to-br from-fuchsia-500 to-magenta-600 flex items-center justify-center text-4xl font-black text-white shadow-2xl shadow-fuchsia-500/40 relative z-10 -rotate-3 group-hover:rotate-0 transition-all duration-500">
+                                <div className="w-32 h-32 rounded-[36px] bg-gradient-to-br from-brand-500 to-brand-600 flex items-center justify-center text-4xl font-black text-white shadow-2xl shadow-brand-500/40 relative z-10 -rotate-3 group-hover:rotate-0 transition-all duration-500">
                                     {progress.percentage}%
                                 </div>
                             </div>
 
                             <div className="flex-1 text-center md:text-left">
                                 <div className="flex items-center gap-3 mb-4 justify-center md:justify-start">
-                                    <span className="text-[11px] font-black uppercase tracking-widest text-fuchsia-400">
+                                    <span className="text-[11px] font-black uppercase tracking-widest text-brand-400">
                                         Global Progress
                                     </span>
                                     <div className="w-1.5 h-1.5 rounded-full bg-slate-700" />
@@ -137,8 +137,8 @@ export default function Dashboard() {
                                 </div>
                                 <h2 className="text-4xl md:text-5xl font-black text-slate-900 dark:text-white mb-6 tracking-tighter leading-none">
                                     {progress.completedCount === 0
-                                        ? (<>Start your <br /> <span className="text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-500 to-magenta-500 dark:from-fuchsia-400 dark:to-magenta-400 italic">first lesson.</span></>)
-                                        : (<>Keep <br /> <span className="text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-500 to-magenta-500 dark:from-fuchsia-400 dark:to-magenta-400 italic">growing. 🔥</span></>)
+                                        ? (<>Start your <br /> <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-500 to-brand-500 dark:from-brand-400 dark:to-brand-400 italic">first lesson.</span></>)
+                                        : (<>Keep <br /> <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-500 to-brand-500 dark:from-brand-400 dark:to-brand-400 italic">growing. 🔥</span></>)
                                     }
                                 </h2>
                                 <p className="text-slate-600 dark:text-slate-400 text-base max-w-xl mb-10 leading-relaxed font-medium">
@@ -146,7 +146,7 @@ export default function Dashboard() {
                                 </p>
                                 <button
                                     onClick={() => activePath ? navigate(`/courses/${activePath.courseId}`) : navigate('/courses')}
-                                    className="px-10 py-5 bg-brand-500 hover:bg-fuchsia-500 text-white rounded-2xl text-xs font-black uppercase tracking-widest transition-all active:scale-95 shadow-2xl shadow-brand-500/30 hover:shadow-fuchsia-500/40 hover:-translate-y-1 flex items-center gap-4 mx-auto md:mx-0"
+                                    className="px-10 py-5 bg-brand-500 hover:bg-brand-500 text-white rounded-2xl text-xs font-black uppercase tracking-widest transition-all active:scale-95 shadow-2xl shadow-brand-500/30 hover:shadow-brand-500/40 hover:-translate-y-1 flex items-center gap-4 mx-auto md:mx-0"
                                 >
                                     {buttonText} <ArrowRight className="w-5 h-5" />
                                 </button>
@@ -169,14 +169,14 @@ export default function Dashboard() {
                                     key={course.id}
                                     onClick={() => navigate(`/courses/${course.id}`)}
                                     className={`group p-8 rounded-[40px] border transition-all duration-500 relative overflow-hidden cursor-pointer hover:-translate-y-1 ${isActive
-                                        ? 'bg-fuchsia-50 dark:bg-fuchsia-500/[0.04] border-fuchsia-200 dark:border-fuchsia-500/30 shadow-2xl shadow-fuchsia-500/10 ring-1 ring-fuchsia-500/20 scale-[1.02] active:scale-100'
+                                        ? 'bg-brand-50 dark:bg-brand-500/[0.04] border-brand-200 dark:border-brand-500/30 shadow-2xl shadow-brand-500/10 ring-1 ring-brand-500/20 scale-[1.02] active:scale-100'
                                         : isDone
                                             ? 'bg-slate-50 dark:bg-slate-900/60 border-slate-200 dark:border-white/5 opacity-80 active:scale-[0.98]'
                                             : 'bg-white dark:bg-black/20 border-slate-200 dark:border-white/[0.04] opacity-80 dark:opacity-60 hover:opacity-100 dark:hover:opacity-80 shadow-sm dark:shadow-none'
                                         }`}
                                 >
                                     <div className="flex flex-col gap-6 relative z-10">
-                                        <div className={`w-14 h-14 rounded-2xl flex items-center justify-center font-black text-xl transition-all duration-500 group-hover:scale-110 ${isActive ? 'bg-gradient-to-br from-fuchsia-500 to-magenta-600 text-white shadow-xl shadow-fuchsia-500/40' : isDone ? 'bg-emerald-100 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400' : 'bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500'
+                                        <div className={`w-14 h-14 rounded-2xl flex items-center justify-center font-black text-xl transition-all duration-500 group-hover:scale-110 ${isActive ? 'bg-gradient-to-br from-brand-500 to-brand-600 text-white shadow-xl shadow-brand-500/40' : isDone ? 'bg-emerald-100 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400' : 'bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500'
                                             }`}>
                                             {isDone ? <CheckCircle className="w-6 h-6" /> : (isActive ? `${percentage}%` : (idx + 1))}
                                         </div>
@@ -185,11 +185,11 @@ export default function Dashboard() {
                                             <h4 className={`text-lg font-black uppercase tracking-tight leading-tight ${isActive ? 'text-slate-900 dark:text-white' : 'text-slate-700 dark:text-slate-400'}`}>{course.title}</h4>
                                         </div>
                                         <div className="pt-6 border-t border-slate-200 dark:border-white/5 flex items-center justify-between">
-                                            <span className={`text-[10px] font-black uppercase tracking-widest ${isActive ? 'text-fuchsia-500 dark:text-fuchsia-400 animate-pulse' : isDone ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-500 dark:text-slate-600'}`}>
+                                            <span className={`text-[10px] font-black uppercase tracking-widest ${isActive ? 'text-brand-500 dark:text-brand-400 animate-pulse' : isDone ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-500 dark:text-slate-600'}`}>
                                                 {isActive ? 'In Progress' : isDone ? 'Completed' : 'View Level'}
                                             </span>
-                                            <div className={`w-8 h-8 rounded-full flex items-center justify-center ${isActive ? 'bg-fuchsia-100 dark:bg-fuchsia-500/10' : 'bg-slate-100 dark:bg-white/5'}`}>
-                                                <ArrowRight className={`w-4 h-4 ${isActive ? 'text-fuchsia-600 dark:text-fuchsia-400' : 'text-slate-400 dark:text-slate-500 group-hover:text-slate-700 dark:group-hover:text-white transition-colors'}`} />
+                                            <div className={`w-8 h-8 rounded-full flex items-center justify-center ${isActive ? 'bg-brand-100 dark:bg-brand-500/10' : 'bg-slate-100 dark:bg-white/5'}`}>
+                                                <ArrowRight className={`w-4 h-4 ${isActive ? 'text-brand-600 dark:text-brand-400' : 'text-slate-400 dark:text-slate-500 group-hover:text-slate-700 dark:group-hover:text-white transition-colors'}`} />
                                             </div>
                                         </div>
                                     </div>

@@ -39,7 +39,7 @@ class ErrorBoundary extends React.Component {
                     <p className="mb-6 text-slate-400">There was a problem loading the page content. Please refresh the page.</p>
                     <button
                         onClick={() => window.location.reload()}
-                        className="bg-fuchsia-600 hover:bg-fuchsia-500 text-white font-bold py-3 px-8 rounded-2xl transition-all shadow-lg shadow-fuchsia-500/20"
+                        className="bg-brand-600 hover:bg-brand-500 text-white font-bold py-3 px-8 rounded-2xl transition-all shadow-lg shadow-brand-500/20"
                     >
                         Refresh Page
                     </button>

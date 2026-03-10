@@ -11,7 +11,7 @@ const {
     getSystemSettings, updateSystemSetting, getLesson, updateCourse,
     updateModule, updateLesson, createCourse, deleteCourse, createModule,
     deleteModule, createLesson, deleteLesson, generateQuiz, saveLessonQuiz,
-    reorderCurriculum
+    reorderCurriculum, syncMilestones
 } = require('../controllers/lmsController');
 const { issueCredential, verifyCredential, getCredentialsByAddress } = require('../controllers/credentialController');
 const { releaseGrant, getGrants, getGlobalImpactStats, getRecentGrants } = require('../controllers/grantController');
@@ -49,6 +49,7 @@ router.delete('/admin/lessons/:lessonId', deleteLesson);
 router.post('/admin/curriculum/reorder', reorderCurriculum);
 router.get('/admin/settings', getSystemSettings);
 router.post('/admin/settings', updateSystemSetting);
+router.post('/sync-milestones', syncMilestones);
 
 // 3. Credential Routes
 router.post('/issue-credential', issueCredential);

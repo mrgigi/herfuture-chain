@@ -188,7 +188,7 @@ export default function LandingPage() {
 
                     <h1 className="text-5xl sm:text-7xl md:text-9xl font-black mb-8 tracking-tighter leading-[0.85] text-slate-900 dark:text-white animate-in fade-in slide-in-from-bottom-4 duration-1000">
                         HerFuture <br />
-                        <span className="bg-gradient-to-r from-emerald-500 via-brand-500 to-fuchsia-500 dark:from-emerald-400 dark:via-brand-400 dark:to-fuchsia-400 bg-clip-text text-transparent">Chain.</span>
+                        <span className="bg-gradient-to-r from-emerald-500 via-brand-500 to-brand-500 dark:from-emerald-400 dark:via-brand-400 dark:to-brand-400 bg-clip-text text-transparent">Chain.</span>
                     </h1>
 
                     <p className="text-slate-600 dark:text-slate-400 text-xl md:text-2xl font-medium leading-relaxed mb-6 animate-in fade-in slide-in-from-bottom-6 duration-1000">
@@ -208,7 +208,7 @@ export default function LandingPage() {
                         </button>
                         <button
                             onClick={() => setIsPartnerModalOpen(true)}
-                            className="px-8 py-5 rounded-2xl bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 text-slate-800 dark:text-white font-black text-xs uppercase tracking-widest hover:bg-magenta-50 dark:hover:bg-magenta-500/10 hover:text-magenta-600 dark:hover:text-magenta-400 transition-all backdrop-blur-md"
+                            className="px-8 py-5 rounded-2xl bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 text-slate-800 dark:text-white font-black text-xs uppercase tracking-widest hover:bg-brand-50 dark:hover:bg-brand-500/10 hover:text-brand-600 dark:hover:text-brand-400 transition-all backdrop-blur-md"
                         >
                             Partner With Us
                         </button>

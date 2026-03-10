@@ -20,8 +20,6 @@ import api, {
     createCourse, deleteCourse, generateQuizAI, getQuiz, saveQuiz,
     deleteParticipant
 } from '../lib/api';
-import { grantDisbursementContract } from '../../api/lib/blockchainService.js';
-import { ethers } from 'ethers';
 
 const CurriculumInput = ({ value, onChange, onBlur, className, placeholder, isTextArea = false }) => {
     const [localValue, setLocalValue] = useState(value);
@@ -92,6 +90,7 @@ export default function AdminDashboard() {
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [selectedStudent, setSelectedStudent] = useState(null);
     const [showStudentDeleteConfirm, setShowStudentDeleteConfirm] = useState(null); // stores student object
+    const [isSyncing, setIsSyncing] = useState(false);
 
     const showToast = (message, type = 'success') => {
         setToast({ message, type });
@@ -122,7 +121,7 @@ export default function AdminDashboard() {
         queryFn: () => api.get('/impact/recent-grants')
     });
 
-    const students = studentData.participants || [];
+    const students = studentData?.participants || [];
     const recentGrants = grantsData?.data?.grants || [];
     const isLoading = coursesLoading || studentsLoading || settingsLoading || grantsLoading;
 
@@ -221,26 +220,6 @@ export default function AdminDashboard() {
 
         try {
             await updateLesson(lessonId, { [field]: value });
-
-            // If updating track_label or grant_amount, register it on the blockchain milestone vault
-            if (field === 'track_label' || field === 'grant_amount') {
-                const mod = courseModules.find(m => m.lessons.some(l => l.id === lessonId));
-                const lesson = mod?.lessons.find(l => l.id === lessonId);
-                if (lesson && lesson.track_label) {
-                    try {
-                        const amount = field === 'grant_amount' ? value : (lesson.grant_amount || settings.default_lesson_grant || 30);
-                        const weiAmount = ethers.parseUnits(amount.toString(), 18);
-
-                        // Fire-and-forget blockchain sync
-                        grantDisbursementContract.setMilestoneGrant(lesson.track_label, weiAmount)
-                            .then(tx => console.log(`[Admin] Registering milestone ${lesson.track_label}:`, tx.hash))
-                            .catch(err => console.error("[Admin] Milestone registration failed:", err));
-                    } catch (bcErr) {
-                        console.error("Blockchain format error:", bcErr);
-                    }
-                }
-            }
-
             // showToast("Lesson updated", "success"); // Removed to avoid too many toasts during auto-save
         } catch (err) {
             console.error("Auto-save lesson error:", err);
@@ -270,10 +249,29 @@ export default function AdminDashboard() {
             showToast("Student permanently removed from registry", "success");
             queryClient.invalidateQueries({ queryKey: ['admin-participants'] });
             setShowStudentDeleteConfirm(null);
-            setSelectedStudent(null);
         } catch (err) {
             console.error("Delete student error:", err);
-            showToast(err.response?.data?.error || "Failed to remove student", "error");
+            showToast("Failed to remove student", "error");
+        }
+    };
+
+    const handleSyncMilestones = async () => {
+        if (!window.confirm("This will synchronize all payable lessons with the blockchain. Ensure the Admin Wallet has enough gas. Continue?")) return;
+
+        setIsSyncing(true);
+        try {
+            const response = await api.post('/sync-milestones');
+            if (response.data.success) {
+                showToast(`Successfully synced ${response.data.syncedCount} lessons!`, "success");
+            } else {
+                showToast(response.data.message || "Sync failed", "error");
+            }
+        } catch (err) {
+            console.error("Milestone sync error:", err);
+            const errorMsg = err.response?.data?.error || "Blockchain communication failed";
+            showToast(errorMsg, "error");
+        } finally {
+            setIsSyncing(false);
         }
     };
 
@@ -488,7 +486,15 @@ export default function AdminDashboard() {
 
         if (!isSilent) setIsSavingQuiz(true);
         try {
-            await saveQuiz(currentLessonForQuiz.id, quizData);
+            // Trim everything before saving to ensure clean data
+            const cleanQuizData = quizData.map(q => ({
+                ...q,
+                question: q.question.trim(),
+                options: q.options.map(opt => opt.trim()),
+                answer: q.answer.trim()
+            }));
+
+            await saveQuiz(currentLessonForQuiz.id, cleanQuizData);
             if (!isSilent) {
                 showToast("Quiz saved successfully!", "success");
                 setTimeout(() => setQuizEditorOpen(false), 500);
@@ -557,6 +563,7 @@ export default function AdminDashboard() {
     };
 
     const filteredStudents = students ? students.filter(s => {
+        if (!s) return false;
         const fullName = `${s.first_name || ''} ${s.last_name || ''}`.toLowerCase();
         return fullName.includes(searchTerm.toLowerCase()) || (s.phone && s.phone.includes(searchTerm));
     }) : [];
@@ -655,8 +662,8 @@ export default function AdminDashboard() {
 
     const stats = {
         totalStudents: students.length,
-        avgProgress: students.length ? Math.round(students.reduce((acc, s) => acc + (s.percentage || 0), 0) / students.length) : 0,
-        totalGrants: studentData.totalGrantsValue || 0
+        avgProgress: students.length ? Math.round(students.reduce((acc, s) => acc + (s?.percentage || 0), 0) / students.length) : 0,
+        totalGrants: studentData?.totalGrantsValue || 0
     };
 
     if (!authorized) return null;
@@ -707,7 +714,7 @@ export default function AdminDashboard() {
                                 setActiveTab(item.label);
                                 setEditingCourse(null);
                             }}
-                            className={`flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer transition-all ${activeTab === item.label ? 'bg-fuchsia-500 text-white shadow-lg shadow-fuchsia-500/20' : 'text-slate-600 dark:text-slate-500 hover:text-slate-900 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-white/5'}`}
+                            className={`flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer transition-all ${activeTab === item.label ? 'bg-brand-500 text-white shadow-lg shadow-brand-500/20' : 'text-slate-600 dark:text-slate-500 hover:text-slate-900 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-white/5'}`}
                         >
                             {item.icon}
                             <span className="text-sm font-semibold">{item.label}</span>
@@ -770,7 +777,7 @@ export default function AdminDashboard() {
                             <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 mb-12">
                                 <div>
                                     <div className="flex items-center gap-3 mb-2">
-                                        <span className="text-[10px] font-black uppercase tracking-[0.3em] text-fuchsia-600 dark:text-fuchsia-400">System Live</span>
+                                        <span className="text-[10px] font-black uppercase tracking-[0.3em] text-brand-600 dark:text-brand-400">System Live</span>
                                         <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                                     </div>
                                     <h1 className="text-4xl font-black text-slate-900 dark:text-white mb-2 tracking-tight">Command Center.</h1>
@@ -798,14 +805,14 @@ export default function AdminDashboard() {
                             {/* Stats */}
                             <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-12">
                                 {[
-                                    { label: 'Total Students', val: stats.totalStudents, icon: <Users className="text-blue-400" /> },
-                                    { label: 'Avg Progress', val: `${stats.avgProgress}%`, icon: <Activity className="text-emerald-400" /> },
-                                    { label: 'Grants Paid', val: `$${stats.totalGrants}`, icon: <DollarSign className="text-amber-400" /> },
-                                    { label: 'Graduates', val: students.filter(s => s.percentage === 100).length, icon: <GraduationCap className="text-purple-400" /> },
+                                    { label: 'Total Students', val: stats.totalStudents, icon: <Users className="text-blue-600 dark:text-blue-400" /> },
+                                    { label: 'Avg Progress', val: `${stats.avgProgress}%`, icon: <Activity className="text-emerald-600 dark:text-emerald-400" /> },
+                                    { label: 'Grants Paid', val: `$${stats.totalGrants}`, icon: <DollarSign className="text-amber-600 dark:text-amber-400" /> },
+                                    { label: 'Graduates', val: students.filter(s => s?.percentage === 100).length, icon: <GraduationCap className="text-purple-600 dark:text-purple-400" /> },
                                 ].map((s, i) => (
-                                    <div key={i} className="glass-panel bg-white dark:bg-transparent p-6 rounded-[32px] border border-slate-200 dark:border-white/5 shadow-sm dark:shadow-none">
+                                    <div key={i} className="glass-panel bg-slate-50 dark:bg-[#0D1525] p-6 rounded-[32px] border border-slate-200 dark:border-white/5 shadow-sm dark:shadow-none transition-all">
                                         <div className="flex justify-between items-start mb-4">
-                                            <div className="p-3 bg-slate-50 dark:bg-white/5 rounded-2xl">{s.icon}</div>
+                                            <div className="p-3 bg-white dark:bg-white/5 rounded-2xl shadow-sm dark:shadow-none border border-slate-100 dark:border-white/5">{s.icon}</div>
                                             <ArrowUpRight className="w-4 h-4 text-slate-400 dark:text-slate-600" />
                                         </div>
                                         <div className="text-2xl font-black text-slate-900 dark:text-white">{s.val}</div>
@@ -821,7 +828,7 @@ export default function AdminDashboard() {
                                         {/* System chart/graph visualization placeholder */}
                                         <div className="aspect-[2/1] bg-gradient-to-t from-slate-100 dark:from-slate-900 to-transparent rounded-t-3xl relative overflow-hidden flex items-end px-4 gap-1">
                                             {[40, 60, 45, 80, 55, 70, 90, 65, 50, 85, 40, 75].map((h, i) => (
-                                                <div key={i} className="flex-1 bg-fuchsia-500/20 dark:bg-fuchsia-500/20 rounded-t-lg transition-all hover:bg-fuchsia-500/40" style={{ height: `${h}%` }} />
+                                                <div key={i} className="flex-1 bg-brand-500/20 dark:bg-brand-500/20 rounded-t-lg transition-all hover:bg-brand-500/40" style={{ height: `${h}%` }} />
                                             ))}
                                         </div>
                                     </div>
@@ -841,13 +848,13 @@ export default function AdminDashboard() {
                                                 <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Available cUSD Reserve</div>
                                             </div>
                                         </div>
-                                        <div className="p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-2xl flex items-center justify-between">
-                                            <span className="text-[10px] font-black tracking-widest text-emerald-400 uppercase">Status</span>
-                                            <span className="text-[10px] font-black text-emerald-400 uppercase tracking-tighter">Healthy Pool</span>
+                                        <div className="p-3 bg-emerald-500/5 dark:bg-emerald-500/10 border border-emerald-500/10 dark:border-emerald-500/20 rounded-2xl flex items-center justify-between">
+                                            <span className="text-[10px] font-black tracking-widest text-emerald-600 dark:text-emerald-400 uppercase">Status</span>
+                                            <span className="text-[10px] font-black text-emerald-600 dark:text-emerald-400 uppercase tracking-tighter">Healthy Pool</span>
                                         </div>
                                     </div>
 
-                                    <div className="glass-panel bg-slate-50 dark:bg-slate-800 p-8 rounded-[40px] border border-slate-200 dark:border-white/5 shadow-sm dark:shadow-none">
+                                    <div className="glass-panel bg-slate-50 dark:bg-white/5 p-8 rounded-[40px] border border-slate-200 dark:border-white/5 shadow-sm dark:shadow-none">
                                         <h3 className="text-xs font-black uppercase tracking-widest text-slate-500 dark:text-slate-400 mb-6 font-medium">Protocol Health</h3>
                                         <div className="space-y-4">
                                             {[
@@ -922,7 +929,7 @@ export default function AdminDashboard() {
                                                             <div className="flex-1 h-2 bg-slate-200 dark:bg-slate-900 rounded-full overflow-hidden w-32 border border-slate-300 dark:border-white/5">
                                                                 <div className="h-full bg-gradient-to-r from-brand-600 to-indigo-500" style={{ width: `${s.percentage}%` }} />
                                                             </div>
-                                                            <span className="text-[10px] font-black text-white">{s.percentage}%</span>
+                                                            <span className="text-[10px] font-black text-slate-900 dark:text-white">{s.percentage}%</span>
                                                         </div>
                                                     </td>
                                                     <td className="px-8 py-7">
@@ -937,7 +944,7 @@ export default function AdminDashboard() {
                                                     <td className="px-8 py-7 text-right">
                                                         <button
                                                             onClick={() => setSelectedStudent(s)}
-                                                            className="px-3 py-2 bg-white/5 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-white/10 transition-colors"
+                                                            className="px-3 py-2 bg-slate-100 dark:bg-white/5 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-slate-200 dark:hover:bg-white/10 text-slate-900 dark:text-white transition-colors"
                                                         >
                                                             View Profile
                                                         </button>
@@ -954,16 +961,16 @@ export default function AdminDashboard() {
                     {/* Student Detail Modal */}
                     {selectedStudent && (
                         <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
-                            <div className="absolute inset-0 bg-black/80 backdrop-blur-md" onClick={() => setSelectedStudent(null)} />
-                            <div className="relative w-full max-w-2xl bg-[#0D1525] border border-white/5 rounded-[40px] shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-300">
+                            <div className="absolute inset-0 bg-black/60 dark:bg-black/80 backdrop-blur-md" onClick={() => setSelectedStudent(null)} />
+                            <div className="relative w-full max-w-2xl bg-white dark:bg-[#0D1525] border border-slate-200 dark:border-white/5 rounded-[40px] shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-300">
                                 <div className="p-10">
                                     <div className="flex justify-between items-start mb-8">
                                         <div className="flex items-center gap-6">
-                                            <div className="w-20 h-20 rounded-3xl bg-slate-900 flex items-center justify-center text-3xl font-black text-slate-400">
+                                            <div className="w-20 h-20 rounded-3xl bg-slate-100 dark:bg-slate-900 flex items-center justify-center text-3xl font-black text-slate-500 dark:text-slate-400">
                                                 {selectedStudent.first_name ? selectedStudent.first_name[0] : '?'}
                                             </div>
                                             <div>
-                                                <h2 className="text-3xl font-black text-white italic">{selectedStudent.first_name} {selectedStudent.last_name}.</h2>
+                                                <h2 className="text-3xl font-black text-slate-900 dark:text-white italic">{selectedStudent.first_name} {selectedStudent.last_name}.</h2>
                                                 <div className="flex items-center gap-3 mt-1">
                                                     <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">{selectedStudent.phone?.startsWith('+') ? selectedStudent.phone : '+' + selectedStudent.phone}</span>
                                                     <span className="w-1.5 h-1.5 rounded-full bg-slate-700" />
@@ -977,16 +984,16 @@ export default function AdminDashboard() {
                                     </div>
 
                                     <div className="grid grid-cols-2 gap-6 mb-10">
-                                        <div className="p-6 rounded-3xl bg-white/5 border border-white/5">
+                                        <div className="p-6 rounded-3xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/5">
                                             <div className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-2">Milestone Velocity</div>
-                                            <div className="text-2xl font-black text-white">{selectedStudent.percentage}%</div>
-                                            <div className="mt-4 h-1.5 bg-slate-900 rounded-full overflow-hidden">
+                                            <div className="text-2xl font-black text-slate-900 dark:text-white">{selectedStudent.percentage}%</div>
+                                            <div className="mt-4 h-1.5 bg-slate-200 dark:bg-slate-900 rounded-full overflow-hidden">
                                                 <div className="h-full bg-brand-500" style={{ width: `${selectedStudent.percentage}%` }} />
                                             </div>
                                         </div>
-                                        <div className="p-6 rounded-3xl bg-white/5 border border-white/5">
+                                        <div className="p-6 rounded-3xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/5">
                                             <div className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-2">Registered On</div>
-                                            <div className="text-xl font-black text-white">
+                                            <div className="text-xl font-black text-slate-900 dark:text-white">
                                                 {selectedStudent.created_at ? new Date(selectedStudent.created_at).toLocaleDateString() : 'Historical data'}
                                             </div>
                                             <div className="text-[10px] text-slate-500 mt-2 font-bold uppercase tracking-widest">DID Registry v1.0</div>
@@ -994,23 +1001,23 @@ export default function AdminDashboard() {
                                     </div>
 
                                     <div className="space-y-6">
-                                        <div className="p-6 rounded-3xl bg-white/2 border border-white/5">
+                                        <div className="p-6 rounded-3xl bg-slate-50/50 dark:bg-white/2 border border-slate-200 dark:border-white/5">
                                             <div className="flex items-center gap-3 mb-4">
-                                                <ShieldCheck className="w-4 h-4 text-brand-400" />
-                                                <h4 className="text-[10px] font-black uppercase tracking-widest text-white">Chain Identity (DID)</h4>
+                                                <ShieldCheck className="w-4 h-4 text-brand-500 dark:text-brand-400" />
+                                                <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-900 dark:text-white">Chain Identity (DID)</h4>
                                             </div>
-                                            <div className="p-4 bg-black/40 rounded-2xl border border-white/5 text-[11px] font-mono text-slate-400 break-all leading-relaxed">
+                                            <div className="p-4 bg-slate-100 dark:bg-black/40 rounded-2xl border border-slate-200 dark:border-white/5 text-[11px] font-mono text-slate-600 dark:text-slate-400 break-all leading-relaxed">
                                                 {selectedStudent.did || 'did:celo:0x' + selectedStudent.wallet_address?.slice(2)}
                                             </div>
                                         </div>
-                                        <div className="p-6 rounded-3xl bg-white/2 border border-white/5">
+                                        <div className="p-6 rounded-3xl bg-slate-50/50 dark:bg-white/2 border border-slate-200 dark:border-white/5">
                                             <div className="flex items-center gap-3 mb-4">
-                                                <Activity className="w-4 h-4 text-emerald-400" />
-                                                <h4 className="text-[10px] font-black uppercase tracking-widest text-white">Wallet Address</h4>
+                                                <Activity className="w-4 h-4 text-emerald-500 dark:text-emerald-400" />
+                                                <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-900 dark:text-white">Wallet Address</h4>
                                             </div>
-                                            <div className="flex items-center justify-between p-4 bg-black/40 rounded-2xl border border-white/5 cursor-pointer hover:border-white/10 transition-all">
-                                                <span className="text-[11px] font-mono text-slate-400 break-all">{selectedStudent.wallet_address || 'Not initialized'}</span>
-                                                <ExternalLink className="w-3 h-3 text-slate-600" />
+                                            <div className="flex items-center justify-between p-4 bg-white dark:bg-black/40 rounded-2xl border border-slate-200 dark:border-white/5 cursor-pointer hover:border-brand-500/20 transition-all shadow-sm dark:shadow-none">
+                                                <span className="text-[11px] font-mono text-slate-600 dark:text-slate-400 break-all">{selectedStudent.wallet_address || 'Not initialized'}</span>
+                                                <ExternalLink className="w-3 h-3 text-slate-400 dark:text-slate-600" />
                                             </div>
                                         </div>
                                     </div>
@@ -1078,11 +1085,11 @@ export default function AdminDashboard() {
                                 {(courses || []).map(course => (
                                     <div key={course.id} className="glass-panel bg-white dark:bg-transparent rounded-[40px] border border-slate-200 dark:border-white/5 p-8 flex flex-col justify-between group hover:border-brand-500/20 transition-all shadow-sm dark:shadow-none">
                                         <div className="mb-8">
-                                            <div className="w-full aspect-video rounded-[32px] overflow-hidden bg-slate-800 mb-6 border border-white/5 relative group/img">
+                                            <div className="w-full aspect-video rounded-[32px] overflow-hidden bg-slate-100 dark:bg-slate-800 mb-6 border border-slate-200 dark:border-white/5 relative group/img shadow-inner dark:shadow-none">
                                                 <img src={course.image_url} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" alt="Cover" />
                                                 <div
                                                     onClick={() => handleCourseClick(course)}
-                                                    className="absolute inset-0 bg-brand-500/60 opacity-0 group-hover/img:opacity-100 transition-all flex items-center justify-center cursor-pointer"
+                                                    className="absolute inset-0 bg-brand-500/40 dark:bg-brand-500/60 opacity-0 group-hover/img:opacity-100 transition-all flex items-center justify-center cursor-pointer"
                                                 >
                                                     <Edit3 className="w-8 h-8 text-white" />
                                                 </div>
@@ -1125,15 +1132,15 @@ export default function AdminDashboard() {
 
                             {/* Delete Confirmation Modal */}
                             {showDeleteConfirm && (
-                                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-300">
-                                    <div className="glass-panel max-w-md w-full p-10 rounded-[40px] border border-white/10 shadow-2xl text-center space-y-6">
-                                        <div className="w-20 h-20 bg-red-500/20 rounded-full flex items-center justify-center mx-auto mb-2">
+                                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 dark:bg-black/80 backdrop-blur-md animate-in fade-in duration-300">
+                                    <div className="bg-white dark:bg-[#0D1525] max-w-md w-full p-10 rounded-[40px] border border-slate-200 dark:border-white/10 shadow-2xl text-center space-y-6">
+                                        <div className="w-20 h-20 bg-red-500/10 rounded-full flex items-center justify-center mx-auto mb-2">
                                             <Trash2 className="w-10 h-10 text-red-500" />
                                         </div>
                                         <div>
-                                            <h2 className="text-2xl font-black text-white italic">Confirm Deletion.</h2>
-                                            <p className="text-slate-400 text-sm mt-3 leading-relaxed">
-                                                Are you sure you want to permanently delete <span className="text-white font-bold">"{showDeleteConfirm.title}"</span>? This action will erase all modules and lessons within this learning path.
+                                            <h2 className="text-2xl font-black text-slate-900 dark:text-white italic">Confirm Deletion.</h2>
+                                            <p className="text-slate-500 dark:text-slate-400 text-sm mt-3 leading-relaxed">
+                                                Are you sure you want to permanently delete <span className="text-slate-900 dark:text-white font-black italic">"{showDeleteConfirm.title}"</span>? This action will erase all modules and lessons within this learning path.
                                             </p>
                                         </div>
                                         <div className="flex flex-col gap-3 pt-4">
@@ -1145,7 +1152,7 @@ export default function AdminDashboard() {
                                             </button>
                                             <button
                                                 onClick={() => setShowDeleteConfirm(null)}
-                                                className="w-full py-4 bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white font-black text-[10px] uppercase tracking-[0.2em] rounded-2xl transition-all"
+                                                className="w-full py-4 bg-slate-50 dark:bg-white/5 hover:bg-slate-100 dark:hover:bg-white/10 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white font-black text-[10px] uppercase tracking-[0.2em] rounded-2xl transition-all border border-slate-200 dark:border-white/5"
                                             >
                                                 Keep Path
                                             </button>
@@ -1168,23 +1175,26 @@ export default function AdminDashboard() {
                                 <div className="glass-panel bg-white dark:bg-transparent p-8 rounded-[40px] border border-slate-200 dark:border-white/5 pb-0 overflow-hidden shadow-sm dark:shadow-none">
                                     <h3 className="text-xs font-black uppercase tracking-widest text-slate-400 mb-6 uppercase font-medium">Recent Grant Cycles</h3>
                                     <div className="space-y-1">
-                                        {recentGrants.map((grant, i) => (
-                                            <div key={i} className="py-4 border-b border-white/5 flex items-center justify-between">
-                                                <div className="flex items-center gap-3">
-                                                    <div className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-400">
-                                                        <ShieldCheck className="w-4 h-4" />
+                                        {recentGrants.map((grant, i) => {
+                                            if (!grant) return null;
+                                            return (
+                                                <div key={i} className="py-4 border-b border-slate-100 dark:border-white/5 flex items-center justify-between">
+                                                    <div className="flex items-center gap-3">
+                                                        <div className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-500 dark:text-emerald-400 border border-emerald-500/20">
+                                                            <ShieldCheck className="w-4 h-4" />
+                                                        </div>
+                                                        <div>
+                                                            <div className="text-sm font-bold text-slate-900 dark:text-white">{grant.student}</div>
+                                                            <div className="text-[10px] text-slate-500">{grant.track || 'Learning Path'}</div>
+                                                        </div>
                                                     </div>
-                                                    <div>
-                                                        <div className="text-sm font-bold text-slate-900 dark:text-white">{grant.student}</div>
-                                                        <div className="text-[10px] text-slate-500">{grant.track || 'Learning Path'}</div>
+                                                    <div className="text-right">
+                                                        <div className="text-sm font-black text-emerald-400">+${grant.amount}</div>
+                                                        <div className="text-[9px] font-mono text-slate-600 truncate w-24 ml-auto text-right">{grant.tx?.slice(0, 10)}...</div>
                                                     </div>
                                                 </div>
-                                                <div className="text-right">
-                                                    <div className="text-sm font-black text-emerald-400">+${grant.amount}</div>
-                                                    <div className="text-[9px] font-mono text-slate-600 truncate w-24 ml-auto text-right">{grant.tx?.slice(0, 10)}...</div>
-                                                </div>
-                                            </div>
-                                        ))}
+                                            );
+                                        })}
                                         {recentGrants.length === 0 && (
                                             <div className="p-12 text-center text-slate-500 text-xs italic">No disbursements processed in current epoch.</div>
                                         )}
@@ -1271,31 +1281,30 @@ export default function AdminDashboard() {
                                     </div>
 
                                     {/* System Contracts & Wallets */}
-                                    <div className="space-y-6 pt-4 border-t border-slate-800">
+                                    <div className="space-y-6 pt-4 border-t border-slate-200 dark:border-slate-800">
                                         <div>
-                                            <h3 className="text-sm font-bold text-white mb-2">Smart Contracts & Wallets</h3>
-                                            <p className="text-xs text-slate-400 leading-relaxed">
+                                            <h3 className="text-sm font-bold text-slate-900 dark:text-white mb-2">Smart Contracts & Wallets</h3>
+                                            <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
                                                 These are the official addresses powering your centralized interactions with the Celo blockchain.
                                             </p>
                                         </div>
-
                                         <div className="space-y-4">
                                             <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 block pl-1">Admin Wallet (Gas Payer)</label>
-                                            <p className="text-[10px] text-slate-400 -mt-3 pl-1 mb-2">Executes all blockchain transactions automatically so students don't have to pay gas fees.</p>
-                                            <div className="p-4 bg-black/40 border border-white/5 rounded-2xl flex items-center justify-between group hover:border-brand-500/30 transition-all">
-                                                <code className="text-[11px] text-slate-400 font-mono tracking-tight">{settings?.adminWalletAddress || '0x6ab220b355DB4F6A220a2C6fA500854cBDdC58e4'}</code>
+                                            <p className="text-[10px] text-slate-500 dark:text-slate-400 -mt-3 pl-1 mb-2">Executes all blockchain transactions automatically so students don't have to pay gas fees.</p>
+                                            <div className="p-4 bg-slate-50 dark:bg-black/40 border border-slate-200 dark:border-white/5 rounded-2xl flex items-center justify-between group hover:border-brand-500/30 transition-all shadow-inner dark:shadow-none">
+                                                <code className="text-[11px] text-slate-600 dark:text-slate-400 font-mono tracking-tight">{settings?.adminWalletAddress || '0x6ab220b355DB4F6A220a2C6fA500854cBDdC58e4'}</code>
                                                 <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigator.clipboard.writeText(settings?.adminWalletAddress || '0x6ab220b355DB4F6A220a2C6fA500854cBDdC58e4')}>
                                                     <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                                                    <span className="text-[9px] font-black uppercase tracking-widest text-brand-400 opacity-60 group-hover:opacity-100 transition-opacity">Copy</span>
+                                                    <span className="text-[9px] font-black uppercase tracking-widest text-brand-500 dark:text-brand-400 opacity-60 group-hover:opacity-100 transition-opacity">Copy</span>
                                                 </div>
                                             </div>
                                         </div>
 
                                         <div className="space-y-4">
                                             <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 block pl-1">Grant Treasury Contract</label>
-                                            <p className="text-[10px] text-slate-400 -mt-3 pl-1 mb-2">Holds the locked cUSD balance. Automatically disburses funds to students upon lesson completion.</p>
-                                            <div className="p-4 bg-black/40 border border-white/5 rounded-2xl flex items-center justify-between group hover:border-brand-500/30 transition-all">
-                                                <code className="text-[11px] text-slate-400 font-mono tracking-tight">{settings?.grantDisbursementAddress || '0xb5A1AD12393640745868374170321254210dE4FE'}</code>
+                                            <p className="text-[10px] text-slate-500 dark:text-slate-400 -mt-3 pl-1 mb-2">Holds the locked cUSD balance. Automatically disburses funds to students upon lesson completion.</p>
+                                            <div className="p-4 bg-slate-50 dark:bg-black/40 border border-slate-200 dark:border-white/5 rounded-2xl flex items-center justify-between group hover:border-brand-500/30 transition-all shadow-inner dark:shadow-none">
+                                                <code className="text-[11px] text-slate-600 dark:text-slate-400 font-mono tracking-tight">{settings?.grantDisbursementAddress || '0xb5A1AD12393640745868374170321254210dE4FE'}</code>
                                                 <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigator.clipboard.writeText(settings?.grantDisbursementAddress || '0xb5A1AD12393640745868374170321254210dE4FE')}>
                                                     <div className="w-1.5 h-1.5 rounded-full bg-indigo-500" />
                                                     <span className="text-[9px] font-black uppercase tracking-widest text-indigo-400 opacity-60 group-hover:opacity-100 transition-opacity">Copy</span>
@@ -1305,9 +1314,9 @@ export default function AdminDashboard() {
 
                                         <div className="space-y-4">
                                             <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 block pl-1">Credential Registry Contract</label>
-                                            <p className="text-[10px] text-slate-400 -mt-3 pl-1 mb-2">Records the IPFS hashes of student certificates permanently on the blockchain for public verification.</p>
-                                            <div className="p-4 bg-black/40 border border-white/5 rounded-2xl flex items-center justify-between group hover:border-brand-500/30 transition-all">
-                                                <code className="text-[11px] text-slate-400 font-mono tracking-tight">{settings?.credentialRegistryAddress || '0x3C1ec4CBDd8cbAFFa11D3BBc889AB061a65Fe77E'}</code>
+                                            <p className="text-[10px] text-slate-500 dark:text-slate-400 -mt-3 pl-1 mb-2">Records the IPFS hashes of student certificates permanently on the blockchain for public verification.</p>
+                                            <div className="p-4 bg-slate-50 dark:bg-black/40 border border-slate-200 dark:border-white/5 rounded-2xl flex items-center justify-between group hover:border-brand-500/30 transition-all shadow-inner dark:shadow-none">
+                                                <code className="text-[11px] text-slate-600 dark:text-slate-400 font-mono tracking-tight">{settings?.credentialRegistryAddress || '0x3C1ec4CBDd8cbAFFa11D3BBc889AB061a65Fe77E'}</code>
                                                 <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigator.clipboard.writeText(settings?.credentialRegistryAddress || '0x3C1ec4CBDd8cbAFFa11D3BBc889AB061a65Fe77E')}>
                                                     <div className="w-1.5 h-1.5 rounded-full bg-indigo-500" />
                                                     <span className="text-[9px] font-black uppercase tracking-widest text-indigo-400 opacity-60 group-hover:opacity-100 transition-opacity">Copy</span>
@@ -1317,14 +1326,42 @@ export default function AdminDashboard() {
 
                                         <div className="space-y-4">
                                             <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 block pl-1">cUSD Token (ERC-20)</label>
-                                            <p className="text-[10px] text-slate-400 -mt-3 pl-1 mb-2">The official stablecoin contract used for payouts. 1 cUSD = 1 USD.</p>
-                                            <div className="p-4 bg-black/40 border border-white/5 rounded-2xl flex items-center justify-between group hover:border-brand-500/30 transition-all">
-                                                <code className="text-[11px] text-slate-400 font-mono tracking-tight">{settings?.cUSDAddress || '0x18871DD3fb8F301809294069E791397b2F002cBb'}</code>
+                                            <p className="text-[10px] text-slate-500 dark:text-slate-400 -mt-3 pl-1 mb-2">The official stablecoin contract used for payouts. 1 cUSD = 1 USD.</p>
+                                            <div className="p-4 bg-slate-50 dark:bg-black/40 border border-slate-200 dark:border-white/5 rounded-2xl flex items-center justify-between group hover:border-brand-500/30 transition-all shadow-inner dark:shadow-none">
+                                                <code className="text-[11px] text-slate-600 dark:text-slate-400 font-mono tracking-tight">{settings?.cUSDAddress || '0x18871DD3fb8F301809294069E791397b2F002cBb'}</code>
                                                 <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigator.clipboard.writeText(settings?.cUSDAddress || '0x18871DD3fb8F301809294069E791397b2F002cBb')}>
                                                     <div className="w-1.5 h-1.5 rounded-full bg-yellow-500" />
                                                     <span className="text-[9px] font-black uppercase tracking-widest text-yellow-400 opacity-60 group-hover:opacity-100 transition-opacity">Copy</span>
                                                 </div>
                                             </div>
+                                        </div>
+                                    </div>
+                                    <div className="pt-8 space-y-4">
+                                        <div className="flex flex-col gap-3">
+                                            <div className="flex flex-col">
+                                                <h3 className="text-sm font-bold text-slate-900 dark:text-white mb-1">Blockchain Curriculum Registry</h3>
+                                                <p className="text-[11px] text-slate-500 dark:text-slate-400 mb-4">
+                                                    Register all payable lessons on the Celo blockchain. This ensures that rewards are ready for students upon completion.
+                                                </p>
+                                            </div>
+                                            <button
+                                                onClick={handleSyncMilestones}
+                                                disabled={isSyncing}
+                                                className={`flex items-center justify-center gap-3 w-full py-5 rounded-[28px] text-[11px] font-black uppercase tracking-[0.2em] transition-all relative overflow-hidden group ${isSyncing
+                                                        ? 'bg-slate-100 dark:bg-white/5 text-slate-400 border border-slate-200 dark:border-white/5'
+                                                        : 'bg-brand-600 hover:bg-brand-500 text-white shadow-[0_20px_40px_rgba(59,130,246,0.2)] hover:shadow-[0_25px_50px_rgba(59,130,246,0.3)] hover:-translate-y-1'
+                                                    }`}
+                                            >
+                                                {isSyncing ? (
+                                                    <Loader2 className="w-5 h-5 animate-spin" />
+                                                ) : (
+                                                    <ShieldCheck className="w-5 h-5 group-hover:animate-bounce" />
+                                                )}
+                                                <span>{isSyncing ? 'Synchronizing Curriculum...' : 'Sync All Milestones'}</span>
+                                                {!isSyncing && (
+                                                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:animate-[shimmer_2s_infinite] pointer-events-none" />
+                                                )}
+                                            </button>
                                         </div>
                                     </div>
 
@@ -1334,7 +1371,7 @@ export default function AdminDashboard() {
                                                 <Activity className="w-4 h-4 text-amber-500" />
                                                 <span className="text-xs font-black uppercase tracking-widest text-amber-500">Node Maintenance</span>
                                             </div>
-                                            <p className="text-xs text-amber-200/60 leading-relaxed italic">
+                                            <p className="text-xs text-amber-600 dark:text-amber-200/60 leading-relaxed italic">
                                                 The Celo node synchronization is currently at 99.8%. No maintenance required for this epoch.
                                             </p>
                                         </div>
@@ -1470,14 +1507,14 @@ export default function AdminDashboard() {
                                                                         width: '100%',
                                                                         zIndex: 9999
                                                                     }}
-                                                                    className={`glass-panel rounded-[32px] border ${snapshot.isDragging ? 'border-brand-500/50 bg-[#0D1525]/90 shadow-[0_20px_50px_rgba(0,0,0,0.5)] scale-[1.01] backdrop-blur-xl' : 'border-white/5 overflow-hidden'}`}
+                                                                    className={`glass-panel rounded-[32px] border ${snapshot.isDragging ? 'border-brand-500/50 bg-white dark:bg-[#0D1525]/90 shadow-[0_20px_50px_rgba(0,0,0,0.15)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.5)] scale-[1.01] backdrop-blur-xl' : 'bg-white dark:bg-transparent border-slate-200 dark:border-white/5 overflow-hidden'}`}
                                                                 >
-                                                                    <div className="p-6 bg-white/[0.02] border-b border-white/5 flex justify-between items-center group/mod">
+                                                                    <div className="p-6 bg-slate-50 dark:bg-white/[0.02] border-b border-slate-200 dark:border-white/5 flex justify-between items-center group/mod">
                                                                         <div className="flex items-center gap-4 flex-1">
-                                                                            <div {...provided.dragHandleProps} className="p-1 hover:bg-white/5 rounded-lg cursor-grab active:cursor-grabbing text-slate-600 hover:text-slate-400 transition-all">
+                                                                            <div {...provided.dragHandleProps} className="p-1 hover:bg-slate-100 dark:hover:bg-white/5 rounded-lg cursor-grab active:cursor-grabbing text-slate-400 dark:text-slate-600 hover:text-slate-900 dark:hover:text-slate-400 transition-all">
                                                                                 <GripVertical className="w-4 h-4" />
                                                                             </div>
-                                                                            <div className="w-8 h-8 shrink-0 rounded-lg bg-white/5 flex items-center justify-center text-xs font-black text-slate-500">{i + 1}</div>
+                                                                            <div className="w-8 h-8 shrink-0 rounded-lg bg-slate-100 dark:bg-white/5 flex items-center justify-center text-xs font-black text-slate-500 dark:text-slate-500">{i + 1}</div>
                                                                             <div className="flex-1">
                                                                                 <CurriculumInput
                                                                                     value={mod.title}
@@ -1487,7 +1524,7 @@ export default function AdminDashboard() {
                                                                                         setCourseModules(newMods);
                                                                                         saveModuleTitle(mod.id, val);
                                                                                     }}
-                                                                                    className="bg-transparent border-none text-white font-black focus:outline-none text-sm p-0 w-full hover:bg-white/[0.02] rounded-md transition-colors"
+                                                                                    className="bg-transparent border-none text-slate-900 dark:text-white font-black focus:outline-none text-sm p-0 w-full hover:bg-slate-100 dark:hover:bg-white/[0.02] rounded-md transition-colors"
                                                                                 />
                                                                             </div>
                                                                         </div>
@@ -1515,7 +1552,7 @@ export default function AdminDashboard() {
                                                                                                         width: "100%",
                                                                                                         zIndex: 9999
                                                                                                     }}
-                                                                                                    className={`p-6 rounded-[28px] border group ${lSnapshot.isDragging ? "bg-[#151D2F] border-brand-500/40 shadow-2xl scale-[1.01] backdrop-blur-md" : "bg-white/5 border-white/5 hover:border-brand-500/30"} space-y-4`}
+                                                                                                    className={`p-6 rounded-[28px] border group ${lSnapshot.isDragging ? "bg-slate-50 dark:bg-[#151D2F] border-brand-500/40 shadow-2xl scale-[1.01] backdrop-blur-md" : "bg-white dark:bg-white/5 border-slate-200 dark:border-white/5 hover:border-brand-500/30"} space-y-4`}
                                                                                                 >
                                                                                                     <div className="flex items-center justify-between">
                                                                                                         <div className="flex items-center gap-4 flex-1">
@@ -1527,20 +1564,20 @@ export default function AdminDashboard() {
                                                                                                                 <CurriculumInput
                                                                                                                     value={lesson.title}
                                                                                                                     onBlur={(val) => saveLessonValue(lesson.id, 'title', val)}
-                                                                                                                    className="bg-transparent border-none text-sm font-bold text-white focus:outline-none w-full p-0 italic hover:bg-white/[0.02] rounded-md transition-colors"
+                                                                                                                    className="bg-transparent border-none text-sm font-bold text-slate-900 dark:text-white focus:outline-none w-full p-0 italic hover:bg-slate-100 dark:hover:bg-white/[0.02] rounded-md transition-colors"
                                                                                                                 />
                                                                                                             </div>
                                                                                                         </div>
                                                                                                         <div className="flex items-center gap-4">
-                                                                                                            <div className="flex items-center gap-2 bg-[#060914] px-3 py-1.5 rounded-xl border border-white/5">
-                                                                                                                <DollarSign className="w-3 h-3 text-emerald-400" />
+                                                                                                            <div className="flex items-center gap-2 bg-slate-50 dark:bg-[#060914] px-3 py-1.5 rounded-xl border border-slate-200 dark:border-white/5">
+                                                                                                                <DollarSign className="w-3 h-3 text-emerald-500 dark:text-emerald-400" />
                                                                                                                 <input
                                                                                                                     type="number"
                                                                                                                     value={lesson.grant_amount}
                                                                                                                     onChange={(e) => saveLessonValue(lesson.id, 'grant_amount', parseInt(e.target.value))}
-                                                                                                                    className="bg-transparent border-none text-[10px] font-black text-white w-12 text-center focus:outline-none p-0"
+                                                                                                                    className="bg-transparent border-none text-[10px] font-black text-slate-900 dark:text-white w-12 text-center focus:outline-none p-0"
                                                                                                                 />
-                                                                                                                <span className="text-[8px] font-black text-slate-600 uppercase">cUSD</span>
+                                                                                                                <span className="text-[8px] font-black text-slate-500 dark:text-slate-600 uppercase">cUSD</span>
                                                                                                             </div>
                                                                                                             <button
                                                                                                                 onClick={() => handleGenerateAIQuiz(lesson)}
@@ -1556,7 +1593,7 @@ export default function AdminDashboard() {
                                                                                                             </button>
                                                                                                             <button
                                                                                                                 onClick={() => handleEditQuizManual(lesson)}
-                                                                                                                className="flex items-center gap-2 px-3 py-1.5 rounded-xl border border-white/5 bg-white/5 text-slate-400 text-[9px] font-black uppercase tracking-widest hover:bg-white/10 hover:text-white transition-all"
+                                                                                                                className="flex items-center gap-2 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-white/5 bg-slate-50 dark:bg-white/5 text-slate-500 dark:text-slate-400 text-[9px] font-black uppercase tracking-widest hover:bg-slate-100 dark:hover:bg-white/10 hover:text-slate-900 dark:hover:text-white transition-all shadow-sm dark:shadow-none"
                                                                                                             >
                                                                                                                 <HelpCircle className="w-3 h-3" />
                                                                                                                 Curate
@@ -1572,21 +1609,21 @@ export default function AdminDashboard() {
 
                                                                                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                                                                                         <div>
-                                                                                                            <label className="text-[8px] font-black uppercase tracking-widest text-slate-600 block mb-1.5 ml-1">Video Endpoint (Embed URL)</label>
+                                                                                                            <label className="text-[8px] font-black uppercase tracking-widest text-slate-500 dark:text-slate-600 block mb-1.5 ml-1">Video Endpoint (Embed URL)</label>
                                                                                                             <CurriculumInput
                                                                                                                 value={lesson.video_url || ''}
                                                                                                                 onBlur={(val) => saveLessonValue(lesson.id, 'video_url', val)}
                                                                                                                 placeholder="https://www.youtube.com/embed/..."
-                                                                                                                className="w-full bg-[#060914] border border-white/5 rounded-xl py-2 px-3 text-[10px] text-slate-400 focus:outline-none focus:border-brand-500/50"
+                                                                                                                className="w-full bg-slate-50 dark:bg-[#060914] border border-slate-200 dark:border-white/5 rounded-xl py-2 px-3 text-[10px] text-slate-500 dark:text-slate-400 focus:outline-none focus:border-brand-500/50"
                                                                                                             />
                                                                                                         </div>
                                                                                                         <div>
-                                                                                                            <label className="text-[8px] font-black uppercase tracking-widest text-slate-600 block mb-1.5 ml-1">Curriculum Summary</label>
+                                                                                                            <label className="text-[8px] font-black uppercase tracking-widest text-slate-500 dark:text-slate-600 block mb-1.5 ml-1">Curriculum Summary</label>
                                                                                                             <CurriculumInput
                                                                                                                 value={lesson.content || ''}
                                                                                                                 onBlur={(val) => saveLessonValue(lesson.id, 'content', val)}
                                                                                                                 placeholder="Self-leadership and mindset..."
-                                                                                                                className="w-full bg-[#060914] border border-white/5 rounded-xl py-2 px-3 text-[10px] text-slate-400 focus:outline-none focus:border-brand-500/50"
+                                                                                                                className="w-full bg-slate-50 dark:bg-[#060914] border border-slate-200 dark:border-white/5 rounded-xl py-2 px-3 text-[10px] text-slate-500 dark:text-slate-400 focus:outline-none focus:border-brand-500/50"
                                                                                                             />
                                                                                                         </div>
                                                                                                     </div>
@@ -1601,7 +1638,7 @@ export default function AdminDashboard() {
                                                                         <button
                                                                             onClick={() => handleAddLesson(mod.id)}
                                                                             disabled={isAddingLesson}
-                                                                            className="w-full py-3 border border-dashed border-white/10 rounded-2xl flex items-center justify-center gap-2 text-[9px] font-black uppercase tracking-widest text-slate-600 hover:text-slate-400 hover:border-white/20 transition-all mt-4 disabled:opacity-50"
+                                                                            className="w-full py-3 border border-dashed border-slate-200 dark:border-white/10 rounded-2xl flex items-center justify-center gap-2 text-[9px] font-black uppercase tracking-widest text-slate-500 dark:text-slate-600 hover:text-slate-900 dark:hover:text-slate-400 hover:border-slate-300 dark:hover:border-white/20 transition-all mt-4 disabled:opacity-50"
                                                                         >
                                                                             {isAddingLesson ? (
                                                                                 <Loader2 className="w-3 h-3 animate-spin" />
@@ -1623,203 +1660,208 @@ export default function AdminDashboard() {
                                 </div>
                             </div>
                         </div>
-                    )}
+                    )
+                    }
                     {/* Quiz Editor Modal - Premium Redesign */}
-                    {quizEditorOpen && (
-                        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-12 backdrop-blur-2xl bg-slate-950/80">
-                            <div className="bg-[#0D121F] w-full max-w-5xl h-[85vh] overflow-hidden flex flex-col rounded-[48px] border border-white/10 shadow-[0_0_80px_rgba(0,0,0,0.5)] animate-in zoom-in-95 duration-500">
-                                {/* Modal Header */}
-                                <div className="px-12 py-10 border-b border-white/5 flex justify-between items-center bg-gradient-to-r from-white/[0.03] to-transparent">
-                                    <div className="flex items-center gap-6">
-                                        <div className="w-16 h-16 bg-brand-500/10 rounded-2xl flex items-center justify-center border border-brand-500/20">
-                                            <GraduationCap className="w-8 h-8 text-brand-400" />
-                                        </div>
-                                        <div>
-                                            <div className="flex items-center gap-3 mb-1">
-                                                <h3 className="text-2xl font-black text-white tracking-tight uppercase italic">Create a Quiz.</h3>
-                                                <span className="px-2 py-0.5 rounded-md bg-brand-500/20 text-brand-400 text-[8px] font-black uppercase tracking-widest border border-brand-500/30">Manual</span>
+                    {
+                        quizEditorOpen && (
+                            <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-12 backdrop-blur-2xl bg-white/40 dark:bg-slate-950/80">
+                                <div className="bg-white dark:bg-[#0D121F] w-full max-w-5xl h-[85vh] overflow-hidden flex flex-col rounded-[48px] border border-slate-200 dark:border-white/10 shadow-2xl dark:shadow-[0_0_80px_rgba(0,0,0,0.5)] animate-in zoom-in-95 duration-500">
+                                    {/* Modal Header */}
+                                    <div className="px-12 py-10 border-b border-slate-200 dark:border-white/5 flex justify-between items-center bg-gradient-to-r from-slate-50 dark:from-white/[0.03] to-transparent">
+                                        <div className="flex items-center gap-6">
+                                            <div className="w-16 h-16 bg-brand-500/10 rounded-2xl flex items-center justify-center border border-brand-500/20">
+                                                <GraduationCap className="w-8 h-8 text-brand-500 dark:text-brand-400" />
                                             </div>
-                                            <p className="text-xs text-slate-500 font-bold uppercase tracking-widest flex items-center gap-2">
-                                                <BookOpen className="w-3 h-3" /> {currentLessonForQuiz?.title}
-                                            </p>
-                                        </div>
-                                    </div>
-                                    <button
-                                        onClick={() => setQuizEditorOpen(false)}
-                                        className="w-12 h-12 flex items-center justify-center bg-white/5 hover:bg-white/10 rounded-2xl transition-all group"
-                                    >
-                                        <X className="w-5 h-5 text-slate-500 group-hover:text-white group-hover:rotate-90 transition-all duration-300" />
-                                    </button>
-                                </div>
-
-                                {/* Modal Body */}
-                                <div className="flex-1 overflow-y-auto p-12 space-y-12 custom-scrollbar bg-black/20">
-                                    {quizData.length === 0 && (
-                                        <div className="text-center py-24 flex flex-col items-center">
-                                            <div className="w-24 h-24 bg-white/5 rounded-[32px] flex items-center justify-center mb-8 border border-white/5">
-                                                <HelpCircle className="w-10 h-10 text-slate-700" />
-                                            </div>
-                                            <h4 className="text-xl font-bold text-white mb-2">Create Your Quiz</h4>
-                                            <p className="text-slate-500 text-sm max-w-sm mx-auto mb-10 leading-relaxed font-medium">Add simple questions to test what students learned. Getting them right unlocks their reward.</p>
-                                            <button
-                                                onClick={addQuestion}
-                                                className="px-8 py-4 bg-brand-500 hover:bg-brand-400 text-white rounded-2xl font-black uppercase tracking-widest text-[10px] shadow-2xl shadow-brand-500/20 transition-all"
-                                            >
-                                                Start Creating
-                                            </button>
-                                        </div>
-                                    )}
-
-                                    {quizData.map((q, idx) => (
-                                        <div key={idx} className="group relative">
-                                            <div className="absolute -left-4 top-0 bottom-0 w-1 bg-brand-500/40 rounded-full opacity-0 group-hover:opacity-100 transition-all" />
-                                            <div className="bg-white/[0.02] rounded-[40px] border border-white/5 p-10 transition-all hover:bg-white/[0.04] hover:border-brand-500/20">
-                                                <div className="flex justify-between items-start mb-8">
-                                                    <div className="flex items-center gap-4">
-                                                        <div className="flex flex-col bg-white/5 rounded-xl border border-white/10 overflow-hidden">
-                                                            <button
-                                                                onClick={() => moveQuestion(idx, 'up')}
-                                                                disabled={idx === 0}
-                                                                title="Move Up"
-                                                                className="p-2 hover:bg-brand-500/20 text-slate-400 hover:text-brand-400 disabled:opacity-10 transition-all active:scale-90"
-                                                            >
-                                                                <ChevronUp className="w-5 h-5" />
-                                                            </button>
-                                                            <div className="h-[1px] bg-white/10 w-full" />
-                                                            <button
-                                                                onClick={() => moveQuestion(idx, 'down')}
-                                                                disabled={idx === quizData.length - 1}
-                                                                title="Move Down"
-                                                                className="p-2 hover:bg-brand-500/20 text-slate-400 hover:text-brand-400 disabled:opacity-10 transition-all active:scale-90"
-                                                            >
-                                                                <ChevronDown className="w-5 h-5" />
-                                                            </button>
-                                                        </div>
-                                                        <div className="w-10 h-10 rounded-xl bg-brand-500/10 flex items-center justify-center text-brand-400 text-xs font-black border border-brand-500/10">
-                                                            {idx + 1}
-                                                        </div>
-                                                        <h4 className="text-xs font-black uppercase tracking-widest text-slate-400 italic">Question {idx + 1}</h4>
-                                                    </div>
-                                                    <button
-                                                        onClick={() => setQuizData(quizData.filter((_, i) => i !== idx))}
-                                                        className="p-3 text-slate-600 hover:text-red-400 flex items-center gap-2 hover:bg-red-400/10 rounded-xl transition-all text-[9px] font-black uppercase tracking-widest"
-                                                    >
-                                                        <X className="w-4 h-4" /> Remove
-                                                    </button>
+                                            <div>
+                                                <div className="flex items-center gap-3 mb-1">
+                                                    <h3 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight uppercase italic">Create a Quiz.</h3>
+                                                    <span className="px-2 py-0.5 rounded-md bg-brand-500/20 text-brand-500 dark:text-brand-400 text-[8px] font-black uppercase tracking-widest border border-brand-500/30">Manual</span>
                                                 </div>
-
-                                                <div className="space-y-8">
-                                                    <div>
-                                                        <label className="text-[10px] font-black uppercase text-brand-400 mb-3 block tracking-[0.2em] ml-2">Question Title</label>
-                                                        <input
-                                                            type="text"
-                                                            value={q.question}
-                                                            onChange={(e) => {
-                                                                const newData = [...quizData];
-                                                                newData[idx].question = e.target.value;
-                                                                setQuizData(newData);
-                                                            }}
-                                                            className="w-full bg-[#060914] border border-white/10 rounded-3xl py-5 px-8 text-lg font-bold text-white focus:outline-none focus:border-brand-500/50 focus:ring-4 ring-brand-500/5 transition-all placeholder:text-slate-700"
-                                                            placeholder="What fundamental concept are we testing?"
-                                                        />
-                                                    </div>
-
-                                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                                        {q.options.map((opt, oIdx) => (
-                                                            <div key={oIdx} className="relative group/opt">
-                                                                <div className="absolute left-6 top-1/2 -translate-y-1/2 text-brand-500/40 font-black text-xs group-focus-within/opt:text-brand-400 transition-colors uppercase">
-                                                                    {String.fromCharCode(65 + oIdx)}
-                                                                </div>
-                                                                <input
-                                                                    type="text"
-                                                                    value={opt}
-                                                                    onChange={(e) => {
-                                                                        const newData = [...quizData];
-                                                                        newData[idx].options[oIdx] = e.target.value;
-                                                                        setQuizData(newData);
-                                                                    }}
-                                                                    className="w-full bg-[#060914]/50 border border-white/5 rounded-2xl py-4 pl-14 pr-6 text-sm text-slate-300 focus:outline-none focus:border-brand-500/30 focus:bg-[#060914] transition-all hover:bg-white/[0.02]"
-                                                                    placeholder={`Option ${String.fromCharCode(65 + oIdx)}`}
-                                                                />
-                                                            </div>
-                                                        ))}
-                                                    </div>
-
-                                                    <div className="pt-6 border-t border-white/5">
-                                                        <label className="text-[10px] font-black uppercase text-emerald-500/70 mb-4 block tracking-[0.2em] ml-2 flex items-center gap-2">
-                                                            <ShieldCheck className="w-3 h-3" /> Correct Answer
-                                                        </label>
-                                                        <div className="relative">
-                                                            <select
-                                                                value={q.answer}
-                                                                onChange={(e) => {
-                                                                    const newData = [...quizData];
-                                                                    newData[idx].answer = e.target.value;
-                                                                    setQuizData(newData);
-                                                                }}
-                                                                className="w-full bg-emerald-500/[0.03] border border-emerald-500/10 rounded-2xl py-4 px-8 text-sm text-emerald-400 font-bold focus:outline-none focus:border-emerald-500/30 appearance-none cursor-pointer hover:bg-emerald-500/[0.05] transition-all"
-                                                            >
-                                                                <option value="" disabled>Pick the correct answer</option>
-                                                                {q.options.filter(o => o.trim() !== "").map((opt, oIdx) => (
-                                                                    <option key={oIdx} value={opt} className="bg-[#0D1525] text-slate-200">{opt}</option>
-                                                                ))}
-                                                            </select>
-                                                            <div className="absolute right-6 top-1/2 -translate-y-1/2 pointer-events-none text-emerald-500/50">
-                                                                <List className="w-4 h-4" />
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
+                                                <p className="text-xs text-slate-500 font-bold uppercase tracking-widest flex items-center gap-2">
+                                                    <BookOpen className="w-3 h-3" /> {currentLessonForQuiz?.title}
+                                                </p>
                                             </div>
                                         </div>
-                                    ))}
-
-                                    {quizData.length > 0 && (
-                                        <button
-                                            onClick={addQuestion}
-                                            className="w-full py-6 border-2 border-dashed border-white/5 rounded-[40px] flex items-center justify-center gap-4 text-xs font-black uppercase tracking-[0.2em] text-slate-600 hover:text-brand-400 hover:border-brand-500/20 hover:bg-brand-500/[0.02] transition-all group/add"
-                                        >
-                                            <PlusCircle className="w-5 h-5 group-hover:scale-125 transition-transform" />
-                                            Add Another Question
-                                        </button>
-                                    )}
-                                </div>
-
-                                {/* Modal Footer */}
-                                <div className="px-12 py-10 border-t border-white/5 bg-white/[0.01] flex items-center justify-between">
-                                    <div className="flex items-center gap-3 text-slate-500 text-[10px] font-black uppercase tracking-[0.1em]">
-                                        <div className="w-2 h-2 rounded-full bg-brand-500/40" />
-                                        {quizData.length} {quizData.length === 1 ? 'Question' : 'Questions'} Added
-                                    </div>
-                                    <div className="flex items-center gap-6">
                                         <button
                                             onClick={() => setQuizEditorOpen(false)}
-                                            className="px-8 py-4 text-slate-500 text-[10px] font-black uppercase tracking-widest hover:text-white hover:bg-white/5 rounded-2xl transition-all"
+                                            className="w-12 h-12 flex items-center justify-center bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 rounded-2xl transition-all group border border-slate-200 dark:border-white/5"
                                         >
-                                            Back to Lessons
+                                            <X className="w-5 h-5 text-slate-500 group-hover:text-slate-900 dark:group-hover:text-white group-hover:rotate-90 transition-all duration-300" />
                                         </button>
-                                        <button
-                                            onClick={() => handleSaveQuizManual(false)}
-                                            disabled={isSavingQuiz}
-                                            className="flex items-center gap-3 px-10 py-5 bg-brand-600 hover:bg-brand-500 text-white rounded-3xl text-[11px] font-black uppercase tracking-widest transition-all shadow-[0_20px_40px_rgba(59,130,246,0.25)] hover:shadow-[0_25px_50px_rgba(59,130,246,0.35)] disabled:opacity-50 group hover:-translate-y-1 active:scale-95 active:shadow-none"
-                                        >
-                                            {isSavingQuiz ? <Loader2 className="w-5 h-5 animate-spin" /> : <ShieldCheck className="w-5 h-5 group-hover:animate-bounce" />}
-                                            {isSavingQuiz ? 'Saving...' : 'Save Quiz'}
-                                        </button>
+                                    </div>
+
+                                    {/* Modal Body */}
+                                    <div className="flex-1 overflow-y-auto p-12 space-y-12 custom-scrollbar bg-slate-50 dark:bg-black/20">
+                                        {quizData.length === 0 && (
+                                            <div className="text-center py-24 flex flex-col items-center">
+                                                <div className="w-24 h-24 bg-slate-50 dark:bg-white/5 rounded-[32px] flex items-center justify-center mb-8 border border-slate-100 dark:border-white/5 shadow-inner dark:shadow-none">
+                                                    <HelpCircle className="w-10 h-10 text-slate-300 dark:text-slate-700" />
+                                                </div>
+                                                <h4 className="text-xl font-bold text-slate-900 dark:text-white mb-2">Create Your Quiz</h4>
+                                                <p className="text-slate-500 text-sm max-w-sm mx-auto mb-10 leading-relaxed font-medium">Add simple questions to test what students learned. Getting them right unlocks their reward.</p>
+                                                <button
+                                                    onClick={addQuestion}
+                                                    className="px-8 py-4 bg-brand-500 hover:bg-brand-400 text-white rounded-2xl font-black uppercase tracking-widest text-[10px] shadow-2xl shadow-brand-500/20 transition-all"
+                                                >
+                                                    Start Creating
+                                                </button>
+                                            </div>
+                                        )}
+
+                                        {quizData.map((q, idx) => (
+                                            <div key={idx} className="group relative">
+                                                <div className="absolute -left-4 top-0 bottom-0 w-1 bg-brand-500/40 rounded-full opacity-0 group-hover:opacity-100 transition-all" />
+                                                <div className="bg-slate-50/50 dark:bg-white/[0.02] rounded-[40px] border border-slate-200 dark:border-white/5 p-10 transition-all hover:bg-slate-50 dark:hover:bg-white/[0.04] hover:border-brand-500/20 shadow-sm dark:shadow-none">
+                                                    <div className="flex justify-between items-start mb-8">
+                                                        <div className="flex items-center gap-4">
+                                                            <div className="flex flex-col bg-slate-100 dark:bg-white/5 rounded-xl border border-slate-200 dark:border-white/10 overflow-hidden shadow-sm dark:shadow-none">
+                                                                <button
+                                                                    onClick={() => moveQuestion(idx, 'up')}
+                                                                    disabled={idx === 0}
+                                                                    title="Move Up"
+                                                                    className="p-2 hover:bg-brand-500/10 dark:hover:bg-brand-500/20 text-slate-400 dark:text-slate-500 hover:text-brand-600 dark:hover:text-brand-400 disabled:opacity-10 transition-all active:scale-90"
+                                                                >
+                                                                    <ChevronUp className="w-5 h-5" />
+                                                                </button>
+                                                                <div className="h-[1px] bg-slate-200 dark:bg-white/10 w-full" />
+                                                                <button
+                                                                    onClick={() => moveQuestion(idx, 'down')}
+                                                                    disabled={idx === quizData.length - 1}
+                                                                    title="Move Down"
+                                                                    className="p-2 hover:bg-brand-500/10 dark:hover:bg-brand-500/20 text-slate-400 dark:text-slate-500 hover:text-brand-600 dark:hover:text-brand-400 disabled:opacity-10 transition-all active:scale-90"
+                                                                >
+                                                                    <ChevronDown className="w-5 h-5" />
+                                                                </button>
+                                                            </div>
+                                                            <div className="w-10 h-10 rounded-xl bg-brand-500/10 flex items-center justify-center text-brand-400 text-xs font-black border border-brand-500/10">
+                                                                {idx + 1}
+                                                            </div>
+                                                            <h4 className="text-xs font-black uppercase tracking-widest text-slate-400 italic">Question {idx + 1}</h4>
+                                                        </div>
+                                                        <button
+                                                            onClick={() => setQuizData(quizData.filter((_, i) => i !== idx))}
+                                                            className="p-3 text-slate-600 hover:text-red-400 flex items-center gap-2 hover:bg-red-400/10 rounded-xl transition-all text-[9px] font-black uppercase tracking-widest"
+                                                        >
+                                                            <X className="w-4 h-4" /> Remove
+                                                        </button>
+                                                    </div>
+
+                                                    <div className="space-y-8">
+                                                        <div>
+                                                            <label className="text-[10px] font-black uppercase text-brand-600 dark:text-brand-400 mb-3 block tracking-[0.2em] ml-2">Question Title</label>
+                                                            <input
+                                                                type="text"
+                                                                value={q.question}
+                                                                onChange={(e) => {
+                                                                    const newData = [...quizData];
+                                                                    newData[idx].question = e.target.value;
+                                                                    setQuizData(newData);
+                                                                }}
+                                                                className="w-full bg-white dark:bg-[#060914] border border-slate-200 dark:border-white/10 rounded-3xl py-5 px-8 text-lg font-bold text-slate-900 dark:text-white focus:outline-none focus:border-brand-500/30 dark:focus:border-brand-500/50 focus:ring-4 ring-brand-500/5 transition-all shadow-inner dark:shadow-none placeholder:text-slate-300 dark:placeholder:text-slate-700"
+                                                                placeholder="What fundamental concept are we testing?"
+                                                            />
+                                                        </div>
+
+                                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                                            {q.options.map((opt, oIdx) => (
+                                                                <div key={oIdx} className="relative group/opt">
+                                                                    <div className="absolute left-6 top-1/2 -translate-y-1/2 text-brand-500/40 font-black text-xs group-focus-within/opt:text-brand-400 transition-colors uppercase">
+                                                                        {String.fromCharCode(65 + oIdx)}
+                                                                    </div>
+                                                                    <input
+                                                                        type="text"
+                                                                        value={opt}
+                                                                        onChange={(e) => {
+                                                                            const newData = [...quizData];
+                                                                            newData[idx].options[oIdx] = e.target.value;
+                                                                            setQuizData(newData);
+                                                                        }}
+                                                                        className="w-full bg-white dark:bg-[#060914]/50 border border-slate-200 dark:border-white/5 rounded-2xl py-4 pl-14 pr-6 text-sm text-slate-700 dark:text-slate-300 focus:outline-none focus:border-brand-500/30 focus:bg-white dark:focus:bg-[#060914] transition-all hover:bg-slate-100 dark:hover:bg-white/[0.02] shadow-sm dark:shadow-none"
+                                                                        placeholder={`Option ${String.fromCharCode(65 + oIdx)}`}
+                                                                    />
+                                                                </div>
+                                                            ))}
+                                                        </div>
+
+                                                        <div className="pt-6 border-t border-white/5">
+                                                            <label className="text-[10px] font-black uppercase text-emerald-500/70 mb-4 block tracking-[0.2em] ml-2 flex items-center gap-2">
+                                                                <ShieldCheck className="w-3 h-3" /> Correct Answer
+                                                            </label>
+                                                            <div className="relative">
+                                                                <select
+                                                                    value={q.answer}
+                                                                    onChange={(e) => {
+                                                                        const newData = [...quizData];
+                                                                        newData[idx].answer = e.target.value;
+                                                                        setQuizData(newData);
+                                                                    }}
+                                                                    className="w-full bg-emerald-500/[0.03] border border-emerald-500/10 rounded-2xl py-4 px-8 text-sm text-emerald-400 font-bold focus:outline-none focus:border-emerald-500/30 appearance-none cursor-pointer hover:bg-emerald-500/[0.05] transition-all"
+                                                                >
+                                                                    <option value="" disabled>Pick the correct answer</option>
+                                                                    {q.options.filter(o => o.trim() !== "").map((opt, oIdx) => (
+                                                                        <option key={oIdx} value={opt} className="bg-white dark:bg-[#0D1525] text-slate-900 dark:text-slate-200">{opt}</option>
+                                                                    ))}
+                                                                </select>
+                                                                <div className="absolute right-6 top-1/2 -translate-y-1/2 pointer-events-none text-emerald-500/50">
+                                                                    <List className="w-4 h-4" />
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ))}
+
+                                        {quizData.length > 0 && (
+                                            <button
+                                                onClick={addQuestion}
+                                                className="w-full py-6 border-2 border-dashed border-slate-200 dark:border-white/5 rounded-[40px] flex items-center justify-center gap-4 text-xs font-black uppercase tracking-[0.2em] text-slate-400 dark:text-slate-600 hover:text-brand-500 dark:hover:text-brand-400 hover:border-brand-500/20 hover:bg-brand-500/[0.02] transition-all group/add"
+                                            >
+                                                <PlusCircle className="w-5 h-5 group-hover:scale-125 transition-transform" />
+                                                Add Another Question
+                                            </button>
+                                        )}
+                                    </div>
+
+                                    {/* Modal Footer */}
+                                    <div className="px-12 py-10 border-t border-slate-200 dark:border-white/5 bg-slate-50 dark:bg-white/[0.01] flex items-center justify-between">
+                                        <div className="flex items-center gap-3 text-slate-500 text-[10px] font-black uppercase tracking-[0.1em]">
+                                            <div className="w-2 h-2 rounded-full bg-brand-500/40" />
+                                            {quizData.length} {quizData.length === 1 ? 'Question' : 'Questions'} Added
+                                        </div>
+                                        <div className="flex items-center gap-6">
+                                            <button
+                                                onClick={() => setQuizEditorOpen(false)}
+                                                className="px-8 py-4 text-slate-500 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5 rounded-2xl transition-all font-black uppercase text-[10px] tracking-widest"
+                                            >
+                                                Back to Lessons
+                                            </button>
+                                            <button
+                                                onClick={() => handleSaveQuizManual(false)}
+                                                disabled={isSavingQuiz}
+                                                className="flex items-center gap-3 px-10 py-5 bg-brand-600 hover:bg-brand-500 text-white rounded-3xl text-[11px] font-black uppercase tracking-widest transition-all shadow-[0_20px_40px_rgba(59,130,246,0.25)] hover:shadow-[0_25px_50px_rgba(59,130,246,0.35)] disabled:opacity-50 group hover:-translate-y-1 active:scale-95 active:shadow-none"
+                                            >
+                                                {isSavingQuiz ? <Loader2 className="w-5 h-5 animate-spin" /> : <ShieldCheck className="w-5 h-5 group-hover:animate-bounce" />}
+                                                {isSavingQuiz ? 'Saving...' : 'Save Quiz'}
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                    )}
-                </div>
-            </main>
+                        )
+                    }
+                </div >
+            </main >
             {/* Toast Feedback */}
-            {toast && (
-                <div className={`fixed bottom-8 left-1/2 -translate-x-1/2 z-[100] px-6 py-3 rounded-2xl border backdrop-blur-xl shadow-2xl flex items-center gap-3 animate-in fade-in slide-in-from-bottom-4 duration-300 ${toast.type === 'error' ? 'bg-red-500/10 border-red-500/20 text-red-400' : 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400'}`}>
-                    {toast.type === 'error' ? <AlertCircle className="w-4 h-4" /> : <CheckCircle className="w-4 h-4" />}
-                    <span className="text-xs font-black uppercase tracking-widest">{toast.message}</span>
-                </div>
-            )}
-        </div>
+            {
+                toast && (
+                    <div className={`fixed bottom-8 left-1/2 -translate-x-1/2 z-[100] px-6 py-3 rounded-2xl border backdrop-blur-xl shadow-2xl flex items-center gap-3 animate-in fade-in slide-in-from-bottom-4 duration-300 ${toast.type === 'error' ? 'bg-red-500/10 border-red-500/20 text-red-400' : 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400'}`}>
+                        {toast.type === 'error' ? <AlertCircle className="w-4 h-4" /> : <CheckCircle className="w-4 h-4" />}
+                        <span className="text-xs font-black uppercase tracking-widest">{toast.message}</span>
+                    </div>
+                )
+            }
+        </div >
     );
 }

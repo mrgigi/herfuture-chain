@@ -9,6 +9,16 @@ import { useCurrency } from '../hooks/useCurrency';
 // Pass = 100% correct — works for any number of questions
 const PASS_THRESHOLD = 3; // Default display threshold, though logic requires 100%
 
+const normalizeString = (str) => {
+    if (!str) return "";
+    return str
+        .toString()
+        .replace(/\u00A0/g, ' ') // Replace non-breaking spaces
+        .replace(/\s+/g, ' ')   // Collapse multiple spaces to single space
+        .trim()
+        .toLowerCase();
+};
+
 export default function LessonPlayer() {
     const { lessonId } = useParams();
     const navigate = useNavigate();
@@ -32,6 +42,7 @@ export default function LessonPlayer() {
     const [txHash, setTxHash] = useState(null);
     const [submitting, setSubmitting] = useState(false);
     const [submitError, setSubmitError] = useState(null);
+    const [courseCompleted, setCourseCompleted] = useState(false);
 
     const triggerCelebration = () => {
         const duration = 3 * 1000;
@@ -98,7 +109,10 @@ export default function LessonPlayer() {
     const handleSubmitAnswer = () => {
         if (!selectedAnswer || !currentQuestion) return;
 
-        const isCorrect = selectedAnswer === (currentQuestion.answer || currentQuestion.correct_answer);
+        const normalizedSelected = normalizeString(selectedAnswer);
+        const normalizedCorrect = normalizeString(currentQuestion.answer || currentQuestion.correct_answer);
+
+        const isCorrect = normalizedSelected === normalizedCorrect;
         setQuestionResult(isCorrect ? 'correct' : 'incorrect');
         if (isCorrect) {
             scoreRef.current += 1; // Update ref immediately (no batching delay)
@@ -116,7 +130,15 @@ export default function LessonPlayer() {
             const res = await submitLessonProgress(participant.id, lessonId, scorePercentage);
             setGrantStatus(res.grantStatus);
             setTxHash(res.txHash);
+
             triggerCelebration();
+            if (res.courseCompleted) {
+                // Extended celebration for course completion
+                setTimeout(triggerCelebration, 1000);
+                setTimeout(triggerCelebration, 2500);
+                setCourseCompleted(true);
+            }
+
             setLessonCompleted(true);
         } catch (err) {
             console.error("Failed to submit progress:", err);
@@ -160,25 +182,39 @@ export default function LessonPlayer() {
     // ─── Lesson Complete Screen ───────────────────────────────────────────────
     if (lessonCompleted) {
         return (
-            <div className="min-h-screen bg-[#0A0F1C] flex items-center justify-center p-6 relative overflow-hidden">
+            <div className="min-h-screen bg-slate-50 dark:bg-[#0A0F1C] flex items-center justify-center p-6 relative overflow-hidden transition-colors duration-300">
                 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-brand-500/10 blur-[120px] rounded-full animate-pulse pointer-events-none" />
-                <div className="max-w-xl w-full glass-panel p-12 rounded-[48px] border border-white/10 relative z-10 text-center shadow-2xl shadow-brand-500/10">
+                <div className="max-w-xl w-full glass-panel bg-white/70 dark:bg-[#0D1525]/50 p-12 rounded-[48px] border border-slate-200 dark:border-white/10 relative z-10 text-center shadow-2xl dark:shadow-brand-500/10">
                     <div className="relative mb-10">
-                        <div className="w-24 h-24 bg-gradient-to-br from-brand-400 to-magenta-600 rounded-3xl flex items-center justify-center mx-auto shadow-2xl shadow-brand-500/40 relative z-10 animate-bounce">
+                        <div className="w-24 h-24 bg-gradient-to-br from-brand-500 to-brand-600 rounded-3xl flex items-center justify-center mx-auto shadow-2xl shadow-brand-500/40 relative z-10 animate-bounce">
                             <Award className="w-12 h-12 text-white" />
                         </div>
                         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-32 bg-brand-500/20 blur-2xl rounded-full" />
                     </div>
-                    <h2 className="text-4xl font-black text-white mb-4 tracking-tighter">YOU DID IT! 🌟</h2>
-                    <p className="text-slate-400 text-sm mb-12 leading-relaxed max-w-sm mx-auto">
-                        {grantStatus === 'paused'
-                            ? "✅ Progress recorded! Your reward will be processed as soon as grant disbursement resumes."
-                            : "Your hard work paid off! Your reward has been sent straight to your wallet."
+                    <h2 className="text-4xl font-black text-slate-900 dark:text-white mb-4 tracking-tighter uppercase italic">
+                        {courseCompleted ? "COURSE COMPLETE! 🎓🌟" : "YOU DID IT! 🌟"}
+                    </h2>
+                    <p className="text-slate-500 dark:text-slate-400 text-sm mb-12 leading-relaxed max-w-sm mx-auto font-medium">
+                        {courseCompleted
+                            ? "Incredible! You have officially graduated from this Learning Path. Your verified completion certificate has been minted to your DID."
+                            : grantStatus === 'paused'
+                                ? "✅ Progress recorded! Your reward will be processed as soon as grant disbursement resumes."
+                                : "Your hard work paid off! Your reward has been sent straight to your wallet."
                         }
                     </p>
-                    <div className="p-8 rounded-[32px] bg-white/5 border border-white/10 mb-10 group hover:border-brand-500/30 transition-all duration-500">
+
+                    {courseCompleted && (
+                        <div className="mb-8 p-6 rounded-3xl bg-brand-500/10 border border-brand-500/20 text-center animate-in zoom-in duration-500 shadow-inner">
+                            <h3 className="text-lg font-black text-brand-600 dark:text-brand-400 uppercase tracking-widest mb-2 flex flex-col items-center justify-center gap-2">
+                                🎓 Official Graduate
+                            </h3>
+                            <p className="text-xs text-brand-700 dark:text-brand-300 font-medium px-4">Check the Certificates dashboard to view your official Web3 credential.</p>
+                        </div>
+                    )}
+
+                    <div className="p-8 rounded-[32px] bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 mb-10 group hover:border-brand-500/30 transition-all duration-500 shadow-inner dark:shadow-none">
                         <div className="flex justify-between items-center mb-3">
-                            <div className="text-[10px] font-black text-brand-400 uppercase tracking-[0.3em]">Reward Earned</div>
+                            <div className="text-[10px] font-black text-brand-600 dark:text-brand-400 uppercase tracking-[0.3em]">Reward Earned</div>
                             {txHash && (
                                 <a
                                     href={`https://sepolia.celoscan.io/tx/${txHash}`}
@@ -190,18 +226,18 @@ export default function LessonPlayer() {
                                 </a>
                             )}
                         </div>
-                        <div className="text-5xl font-black text-white group-hover:scale-110 transition-transform duration-500">
+                        <div className="text-5xl font-black text-slate-900 dark:text-white group-hover:scale-110 transition-transform duration-500">
                             {formatNaira(toNaira(lesson?.grant_amount || 0))}
                         </div>
-                        <div className="text-sm text-slate-500 mt-2">{formatCUSD(lesson?.grant_amount || 0)} cUSD</div>
+                        <div className="text-sm text-slate-500 dark:text-slate-500 mt-2 font-bold">{formatCUSD(lesson?.grant_amount || 0)} cUSD</div>
                     </div>
                     <button
                         onClick={() => navigate('/dashboard')}
-                        className="w-full py-6 bg-white hover:bg-brand-500 text-black hover:text-white rounded-[24px] font-black uppercase tracking-widest text-sm transition-all duration-500 shadow-xl hover:shadow-brand-500/40 flex items-center justify-center gap-3 group"
+                        className="w-full py-6 bg-slate-900 dark:bg-white hover:bg-brand-600 dark:hover:bg-brand-500 text-white dark:text-black hover:text-white rounded-[24px] font-black uppercase tracking-widest text-sm transition-all duration-500 shadow-xl hover:shadow-brand-500/40 flex items-center justify-center gap-3 group"
                     >
                         Return to Dashboard <ArrowRight className="w-5 h-5 group-hover:translate-x-2 transition-transform" />
                     </button>
-                    <p className="mt-8 text-[10px] font-black uppercase tracking-widest text-slate-600">
+                    <p className="mt-8 text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-600">
                         ✅ Verified by HerFuture Chain
                     </p>
                 </div>
@@ -215,23 +251,23 @@ export default function LessonPlayer() {
 
         if (passed) {
             return (
-                <div className="min-h-screen bg-[#0A0F1C] flex items-center justify-center p-6 relative overflow-hidden">
-                    <div className="max-w-sm w-full glass-panel p-10 rounded-[40px] border border-white/10 relative z-10 text-center">
+                <div className="min-h-screen bg-slate-50 dark:bg-[#0A0F1C] flex items-center justify-center p-6 relative overflow-hidden transition-colors duration-300">
+                    <div className="max-w-sm w-full glass-panel bg-white/80 dark:bg-[#0D1525]/50 p-10 rounded-[40px] border border-slate-200 dark:border-white/10 relative z-10 text-center shadow-2xl dark:shadow-none">
                         {submitting ? (
                             <>
                                 <div className="w-20 h-20 bg-brand-500/10 rounded-3xl flex items-center justify-center mx-auto mb-6">
                                     <div className="h-8 w-8 border-4 border-brand-500/30 border-t-brand-500 rounded-full animate-spin shadow-lg shadow-brand-500/20" />
                                 </div>
-                                <h2 className="text-2xl font-black text-white mb-3">Recording Progress...</h2>
-                                <p className="text-slate-400 text-sm mb-3">Please wait while we secure your reward.</p>
+                                <h2 className="text-2xl font-black text-slate-900 dark:text-white mb-3">Recording Progress...</h2>
+                                <p className="text-slate-500 dark:text-slate-400 text-sm mb-3 font-medium">Please wait while we secure your reward.</p>
                             </>
                         ) : submitError ? (
                             <>
                                 <div className="w-20 h-20 bg-red-500/10 rounded-3xl flex items-center justify-center mx-auto mb-6 text-4xl shadow-xl shadow-red-500/20 border border-red-500/20">
                                     ⚠️
                                 </div>
-                                <h2 className="text-2xl font-black text-white mb-3 tracking-tight">Submission Failed</h2>
-                                <p className="text-red-400 text-sm mb-6 leading-relaxed font-medium pb-2 border-b border-white/5">{submitError}</p>
+                                <h2 className="text-2xl font-black text-slate-900 dark:text-white mb-3 tracking-tight">Submission Failed</h2>
+                                <p className="text-red-500 dark:text-red-400 text-sm mb-6 leading-relaxed font-medium pb-2 border-b border-slate-100 dark:border-white/5">{submitError}</p>
                                 <button
                                     onClick={() => submitProgress(score)}
                                     className="w-full py-4 bg-red-500 hover:bg-red-400 text-white rounded-2xl font-black uppercase tracking-widest text-sm transition-all shadow-xl shadow-red-500/20"
@@ -271,14 +307,14 @@ export default function LessonPlayer() {
         };
 
         return (
-            <div className="min-h-screen bg-[#0A0F1C] flex items-center justify-center p-6 relative overflow-hidden">
-                <div className="max-w-sm w-full glass-panel p-10 rounded-[40px] border border-white/10 relative z-10 text-center">
-                    <div className={`w-20 h-20 ${isZero ? 'bg-slate-800/60' : 'bg-amber-500/10'} rounded-3xl flex items-center justify-center mx-auto mb-6 text-4xl`}>
+            <div className="min-h-screen bg-slate-50 dark:bg-[#0A0F1C] flex items-center justify-center p-6 relative overflow-hidden transition-colors duration-300">
+                <div className="max-w-sm w-full glass-panel bg-white/80 dark:bg-[#0D1525]/50 p-10 rounded-[40px] border border-slate-200 dark:border-white/10 relative z-10 text-center shadow-2xl dark:shadow-none">
+                    <div className={`w-20 h-20 ${isZero ? 'bg-slate-100 dark:bg-slate-800/60' : 'bg-amber-500/10'} rounded-3xl flex items-center justify-center mx-auto mb-6 text-4xl shadow-inner dark:shadow-none`}>
                         {emoji}
                     </div>
-                    <h2 className="text-2xl font-black text-white mb-3">{headline}</h2>
-                    <p className="text-slate-400 text-sm mb-3 leading-relaxed">{subtext}</p>
-                    <p className="text-slate-600 text-xs mb-8">You need <span className="text-brand-400 font-bold">all {totalQuestions} correct</span> to earn your reward.</p>
+                    <h2 className="text-2xl font-black text-slate-900 dark:text-white mb-3">{headline}</h2>
+                    <p className="text-slate-600 dark:text-slate-400 text-sm mb-3 leading-relaxed font-medium">{subtext}</p>
+                    <p className="text-slate-400 dark:text-slate-600 text-xs mb-8 uppercase tracking-widest font-black">You need <span className="text-brand-600 dark:text-brand-400 font-bold">all {totalQuestions} correct</span> to earn your reward.</p>
                     <button
                         onClick={handleRetry}
                         className={`w-full py-4 ${isZero ? 'bg-slate-700 hover:bg-slate-600' : 'bg-brand-500 hover:bg-brand-400'} text-white rounded-2xl font-black uppercase tracking-widest text-sm transition-all`}
@@ -292,20 +328,20 @@ export default function LessonPlayer() {
 
     // ─── Loading State ────────────────────────────────────────────────────────
     if (loading && !lesson) return (
-        <div className="min-h-screen bg-[#0A0F1C] flex flex-col items-center justify-center p-6 text-center">
+        <div className="min-h-screen bg-slate-50 dark:bg-[#0A0F1C] flex flex-col items-center justify-center p-6 text-center transition-colors duration-300">
             <div className="h-12 w-12 border-4 border-brand-500/30 border-t-brand-500 rounded-full animate-spin mb-4" />
-            <p className="text-slate-500 font-medium">Syncing with HerFuture Academy...</p>
+            <p className="text-slate-500 dark:text-slate-500 font-bold uppercase tracking-widest text-[10px]">Syncing with HerFuture Academy...</p>
         </div>
     );
 
     if (!lesson) return (
-        <div className="min-h-screen bg-[#0A0F1C] flex flex-col items-center justify-center p-6 text-center">
+        <div className="min-h-screen bg-slate-50 dark:bg-[#0A0F1C] flex flex-col items-center justify-center p-6 text-center transition-colors duration-300">
             <div className="w-16 h-16 bg-red-500/10 rounded-full flex items-center justify-center mb-6">
                 <HelpCircle className="w-8 h-8 text-red-500" />
             </div>
-            <h2 className="text-xl font-bold text-white mb-2">Lesson Not Found</h2>
-            <p className="text-slate-500 mb-8 max-w-xs mx-auto">This lesson might be still synchronizing or doesn't exist yet.</p>
-            <button onClick={() => navigate('/dashboard')} className="px-6 py-3 bg-slate-800 hover:bg-slate-700 text-white rounded-xl font-bold transition-all text-sm mb-4">
+            <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-2">Lesson Not Found</h2>
+            <p className="text-slate-500 dark:text-slate-500 mb-8 max-w-xs mx-auto font-medium">This lesson might be still synchronizing or doesn't exist yet.</p>
+            <button onClick={() => navigate('/dashboard')} className="px-6 py-3 bg-slate-900 dark:bg-slate-800 hover:bg-slate-800 dark:hover:bg-slate-700 text-white rounded-xl font-bold transition-all text-sm mb-4 shadow-lg">
                 Back to Dashboard
             </button>
             <button onClick={() => window.location.reload()} className="text-brand-400 text-xs font-bold hover:underline">
@@ -316,14 +352,14 @@ export default function LessonPlayer() {
 
     // ─── Main Lesson Player ───────────────────────────────────────────────────
     return (
-        <div className="min-h-screen bg-[#0A0F1C] flex flex-col">
+        <div className="min-h-screen bg-slate-50 dark:bg-[#0A0F1C] flex flex-col transition-colors duration-300">
             {/* Header */}
-            <header className="p-4 flex items-center justify-between border-b border-white/5 bg-slate-900/50 backdrop-blur-md sticky top-0 z-50">
-                <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-slate-400 hover:text-white transition-colors">
+            <header className="p-4 flex items-center justify-between border-b border-slate-200 dark:border-white/5 bg-white/80 dark:bg-slate-900/50 backdrop-blur-md sticky top-0 z-50 transition-colors">
+                <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">
                     <ChevronLeft className="w-4 h-4" />
-                    <span className="text-xs font-medium text-slate-500 hover:text-white transition-colors">Exit Academy</span>
+                    <span className="text-xs font-bold uppercase tracking-widest text-slate-500 hover:text-slate-900 dark:hover:text-white transition-colors">Exit Academy</span>
                 </button>
-                <div className="text-[10px] font-bold text-white/30 uppercase tracking-[0.2em]">
+                <div className="text-[10px] font-black text-slate-400 dark:text-white/30 uppercase tracking-[0.2em] italic">
                     {lesson.title}
                 </div>
                 <div className="w-24" />
@@ -341,12 +377,12 @@ export default function LessonPlayer() {
                         <div className="w-full max-w-xl p-6 md:p-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
                             {/* Quiz Header */}
                             <div className="text-center mb-8">
-                                <div className="w-14 h-14 bg-brand-500/10 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                                    <Zap className="w-7 h-7 text-brand-400 animate-pulse" />
+                                <div className="w-14 h-14 bg-brand-500/10 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-brand-500/20">
+                                    <Zap className="w-7 h-7 text-brand-600 dark:text-brand-400 animate-pulse" />
                                 </div>
-                                <h2 className="text-2xl font-black text-white tracking-tight">KNOWLEDGE CHECK</h2>
-                                <p className="text-slate-500 text-sm mt-1">
-                                    Pass <span className="text-brand-400 font-bold">{PASS_THRESHOLD}/{totalQuestions}</span> to unlock your <span className="text-brand-400 font-bold">{formatNaira(toNaira(lesson?.grant_amount || 0))}</span> reward.
+                                <h2 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight italic uppercase">KNOWLEDGE CHECK.</h2>
+                                <p className="text-slate-500 dark:text-slate-500 text-sm mt-1 font-bold">
+                                    Pass <span className="text-brand-600 dark:text-brand-400 font-black">{totalQuestions === 1 ? '1' : `${Math.min(PASS_THRESHOLD, totalQuestions)}`}/{totalQuestions}</span> to unlock your <span className="text-brand-600 dark:text-brand-400 font-black">{formatNaira(toNaira(lesson?.grant_amount || 0))}</span> reward.
                                 </p>
                             </div>
 
@@ -359,8 +395,8 @@ export default function LessonPlayer() {
                                             className={`h-2 rounded-full transition-all duration-500 ${i < currentQuestionIndex
                                                 ? 'w-6 bg-emerald-500'
                                                 : i === currentQuestionIndex
-                                                    ? 'w-8 bg-brand-500'
-                                                    : 'w-2 bg-white/10'
+                                                    ? 'w-8 bg-brand-500 shadow-[0_0_15px_rgba(59,130,246,0.5)]'
+                                                    : 'w-2 bg-slate-200 dark:bg-white/10'
                                                 }`}
                                         />
                                     ))}
@@ -373,23 +409,22 @@ export default function LessonPlayer() {
                             {/* Question */}
                             {currentQuestion ? (
                                 <div className="space-y-3">
-                                    <p className="text-slate-100 text-base md:text-lg mb-6 leading-relaxed font-medium">
+                                    <p className="text-slate-800 dark:text-slate-100 text-base md:text-lg mb-6 leading-relaxed font-bold italic">
                                         {currentQuestion.question}
                                     </p>
 
                                     {/* Answer Options */}
                                     {(currentQuestion.options || []).map((option) => {
                                         const isSelected = selectedAnswer === option;
-                                        const correctAnswer = currentQuestion.answer || currentQuestion.correct_answer;
-                                        const isCorrectOption = option === correctAnswer;
+                                        const isCorrectOption = normalizeString(option) === normalizeString(currentQuestion.answer || currentQuestion.correct_answer);
 
-                                        let optionStyle = 'bg-white/5 border-white/5 text-slate-400 hover:border-white/10';
+                                        let optionStyle = 'bg-white dark:bg-white/5 border-slate-200 dark:border-white/5 text-slate-600 dark:text-slate-400 hover:border-brand-500/30 shadow-sm dark:shadow-none';
                                         if (questionResult) {
-                                            if (isCorrectOption) optionStyle = 'bg-emerald-500/20 border-emerald-500 text-emerald-300';
-                                            else if (isSelected && !isCorrectOption) optionStyle = 'bg-red-500/10 border-red-500/50 text-red-400';
-                                            else optionStyle = 'bg-white/5 border-white/5 text-slate-600 opacity-50';
+                                            if (isCorrectOption) optionStyle = 'bg-emerald-500/10 dark:bg-emerald-500/20 border-emerald-500 text-emerald-700 dark:text-emerald-300';
+                                            else if (isSelected && !isCorrectOption) optionStyle = 'bg-red-500/5 dark:bg-red-500/10 border-red-500/50 text-red-600 dark:text-red-400';
+                                            else optionStyle = 'bg-slate-50 dark:bg-white/5 border-slate-100 dark:border-white/5 text-slate-400 dark:text-slate-600 opacity-50';
                                         } else if (isSelected) {
-                                            optionStyle = 'bg-brand-500/20 border-brand-500 text-brand-400';
+                                            optionStyle = 'bg-brand-50 dark:bg-brand-500/20 border-brand-500 text-brand-700 dark:text-brand-400 shadow-md';
                                         }
 
                                         return (
@@ -397,9 +432,9 @@ export default function LessonPlayer() {
                                                 key={option}
                                                 onClick={() => handleAnswerSelect(option)}
                                                 disabled={!!questionResult}
-                                                className={`w-full p-4 rounded-2xl border transition-all text-left flex items-center justify-between ${optionStyle}`}
+                                                className={`w-full p-4 rounded-2xl border transition-all text-left flex items-center justify-between group/opt ${optionStyle}`}
                                             >
-                                                <span className="flex-1 text-sm font-medium">{option}</span>
+                                                <span className="flex-1 text-sm font-bold">{option}</span>
                                                 {questionResult && isCorrectOption && <CheckCircle className="w-5 h-5 text-emerald-400 flex-shrink-0" />}
                                                 {questionResult && isSelected && !isCorrectOption && <XCircle className="w-5 h-5 text-red-400 flex-shrink-0" />}
                                                 {!questionResult && isSelected && <CheckCircle className="w-5 h-5 text-brand-400 flex-shrink-0" />}
@@ -446,15 +481,15 @@ export default function LessonPlayer() {
                             ) : (
                                 // No quiz found
                                 <div className="text-center">
-                                    <p className="text-slate-500 mb-6">No quiz found for this lesson. You can claim your reward!</p>
+                                    <p className="text-slate-500 dark:text-slate-500 mb-6 font-bold uppercase tracking-widest text-xs">No quiz found for this lesson. You can claim your reward!</p>
 
                                     {submitError && (
-                                        <div className="mb-4 p-3 bg-red-500/10 border border-red-500/20 text-red-400 text-sm rounded-xl font-medium shadow-md">
+                                        <div className="mb-4 p-3 bg-red-500/10 border border-red-500/20 text-red-600 dark:text-red-400 text-sm rounded-xl font-bold shadow-md">
                                             {submitError}
                                         </div>
                                     )}
 
-                                    <button onClick={handleClaimWithoutQuiz} disabled={submitting} className="btn-primary px-8 py-4 flex items-center gap-2 justify-center mx-auto transition-all w-full max-w-[280px]">
+                                    <button onClick={handleClaimWithoutQuiz} disabled={submitting} className="w-full py-5 bg-brand-500 hover:bg-brand-400 text-white rounded-2xl font-black uppercase tracking-widest text-xs shadow-2xl shadow-brand-500/20 flex items-center gap-2 justify-center mx-auto transition-all max-w-[280px]">
                                         {submitting ? <div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : 'Claim My Reward'}
                                     </button>
                                 </div>
@@ -464,12 +499,12 @@ export default function LessonPlayer() {
                 </div>
 
                 {/* Sidebar */}
-                <div className="w-full lg:w-[400px] border-l border-white/5 bg-[#0D121F] flex flex-col">
-                    <div className="flex border-b border-white/5">
-                        <button onClick={() => setActiveTab('video')} className={`flex-1 py-4 text-[10px] font-bold uppercase tracking-wider transition-all ${activeTab === 'video' ? 'text-brand-400 bg-brand-500/5 border-b-2 border-brand-500' : 'text-slate-600 hover:text-slate-300'}`}>
+                <div className="w-full lg:w-[400px] border-l border-slate-200 dark:border-white/5 bg-white dark:bg-[#0D121F] flex flex-col transition-colors">
+                    <div className="flex border-b border-slate-200 dark:border-white/5">
+                        <button onClick={() => setActiveTab('video')} className={`flex-1 py-4 text-[10px] font-black uppercase tracking-[0.2em] transition-all ${activeTab === 'video' ? 'text-brand-600 dark:text-brand-400 bg-slate-50 dark:bg-brand-500/5 border-b-2 border-brand-500' : 'text-slate-400 dark:text-slate-600 hover:text-slate-900 dark:hover:text-slate-300'}`}>
                             Lesson Overview
                         </button>
-                        <button onClick={() => setActiveTab('outcomes')} className={`flex-1 py-4 text-[10px] font-bold uppercase tracking-wider transition-all ${activeTab === 'outcomes' ? 'text-brand-400 bg-brand-500/5 border-b-2 border-brand-500' : 'text-slate-600 hover:text-slate-300'}`}>
+                        <button onClick={() => setActiveTab('outcomes')} className={`flex-1 py-4 text-[10px] font-black uppercase tracking-[0.2em] transition-all ${activeTab === 'outcomes' ? 'text-brand-600 dark:text-brand-400 bg-slate-50 dark:bg-brand-500/5 border-b-2 border-brand-500' : 'text-slate-400 dark:text-slate-600 hover:text-slate-900 dark:hover:text-slate-300'}`}>
                             Learning Goals
                         </button>
                     </div>
@@ -477,17 +512,17 @@ export default function LessonPlayer() {
                     <div className="flex-1 overflow-y-auto p-6 md:p-8 custom-scrollbar">
                         {activeTab === 'video' ? (
                             <div className="animate-in fade-in slide-in-from-right-4 duration-500">
-                                <h2 className="text-xl font-bold text-white mb-3 leading-tight">{lesson.title}</h2>
-                                <p className="text-slate-400 text-sm leading-relaxed mb-6">{lesson.content}</p>
-                                <div className="p-5 rounded-2xl bg-brand-500/5 border border-brand-500/10 mb-6">
-                                    <div className="text-[10px] font-black text-brand-400 uppercase tracking-widest mb-1">Lesson Reward</div>
-                                    <div className="text-2xl font-black text-white">{formatNaira(toNaira(lesson.grant_amount))}</div>
-                                    <div className="text-xs text-slate-500 mt-1">{formatCUSD(lesson.grant_amount)} cUSD · Paid directly to your wallet — instantly 🎉</div>
+                                <h2 className="text-xl font-black text-slate-900 dark:text-white mb-3 leading-tight italic uppercase">{lesson.title}</h2>
+                                <p className="text-slate-600 dark:text-slate-400 text-sm leading-relaxed mb-6 font-medium">{lesson.content}</p>
+                                <div className="p-5 rounded-2xl bg-slate-50 dark:bg-brand-500/5 border border-slate-200 dark:border-brand-500/10 mb-6 shadow-sm dark:shadow-none">
+                                    <div className="text-[10px] font-black text-brand-600 dark:text-brand-400 uppercase tracking-widest mb-1">Lesson Reward</div>
+                                    <div className="text-2xl font-black text-slate-900 dark:text-white">{formatNaira(toNaira(lesson.grant_amount))}</div>
+                                    <div className="text-xs text-slate-500 dark:text-slate-500 mt-1 font-medium">{formatCUSD(lesson.grant_amount)} cUSD · Paid directly to your wallet — instantly 🎉</div>
                                 </div>
                                 {!showQuiz && (
                                     <button
                                         onClick={() => setShowQuiz(true)}
-                                        className="w-full py-4 rounded-2xl bg-white text-[#060914] font-black uppercase tracking-widest text-xs flex items-center justify-center gap-3 hover:bg-brand-500 hover:text-white transition-all shadow-xl"
+                                        className="w-full py-4 rounded-2xl bg-slate-900 dark:bg-white text-white dark:text-[#060914] font-black uppercase tracking-widest text-[10px] flex items-center justify-center gap-3 hover:bg-brand-600 dark:hover:bg-brand-500 hover:text-white transition-all shadow-xl"
                                     >
                                         Take the Quiz <ArrowRight className="w-4 h-4" />
                                     </button>
@@ -495,12 +530,12 @@ export default function LessonPlayer() {
                             </div>
                         ) : (
                             <div className="animate-in fade-in slide-in-from-right-4 duration-500">
-                                <h3 className="text-sm font-black text-white/30 uppercase tracking-[0.2em] mb-4">Competencies To Master</h3>
+                                <h3 className="text-[10px] font-black text-slate-400 dark:text-white/30 uppercase tracking-[0.2em] mb-4">Competencies To Master</h3>
                                 <div className="space-y-3">
                                     {(lesson.learning_outcomes || []).map((outcome, i) => (
-                                        <div key={i} className="flex gap-3 p-4 rounded-2xl bg-white/5 border border-white/5 items-start">
-                                            <CheckCircle className="w-4 h-4 text-brand-400 mt-0.5 flex-shrink-0" />
-                                            <p className="text-sm text-slate-300 font-medium leading-relaxed">{outcome}</p>
+                                        <div key={i} className="flex gap-3 p-4 rounded-2xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/5 items-start shadow-sm dark:shadow-none">
+                                            <CheckCircle className="w-4 h-4 text-brand-600 dark:text-brand-400 mt-0.5 flex-shrink-0" />
+                                            <p className="text-sm text-slate-700 dark:text-slate-300 font-bold leading-relaxed">{outcome}</p>
                                         </div>
                                     ))}
                                 </div>

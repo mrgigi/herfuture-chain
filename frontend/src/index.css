@@ -7,6 +7,7 @@
     --color-fuchsia: #d946ef;
     --color-magenta: #f43f5e;
   }
+
   body {
     background-color: #0f172a;
     /* Slate 900 for dark mode */
@@ -25,11 +26,11 @@
   }
 
   .bg-feminine-gradient {
-    @apply bg-gradient-to-r from-magenta-500 to-fuchsia-500;
+    @apply bg-gradient-to-r from-brand-600 to-brand-400;
   }
 
   .bg-brand-glow {
-    @apply bg-gradient-to-tr from-brand-600 via-magenta-500 to-fuchsia-500;
+    @apply bg-gradient-to-tr from-brand-600 via-brand-500 to-brand-400;
   }
 
   .btn-primary {

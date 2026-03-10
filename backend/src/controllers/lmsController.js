@@ -311,6 +311,7 @@ async function completeLesson(req, res) {
         }
 
         // --- Certificate Issuance Logic ---
+        let isCourseNewlyCompleted = false;
         // After completing a lesson, check if the entire COURSE is now complete
         const { data: courseLessons } = await supabase
             .from('lessons')
@@ -340,6 +341,7 @@ async function completeLesson(req, res) {
                     .maybeSingle(); // Use maybeSingle to avoid 406 errors on empty
 
                 if (!existingCert && participant && participant.wallet_address) {
+                    isCourseNewlyCompleted = true;
                     console.log(`Course fully completed! Issuing certificate: ${certTitle}`);
                     const ipfsHash = "QmPlaceholderForNow"; // Placeholder or call IPFS service
                     try {
@@ -379,7 +381,8 @@ async function completeLesson(req, res) {
             data,
             grant_triggered: !!(lesson && lesson.grant_amount > 0),
             txHash: typeof txHash !== 'undefined' ? txHash : null,
-            grantStatus: typeof grantStatus !== 'undefined' ? grantStatus : null
+            grantStatus: typeof grantStatus !== 'undefined' ? grantStatus : null,
+            courseCompleted: isCourseNewlyCompleted
         });
     } catch (error) {
         console.error("completeLesson error:", error);
@@ -643,13 +646,42 @@ async function updateLesson(req, res) {
     try {
         const { lessonId } = req.params;
         const updateData = { ...req.body };
-        const { error } = await supabase
+
+        const { data: updated, error } = await supabase
             .from('lessons')
             .update(updateData)
-            .eq('id', lessonId);
+            .eq('id', lessonId)
+            .select()
+            .single();
+
         if (error) throw error;
-        res.json({ success: true });
+
+        // Secure Backend Blockchain Sync
+        // If track_label or grant_amount changed, sync to blockchain milestone vault
+        if (updateData.track_label || updateData.grant_amount !== undefined) {
+            const lesson = updated;
+            if (lesson && lesson.track_label) {
+                try {
+                    const { ethers } = require('ethers');
+                    // Use lesson.grant_amount (which might have been updated)
+                    const amount = lesson.grant_amount || 0;
+                    const weiAmount = ethers.parseUnits(amount.toString(), 18);
+
+                    console.log(`[Admin] Registering blockchain milestone ${lesson.track_label} with ${amount} cUSD...`);
+
+                    // Fire-and-forget blockchain sync (don't block the API response)
+                    grantDisbursementContract.setMilestoneGrant(lesson.track_label, weiAmount)
+                        .then(tx => console.log(`[Admin] Milestone registered: ${lesson.track_label}, Tx: ${tx.hash}`))
+                        .catch(err => console.error("[Admin] Milestone registration failed:", err.message));
+                } catch (bcErr) {
+                    console.error("[Admin] Blockchain format error:", bcErr.message);
+                }
+            }
+        }
+
+        res.json({ success: true, data: updated });
     } catch (error) {
+        console.error("updateLesson error:", error);
         res.status(500).json({ error: error.message });
     }
 }
@@ -942,6 +974,61 @@ async function generateQuiz(req, res) {
     }
 }
 
+async function syncMilestones(req, res) {
+    console.log(`[Admin] Initiating Bulk Milestone Sync...`);
+    try {
+        const { ethers } = require('ethers');
+
+        // 1. Fetch all lessons with grant_amounts
+        const { data: lessons, error } = await supabase
+            .from('lessons')
+            .select('id, track_label, grant_amount')
+            .not('track_label', 'is', null)
+            .gt('grant_amount', 0);
+
+        if (error) throw error;
+
+        if (!lessons || lessons.length === 0) {
+            return res.json({ success: true, message: "No payable lessons found to sync.", syncedCount: 0 });
+        }
+
+        console.log(`[Admin] Found ${lessons.length} lessons to sync.`);
+
+        // 2. Register each on the blockchain
+        // We'll process them in sequence to avoid nonce issues if using the same admin wallet
+        let syncedCount = 0;
+        for (const lesson of lessons) {
+            try {
+                const amount = lesson.grant_amount || 0;
+                const weiAmount = ethers.parseUnits(amount.toString(), 18);
+                const milestone = lesson.track_label;
+
+                console.log(`[Admin] Syncing ${milestone} (${amount} cUSD)...`);
+
+                // We await the transaction creation, but for bulk sync it might be slow.
+                // However, safety first for Admin tools.
+                const tx = await grantDisbursementContract.setMilestoneGrant(milestone, weiAmount);
+                await tx.wait();
+
+                syncedCount++;
+                console.log(`[Admin] Successfully synced ${milestone}.`);
+            } catch (lessonErr) {
+                console.error(`[Admin] Failed to sync lesson ${lesson.id}:`, lessonErr.message);
+                // Continue with others
+            }
+        }
+
+        res.json({
+            success: true,
+            message: `Successfully synchronized ${syncedCount} lessons with the blockchain.`,
+            syncedCount
+        });
+    } catch (error) {
+        console.error("[Admin] Global sync error:", error);
+        res.status(500).json({ error: error.message });
+    }
+}
+
 module.exports = {
     getCourses,
     getCourseModules,
@@ -964,5 +1051,6 @@ module.exports = {
     deleteLesson,
     generateQuiz,
     saveLessonQuiz,
-    reorderCurriculum
+    reorderCurriculum,
+    syncMilestones
 };

@@ -126,19 +126,19 @@ export default function LoginSignup() {
     };
 
     return (
-        <div className="flex min-h-screen bg-[#0A0F1C] overflow-hidden">
+        <div className="flex min-h-screen bg-white dark:bg-[#0A0F1C] text-slate-900 dark:text-white transition-colors duration-300 overflow-hidden">
             {/* Left Side: Sharp HD Visual (Desktop Only) */}
-            <div className="hidden lg:block lg:w-[45%] xl:w-[50%] relative overflow-hidden h-screen bg-brand-900">
+            <div className="hidden lg:block lg:w-[45%] xl:w-[50%] relative overflow-hidden h-screen bg-slate-900 dark:bg-brand-900">
                 <img
                     src="/images/login_hero.png"
-                    className="absolute inset-0 w-full h-full object-cover animate-pulse-slow transition-transform duration-[5000ms] hover:scale-105"
+                    className="absolute inset-0 w-full h-full object-cover animate-pulse-slow transition-transform duration-[5000ms] hover:scale-105 opacity-80 dark:opacity-100"
                     alt="Success Portrait"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-[#0A0F1C] via-[#0A0F1C]/20 to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-t from-slate-50 via-slate-50/20 to-transparent dark:from-[#0A0F1C] dark:via-[#0A0F1C]/20 dark:to-transparent" />
 
                 {/* Branding on top of image */}
                 <div className="absolute top-10 left-10 z-20 flex items-center gap-2 cursor-pointer transition-transform active:scale-95 h-10" onClick={() => navigate('/')}>
-                    <img src="/images/logo.svg" alt="HerFuture Chain Logo" className="h-full w-auto" />
+                    <img src="/images/logo.svg" alt="HerFuture Chain Logo" className="h-full w-auto block" />
                 </div>
 
                 {/* Floating Content */}
@@ -157,11 +157,12 @@ export default function LoginSignup() {
                 {/* Mobile/Small Screen Header */}
                 <nav className="lg:hidden relative z-30 px-6 py-6 flex justify-between items-center w-full">
                     <div className="flex items-center gap-2 cursor-pointer transition-transform active:scale-95 h-8" onClick={() => navigate('/')}>
-                        <img src="/images/logo.svg" alt="HerFuture Chain Logo" className="h-full w-auto" />
+                        <img src="/images/logo.svg" alt="HerFuture Chain Logo" className="h-full w-auto hidden dark:block" />
+                        <img src="/images/logo.svg" alt="HerFuture Chain Logo" className="h-full w-auto block dark:hidden invert" />
                     </div>
                     <button
                         onClick={() => navigate('/')}
-                        className="flex items-center gap-2 text-slate-500 hover:text-white transition-all text-[10px] font-black tracking-widest uppercase group bg-white/5 px-4 py-2 rounded-xl border border-white/5"
+                        className="flex items-center gap-2 text-slate-500 hover:text-slate-900 dark:hover:text-white transition-all text-[10px] font-black tracking-widest uppercase group bg-slate-50 dark:bg-white/5 px-4 py-2 rounded-xl border border-slate-200 dark:border-white/5"
                     >
                         <ArrowLeft className="w-3.5 h-3.5 group-hover:-translate-x-1 transition-transform" />
                         Home
@@ -172,7 +173,7 @@ export default function LoginSignup() {
                     {/* Desktop Escape Button */}
                     <button
                         onClick={() => navigate('/')}
-                        className="hidden lg:flex absolute top-10 right-10 items-center gap-2 text-slate-500 hover:text-white transition-all text-[10px] font-black tracking-widest uppercase group bg-white/5 px-4 py-2 rounded-xl border border-white/5 opacity-50 hover:opacity-100"
+                        className="hidden lg:flex absolute top-10 right-10 items-center gap-2 text-slate-500 hover:text-slate-900 dark:hover:text-white transition-all text-[10px] font-black tracking-widest uppercase group bg-slate-50 dark:bg-white/5 px-4 py-2 rounded-xl border border-slate-200 dark:border-white/5 opacity-50 hover:opacity-100"
                     >
                         <ArrowLeft className="w-3.5 h-3.5 group-hover:-translate-x-1 transition-transform" />
                         Home
@@ -180,24 +181,24 @@ export default function LoginSignup() {
 
                     <div className="w-full max-w-md z-10 animate-in fade-in slide-in-from-bottom-4 duration-700">
                         <div className="text-center mb-10">
-                            <h1 className="text-4xl lg:text-5xl font-black tracking-tighter text-white mb-2">Welcome Back.</h1>
+                            <h1 className="text-4xl lg:text-5xl font-black tracking-tighter text-slate-900 dark:text-white mb-2">Welcome Back.</h1>
                             <p className="text-slate-400 text-sm max-w-xs mx-auto font-medium">
                                 Step into the ecosystem. Access your dashboard and verify your growth.
                             </p>
                         </div>
 
-                        <div className="glass-panel p-8 rounded-[40px] border border-white/5 relative overflow-hidden shadow-2xl">
+                        <div className="glass-panel bg-white dark:bg-transparent p-8 rounded-[40px] border border-slate-200 dark:border-white/5 relative overflow-hidden shadow-2xl">
                             <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-brand-400 to-indigo-500" />
 
                             <div className="flex gap-4 mb-8">
                                 <button
-                                    className={`flex-1 pb-4 text-xs uppercase tracking-widest font-black transition-all duration-300 border-b-2 ${!isLogin ? 'border-brand-500 text-white' : 'border-transparent text-slate-600 hover:text-slate-400'}`}
+                                    className={`flex-1 pb-4 text-xs uppercase tracking-widest font-black transition-all duration-300 border-b-2 ${!isLogin ? 'border-brand-500 text-slate-900 dark:text-white' : 'border-transparent text-slate-500 dark:text-slate-600 hover:text-slate-900 dark:hover:text-slate-400'}`}
                                     onClick={() => { setIsLogin(false); setStep('phone'); }}
                                 >
                                     Sign Up
                                 </button>
                                 <button
-                                    className={`flex-1 pb-4 text-xs uppercase tracking-widest font-black transition-all duration-300 border-b-2 ${isLogin ? 'border-brand-500 text-white' : 'border-transparent text-slate-600 hover:text-slate-400'}`}
+                                    className={`flex-1 pb-4 text-xs uppercase tracking-widest font-black transition-all duration-300 border-b-2 ${isLogin ? 'border-brand-500 text-slate-900 dark:text-white' : 'border-transparent text-slate-500 dark:text-slate-600 hover:text-slate-900 dark:hover:text-slate-400'}`}
                                     onClick={() => { setIsLogin(true); setStep('phone'); }}
                                 >
                                     Log In
@@ -256,7 +257,7 @@ export default function LoginSignup() {
                                             <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Phone Number</label>
                                             <div className="relative group flex items-center gap-0">
                                                 {/* Country Code Prefix */}
-                                                <div className="flex items-center gap-2 px-3.5 h-[46px] bg-white/5 border border-white/10 rounded-l-2xl border-r-0 text-xs font-black text-white tracking-wider flex-shrink-0">
+                                                <div className="flex items-center gap-2 px-3.5 h-[46px] bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-l-2xl border-r-0 text-xs font-black text-slate-900 dark:text-white tracking-wider flex-shrink-0">
                                                     🇳🇬 +234
                                                 </div>
                                                 <input

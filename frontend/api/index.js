@@ -232,7 +232,8 @@ app.post('/api/complete-lesson', async (req, res) => {
             if (isActive) {
                 const { data: p } = await supabase.from('participants').select('wallet_address').eq('id', participantId).single();
                 if (p?.wallet_address) {
-                    const milestone = lesson.track_label || `M_${lesson.id}`;
+                    // Use a stable milestone identifier: "L_" + UUID
+                    const milestone = `L_${lesson.id}`;
 
                     // 1. Unconditionally Save Reward to Database first
                     let grantRecordId = null;
@@ -692,7 +693,7 @@ app.get('/api/grants/:participantId', async (req, res) => {
 
         const formatted = grants.map(grant => {
             // Match entirely by track_label since lesson_id is not in DB table
-            const lesson = lessons?.find(l => l.track_label === grant.milestone);
+            const lesson = lessons?.find(l => (l.track_label === grant.milestone) || (`L_${l.id}` === grant.milestone));
 
             return {
                 ...grant,
@@ -704,6 +705,66 @@ app.get('/api/grants/:participantId', async (req, res) => {
         res.json(formatted);
     } catch (err) {
         res.status(500).json({ error: err.message });
+    }
+});
+
+// --- 3. System & Admin Routes ---
+
+app.post('/api/sync-milestones', async (req, res) => {
+    try {
+        console.log("[Vercel API] Starting bulk milestone sync...");
+
+        // 1. Fetch all lessons with a grant amount > 0
+        const { data: lessons, error } = await supabase
+            .from('lessons')
+            .select('id, title, grant_amount')
+            .gt('grant_amount', 0);
+
+        if (error) throw error;
+        if (!lessons || lessons.length === 0) {
+            return res.json({ success: true, message: "No lessons with grant amounts found to sync.", results: [] });
+        }
+
+        const results = [];
+        for (const lesson of lessons) {
+            const milestoneName = `L_${lesson.id}`;
+            // Convert amount to Celo decimals (18)
+            const amountInWei = ethers.utils.parseUnits(lesson.grant_amount.toString(), 18);
+
+            try {
+                console.log(`[Vercel API] Syncing milestone: ${milestoneName} (${lesson.title}) -> $${lesson.grant_amount}`);
+
+                // We use setMilestoneGrant which stores/updates the value for the name
+                const tx = await grantDisbursementContract.setMilestoneGrant(milestoneName, amountInWei);
+                const receipt = await tx.wait();
+
+                results.push({
+                    id: lesson.id,
+                    title: lesson.title,
+                    status: 'synced',
+                    txHash: receipt.hash
+                });
+            } catch (err) {
+                console.error(`[Vercel API] Failed to sync ${milestoneName}:`, err.message);
+                results.push({
+                    id: lesson.id,
+                    title: lesson.title,
+                    status: 'failed',
+                    error: err.message
+                });
+            }
+        }
+
+        res.json({
+            success: true,
+            message: "Bulk sync completed",
+            total: lessons.length,
+            syncedCount: results.filter(r => r.status === 'synced').length,
+            results
+        });
+    } catch (err) {
+        console.error("[Vercel API] Sync error:", err);
+        res.status(500).json({ success: false, error: err.message });
     }
 });
 
@@ -784,8 +845,9 @@ app.get('/api/impact/recent-grants', async (req, res) => {
             .from('lessons')
             .select('id, track_label, title, grant_amount');
 
+        const sortedLessons = lessons || [];
         const formatted = (data || []).map(g => {
-            const lesson = (lessons || []).find(l => l.track_label === g.milestone);
+            const lesson = sortedLessons.find(l => (l.track_label === g.milestone) || (`L_${l.id}` === g.milestone));
             return {
                 student: g.participants
                     ? `${g.participants.first_name || 'Student'} ${g.participants.last_name || ''}`.trim()

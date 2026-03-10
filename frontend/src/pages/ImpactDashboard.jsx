@@ -75,7 +75,7 @@ export default function ImpactDashboard() {
     };
 
     return (
-        <div className="min-h-screen bg-white dark:bg-[#0A0F1C] text-slate-900 dark:text-slate-100 font-sans pb-32 transition-colors duration-300">
+        <div className="min-h-screen bg-slate-50 dark:bg-transparent text-slate-900 dark:text-slate-100 font-sans pb-32 transition-colors duration-300">
             {/* Nav */}
             <nav className="px-6 md:px-10 flex justify-between items-center border-b border-slate-200 dark:border-white/5 bg-white/80 dark:bg-[#0A0F1C] backdrop-blur-md sticky top-0 z-50 h-16 transition-colors duration-300">
                 <div className="flex items-center gap-2 cursor-pointer h-full py-3" onClick={() => navigate('/')}>
@@ -124,7 +124,7 @@ export default function ImpactDashboard() {
                         {
                             label: 'Milestones',
                             val: stats.grantsDistributed,
-                            accent: 'text-fuchsia-500 dark:text-fuchsia-400'
+                            accent: 'text-brand-500 dark:text-brand-400'
                         },
                     ].map((s, i) => (
                         <div key={i} className="glass-panel bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-white/5 shadow-sm dark:shadow-none rounded-2xl p-5">
@@ -146,14 +146,14 @@ export default function ImpactDashboard() {
                                 <span className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-widest">Live Grant Ledger</span>
                                 <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                             </div>
-                            <span className="text-[10px] text-slate-500 dark:text-slate-600 uppercase tracking-widest">Distributed Ledger</span>
+                            <span className="text-[10px] text-slate-400 dark:text-slate-600 uppercase tracking-widest">Distributed Ledger</span>
                         </div>
 
                         <div className="space-y-3 max-h-[640px] overflow-y-auto pr-1">
                             {(recentGrants || []).map((grant, i) => (
-                                <div key={i} className="glass-panel bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-white/5 shadow-sm dark:shadow-none rounded-2xl p-5 flex items-center justify-between hover:border-slate-300 dark:hover:border-white/10 transition-all">
+                                <div key={i} className="glass-panel bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/5 shadow-sm dark:shadow-none rounded-2xl p-5 flex items-center justify-between hover:border-slate-300 dark:hover:border-white/10 transition-all">
                                     <div className="flex items-center gap-4">
-                                        <div className="w-10 h-10 rounded-xl bg-slate-200 dark:bg-slate-800 flex items-center justify-center font-black text-slate-500 dark:text-slate-400 flex-shrink-0">
+                                        <div className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center font-black text-slate-400 dark:text-slate-500 flex-shrink-0">
                                             {grant.student ? grant.student[0] : '?'}
                                         </div>
                                         <div>
@@ -165,7 +165,7 @@ export default function ImpactDashboard() {
                                         <div className="text-sm font-black text-emerald-600 dark:text-emerald-400">+${grant.amount || 0}</div>
                                         <button
                                             onClick={() => grant.tx_hash && window.open(`https://sepolia.celoscan.io/tx/${grant.tx_hash}`, '_blank')}
-                                            className="text-[10px] bg-white dark:bg-white/5 hover:bg-brand-50 dark:hover:bg-brand-500/20 text-slate-500 dark:text-slate-400 hover:text-brand-600 dark:hover:text-brand-300 px-2 py-1 rounded border border-slate-200 dark:border-white/5 transition-all font-mono flex items-center gap-1 group shadow-sm dark:shadow-none"
+                                            className="text-[10px] bg-slate-50 dark:bg-white/5 hover:bg-brand-50 dark:hover:bg-brand-500/20 text-slate-500 dark:text-slate-400 hover:text-brand-600 dark:hover:text-brand-300 px-2 py-1 rounded border border-slate-200 dark:border-white/5 transition-all font-mono flex items-center gap-1 group shadow-sm dark:shadow-none"
                                             title="View on Celo Explorer"
                                         >
                                             {grant.tx_hash ? `${grant.tx_hash.substring(0, 8)}...` : 'PENDING'}
@@ -219,7 +219,7 @@ export default function ImpactDashboard() {
                                             <span className="text-slate-700 dark:text-slate-300">{track.val}%</span>
                                         </div>
                                         <div className="h-1 w-full bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden">
-                                            <div className="h-full bg-magenta-500 rounded-full" style={{ width: `${track.val}%` }} />
+                                            <div className="h-full bg-brand-500 rounded-full" style={{ width: `${track.val}%` }} />
                                         </div>
                                     </div>
                                 ))}
@@ -237,7 +237,7 @@ export default function ImpactDashboard() {
                                     { label: 'Gitcoin', letter: 'G', color: 'text-emerald-400' },
                                 ].map((v, i) => (
                                     <div key={i} className="flex items-center gap-3">
-                                        <div className={`w-8 h-8 rounded-lg bg-white dark:bg-white/5 shadow-sm dark:shadow-none border border-slate-200 dark:border-white/5 flex items-center justify-center font-black text-sm ${v.color}`}>{v.letter}</div>
+                                        <div className={`w-8 h-8 rounded-lg bg-slate-100 dark:bg-white/5 shadow-sm dark:shadow-none border border-slate-200 dark:border-white/5 flex items-center justify-center font-black text-sm ${v.color}`}>{v.letter}</div>
                                         <span className="text-[11px] text-slate-600 dark:text-slate-400 font-semibold">{v.label}</span>
                                     </div>
                                 ))}
