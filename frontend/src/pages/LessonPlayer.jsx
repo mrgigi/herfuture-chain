@@ -4,10 +4,11 @@ import { ChevronLeft, CheckCircle, XCircle, Award, ArrowRight, HelpCircle, Zap, 
 import { getQuiz, submitLessonProgress, getParticipant, getLesson } from '../lib/api';
 import confetti from 'canvas-confetti';
 import YoutubePlayer from '../components/YoutubePlayer';
+import ThemeToggle from '../components/ThemeToggle';
 import { useCurrency } from '../hooks/useCurrency';
 
 // Pass = 100% correct — works for any number of questions
-const PASS_THRESHOLD = 3; // Default display threshold, though logic requires 100%
+
 
 const normalizeString = (str) => {
     if (!str) return "";
@@ -359,15 +360,17 @@ export default function LessonPlayer() {
                     <ChevronLeft className="w-4 h-4" />
                     <span className="text-xs font-bold uppercase tracking-widest text-slate-500 hover:text-slate-900 dark:hover:text-white transition-colors">Exit Academy</span>
                 </button>
-                <div className="text-[10px] font-black text-slate-400 dark:text-white/30 uppercase tracking-[0.2em] italic">
+                <div className="text-[10px] font-black text-slate-400 dark:text-white/30 uppercase tracking-[0.2em] italic text-center mx-2 line-clamp-1">
                     {lesson.title}
                 </div>
-                <div className="w-24" />
+                <div className="flex items-center gap-4">
+                    <ThemeToggle />
+                </div>
             </header>
 
             <div className="flex-1 flex flex-col lg:flex-row h-[calc(100vh-65px)] overflow-hidden">
                 {/* Main Content: Video or Quiz */}
-                <div className="flex-1 bg-black flex flex-col items-center justify-center relative">
+                <div className="flex-1 bg-white dark:bg-black flex flex-col items-center justify-center relative overflow-y-auto">
                     {!showQuiz ? (
                         <div className="w-full">
                             <YoutubePlayer url={lesson.video_url} />
@@ -381,8 +384,8 @@ export default function LessonPlayer() {
                                     <Zap className="w-7 h-7 text-brand-600 dark:text-brand-400 animate-pulse" />
                                 </div>
                                 <h2 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight italic uppercase">KNOWLEDGE CHECK.</h2>
-                                <p className="text-slate-500 dark:text-slate-500 text-sm mt-1 font-bold">
-                                    Pass <span className="text-brand-600 dark:text-brand-400 font-black">{totalQuestions === 1 ? '1' : `${Math.min(PASS_THRESHOLD, totalQuestions)}`}/{totalQuestions}</span> to unlock your <span className="text-brand-600 dark:text-brand-400 font-black">{formatNaira(toNaira(lesson?.grant_amount || 0))}</span> reward.
+                                <p className="text-slate-500 dark:text-slate-400 text-sm mt-1 font-bold">
+                                    Pass <span className="text-brand-600 dark:text-brand-400 font-black">{totalQuestions}/{totalQuestions}</span> to unlock your <span className="text-brand-600 dark:text-brand-400 font-black">{formatNaira(toNaira(lesson?.grant_amount || 0))}</span> reward.
                                 </p>
                             </div>
 
@@ -408,7 +411,7 @@ export default function LessonPlayer() {
 
                             {/* Question */}
                             {currentQuestion ? (
-                                <div className="space-y-3">
+                                <div className="space-y-4">
                                     <p className="text-slate-800 dark:text-slate-100 text-base md:text-lg mb-6 leading-relaxed font-bold italic">
                                         {currentQuestion.question}
                                     </p>
@@ -418,10 +421,10 @@ export default function LessonPlayer() {
                                         const isSelected = selectedAnswer === option;
                                         const isCorrectOption = normalizeString(option) === normalizeString(currentQuestion.answer || currentQuestion.correct_answer);
 
-                                        let optionStyle = 'bg-white dark:bg-white/5 border-slate-200 dark:border-white/5 text-slate-600 dark:text-slate-400 hover:border-brand-500/30 shadow-sm dark:shadow-none';
+                                        let optionStyle = 'bg-slate-50 dark:bg-white/5 border-slate-200 dark:border-white/5 text-slate-700 dark:text-slate-300 hover:border-brand-500/30 shadow-sm transition-all';
                                         if (questionResult) {
                                             if (isCorrectOption) optionStyle = 'bg-emerald-500/10 dark:bg-emerald-500/20 border-emerald-500 text-emerald-700 dark:text-emerald-300';
-                                            else if (isSelected && !isCorrectOption) optionStyle = 'bg-red-500/5 dark:bg-red-500/10 border-red-500/50 text-red-600 dark:text-red-400';
+                                            else if (isSelected && !isCorrectOption) optionStyle = 'bg-red-500/10 dark:bg-red-500/20 border-red-500/50 text-red-600 dark:text-red-400';
                                             else optionStyle = 'bg-slate-50 dark:bg-white/5 border-slate-100 dark:border-white/5 text-slate-400 dark:text-slate-600 opacity-50';
                                         } else if (isSelected) {
                                             optionStyle = 'bg-brand-50 dark:bg-brand-500/20 border-brand-500 text-brand-700 dark:text-brand-400 shadow-md';

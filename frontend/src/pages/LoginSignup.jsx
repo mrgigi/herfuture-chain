@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { ArrowRight, Wallet, ShieldCheck, Phone, User, MessageSquare, ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import ThemeToggle from '../components/ThemeToggle';
 import api, { createWallet } from '../lib/api';
 
 export default function LoginSignup() {
@@ -160,24 +161,30 @@ export default function LoginSignup() {
                         <img src="/images/logo.svg" alt="HerFuture Chain Logo" className="h-full w-auto hidden dark:block" />
                         <img src="/images/logo.svg" alt="HerFuture Chain Logo" className="h-full w-auto block dark:hidden invert" />
                     </div>
-                    <button
-                        onClick={() => navigate('/')}
-                        className="flex items-center gap-2 text-slate-500 hover:text-slate-900 dark:hover:text-white transition-all text-[10px] font-black tracking-widest uppercase group bg-slate-50 dark:bg-white/5 px-4 py-2 rounded-xl border border-slate-200 dark:border-white/5"
-                    >
-                        <ArrowLeft className="w-3.5 h-3.5 group-hover:-translate-x-1 transition-transform" />
-                        Home
-                    </button>
+                    <div className="flex items-center gap-3">
+                        <ThemeToggle />
+                        <button
+                            onClick={() => navigate('/')}
+                            className="flex items-center gap-2 text-slate-500 hover:text-slate-900 dark:hover:text-white transition-all text-[10px] font-black tracking-widest uppercase group bg-slate-50 dark:bg-white/5 px-4 py-2 rounded-xl border border-slate-200 dark:border-white/5"
+                        >
+                            <ArrowLeft className="w-3.5 h-3.5 group-hover:-translate-x-1 transition-transform" />
+                            Home
+                        </button>
+                    </div>
                 </nav>
 
                 <div className="flex-grow flex items-center justify-center p-6 lg:p-16 relative">
                     {/* Desktop Escape Button */}
-                    <button
-                        onClick={() => navigate('/')}
-                        className="hidden lg:flex absolute top-10 right-10 items-center gap-2 text-slate-500 hover:text-slate-900 dark:hover:text-white transition-all text-[10px] font-black tracking-widest uppercase group bg-slate-50 dark:bg-white/5 px-4 py-2 rounded-xl border border-slate-200 dark:border-white/5 opacity-50 hover:opacity-100"
-                    >
-                        <ArrowLeft className="w-3.5 h-3.5 group-hover:-translate-x-1 transition-transform" />
-                        Home
-                    </button>
+                    <div className="hidden lg:flex absolute top-10 right-10 items-center gap-4">
+                        <ThemeToggle />
+                        <button
+                            onClick={() => navigate('/')}
+                            className="flex items-center gap-2 text-slate-500 hover:text-slate-900 dark:hover:text-white transition-all text-[10px] font-black tracking-widest uppercase group bg-slate-50 dark:bg-white/5 px-4 py-2 rounded-xl border border-slate-200 dark:border-white/5 opacity-50 hover:opacity-100"
+                        >
+                            <ArrowLeft className="w-3.5 h-3.5 group-hover:-translate-x-1 transition-transform" />
+                            Home
+                        </button>
+                    </div>
 
                     <div className="w-full max-w-md z-10 animate-in fade-in slide-in-from-bottom-4 duration-700">
                         <div className="text-center mb-10">

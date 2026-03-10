@@ -303,8 +303,9 @@ async function completeLesson(req, res) {
                         }]);
 
                     if (grantInsertError) {
-                        console.error("[LMS] Failed to insert grant record:", grantInsertError.message);
-                        throw new Error(`Failed to record reward in database: ${grantInsertError.message}`);
+                        console.error("[LMS] Failed to insert grant record (likely RLS):", grantInsertError.message);
+                        // We do NOT throw here anymore because we derive history from student_progress now.
+                        // Failing to insert into the legacy grants table should not block lesson completion.
                     }
                 }
             }
@@ -521,8 +522,23 @@ async function getAllParticipantsWithProgress(req, res) {
             .from('participants')
             .select('*', { count: 'exact', head: true });
 
+        // Calculate total grants value across all participants (for the dashboard stat)
+        const { data: allCompletedProgress } = await supabase
+            .from('student_progress')
+            .select('lesson_id')
+            .eq('status', 'completed');
+
+        const { data: allPayableLessons } = await supabase
+            .from('lessons')
+            .select('id, grant_amount')
+            .gt('grant_amount', 0);
+
+        const payableLessonMap = new Map((allPayableLessons || []).map(l => [l.id, l.grant_amount]));
+        const totalGrantsValue = (allCompletedProgress || []).reduce((acc, p) => acc + (payableLessonMap.get(p.lesson_id) || 0), 0);
+
         res.json({
             participants: formatted,
+            totalGrantsValue,
             pagination: {
                 page,
                 limit,

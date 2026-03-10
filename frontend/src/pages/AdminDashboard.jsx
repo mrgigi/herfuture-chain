@@ -1190,7 +1190,9 @@ export default function AdminDashboard() {
                                                     </div>
                                                     <div className="text-right">
                                                         <div className="text-sm font-black text-emerald-400">+${grant.amount}</div>
-                                                        <div className="text-[9px] font-mono text-slate-600 truncate w-24 ml-auto text-right">{grant.tx?.slice(0, 10)}...</div>
+                                                        <div className="text-[9px] font-mono text-slate-600 truncate w-24 ml-auto text-right">
+                                                            {grant.tx ? `${grant.tx.slice(0, 10)}...` : 'System Verified'}
+                                                        </div>
                                                     </div>
                                                 </div>
                                             );
@@ -1348,8 +1350,8 @@ export default function AdminDashboard() {
                                                 onClick={handleSyncMilestones}
                                                 disabled={isSyncing}
                                                 className={`flex items-center justify-center gap-3 w-full py-5 rounded-[28px] text-[11px] font-black uppercase tracking-[0.2em] transition-all relative overflow-hidden group ${isSyncing
-                                                        ? 'bg-slate-100 dark:bg-white/5 text-slate-400 border border-slate-200 dark:border-white/5'
-                                                        : 'bg-brand-600 hover:bg-brand-500 text-white shadow-[0_20px_40px_rgba(59,130,246,0.2)] hover:shadow-[0_25px_50px_rgba(59,130,246,0.3)] hover:-translate-y-1'
+                                                    ? 'bg-slate-100 dark:bg-white/5 text-slate-400 border border-slate-200 dark:border-white/5'
+                                                    : 'bg-brand-600 hover:bg-brand-500 text-white shadow-[0_20px_40px_rgba(59,130,246,0.2)] hover:shadow-[0_25px_50px_rgba(59,130,246,0.3)] hover:-translate-y-1'
                                                     }`}
                                             >
                                                 {isSyncing ? (

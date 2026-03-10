@@ -3,6 +3,7 @@ import { ShieldCheck, Heart, ExternalLink, ArrowDownRight, Globe, TrendingUp, Aw
 import { useNavigate } from 'react-router-dom';
 import BottomNav from '../components/BottomNav';
 import api from '../lib/api';
+import ThemeToggle from '../components/ThemeToggle';
 import { useCurrency } from '../hooks/useCurrency';
 
 export default function ImpactDashboard() {
@@ -89,6 +90,7 @@ export default function ImpactDashboard() {
                     >
                         ← Back
                     </button>
+                    <ThemeToggle />
                 </div>
             </nav>
 

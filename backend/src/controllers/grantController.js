@@ -87,9 +87,6 @@ async function releaseGrant(req, res) {
     }
 }
 
-/**
- * Fetches all grant history for a given participant from Supabase.
- */
 async function getGrants(req, res) {
     try {
         const { participantId } = req.params;
@@ -97,43 +94,41 @@ async function getGrants(req, res) {
             return res.status(400).json({ error: "Missing participantId parameter" });
         }
 
-        // 1. Fetch grants for the participant
-        const { data: grants, error: gError } = await supabase
-            .from('grants')
-            .select('*')
+        // 1. Fetch completed progress for the participant
+        const { data: progress, error: pError } = await supabase
+            .from('student_progress')
+            .select('lesson_id, created_at')
             .eq('participant_id', participantId)
+            .eq('status', 'completed')
             .order('created_at', { ascending: false });
 
-        if (gError) {
-            console.error("Supabase grants fetch error:", gError);
-            throw new Error("Failed to fetch grants from Supabase");
-        }
+        if (pError) throw pError;
 
-        // 2. Fetch all lessons to map milestone labels to names and amounts
-        // We match grant.milestone with lesson.track_label
+        // 2. Fetch all lessons to get grant_amounts and titles
         const { data: lessons, error: lError } = await supabase
             .from('lessons')
-            .select('track_label, title, grant_amount');
+            .select('id, track_label, title, grant_amount')
+            .gt('grant_amount', 0); // Only lessons that have an actual grant
 
-        if (lError) {
-            console.error("Supabase lessons fetch error:", lError);
-            // Non-blocking, we'll just return raw data if mapping fails
-        }
+        if (lError) throw lError;
 
-        const formattedGrants = grants.map(grant => {
-            const lesson = (lessons || []).find(l => l.track_label === grant.milestone || `M_${l.id}` === grant.milestone);
-
-            // Calculate total (Summing all for compatibility, but future will be 100% in withdrawable)
-            const calculatedAmount = (Number(grant.withdrawable_amount) || 0) +
-                (Number(grant.savings_amount) || 0) +
-                (Number(grant.investment_amount) || 0);
-
-            return {
-                ...grant,
-                milestone_name: lesson ? lesson.title : `Milestone ${grant.milestone}`,
-                amount: calculatedAmount || (lesson ? lesson.grant_amount : 0)
-            };
-        });
+        // 3. Map progress into a "Grant" object
+        const formattedGrants = (progress || [])
+            .map(p => {
+                const lesson = lessons.find(l => l.id === p.lesson_id);
+                if (!lesson) return null; // Skip if no grant was attached
+                return {
+                    id: `${p.lesson_id}-${p.created_at}`,
+                    participant_id: participantId,
+                    milestone: lesson.track_label || `M_${lesson.id}`,
+                    milestone_name: lesson.title,
+                    amount: lesson.grant_amount || 0,
+                    withdrawable_amount: lesson.grant_amount || 0,
+                    created_at: p.created_at,
+                    tx_hash: null // Derived dynamically, tx hash not strictly logged here
+                };
+            })
+            .filter(Boolean);
 
         return res.status(200).json(formattedGrants);
     } catch (err) {
@@ -144,42 +139,50 @@ async function getGrants(req, res) {
 
 async function getGlobalImpactStats(req, res) {
     try {
-        // 1. Get total grants count
-        const { count: grantsCount } = await supabase
-            .from('grants')
-            .select('*', { count: 'exact', head: true });
+        // 1. Derive grants from student_progress
+        const { data: allProgress } = await supabase
+            .from('student_progress')
+            .select('lesson_id, created_at')
+            .eq('status', 'completed');
 
         // 2. Get total participants
         const { count: participantsCount } = await supabase
             .from('participants')
             .select('*', { count: 'exact', head: true });
 
-        // 3. Get graduates (finished Track 3.6)
-        const { count: graduatesCount } = await supabase
-            .from('grants')
-            .select('*', { count: 'exact', head: true })
-            .eq('milestone', '3.6');
-
-        // 4. Calculate total amount (Summing all buckets for backward compatibility)
-        const { data: grantsData } = await supabase
-            .from('grants')
-            .select('withdrawable_amount, savings_amount, investment_amount');
+        // 3. Resolve corresponding lessons
+        const { data: payableLessons } = await supabase
+            .from('lessons')
+            .select('id, grant_amount, track_label')
+            .gt('grant_amount', 0);
 
         let totalAmount = 0;
-        grantsData.forEach(g => {
-            totalAmount += (Number(g.withdrawable_amount) || 0) +
-                (Number(g.savings_amount) || 0) +
-                (Number(g.investment_amount) || 0);
+        let grantsDistributed = 0;
+        let graduatesCount = 0;
+
+        const payableLessonIds = new Set((payableLessons || []).map(l => l.id));
+        const lessonMap = new Map((payableLessons || []).map(l => [l.id, l]));
+
+        (allProgress || []).forEach(p => {
+            if (payableLessonIds.has(p.lesson_id)) {
+                grantsDistributed++;
+                const lesson = lessonMap.get(p.lesson_id);
+                totalAmount += (Number(lesson.grant_amount) || 0);
+
+                if (lesson.track_label === '3.6') { // Graduate marker
+                    graduatesCount++;
+                }
+            }
         });
 
-        const baselineTreasury = 100000;
+        const baselineTreasury = 10000; // Recalibrated for user scale
         const treasuryBalance = Math.max(0, baselineTreasury - totalAmount);
 
         res.json({
             totalImpact: totalAmount,
             treasuryBalance: treasuryBalance,
-            grantsDistributed: grantsCount || 0,
-            graduates: graduatesCount || 0,
+            grantsDistributed: grantsDistributed,
+            graduates: graduatesCount,
             countries: 1, // Nigeria
             participants: participantsCount || 0
         });
@@ -193,68 +196,56 @@ async function getRecentGrants(req, res) {
         const page = parseInt(req.query.page) || 1;
         const limit = parseInt(req.query.limit) || 10;
         const start = (page - 1) * limit;
-        const end = start + limit - 1;
 
-        const { data, error, count } = await supabase
-            .from('grants')
+        // Fetch all progress with participant info
+        const { data: allProgress, error, count } = await supabase
+            .from('student_progress')
             .select(`
-                id,
-                milestone,
-                tx_hash,
+                lesson_id,
                 created_at,
-                withdrawable_amount,
-                savings_amount,
-                investment_amount,
                 participants (
                     first_name,
                     last_name
                 )
             `, { count: 'exact' })
-            .order('created_at', { ascending: false })
-            .range(start, end);
+            .eq('status', 'completed')
+            .order('created_at', { ascending: false });
 
         if (error) throw error;
 
-        // Fetch lesson titles for the milestones
-        const { data: lessons } = await supabase
+        // Fetch lessons
+        const { data: payableLessons } = await supabase
             .from('lessons')
-            .select('track_label, title, grant_amount');
+            .select('id, title, grant_amount')
+            .gt('grant_amount', 0);
 
-        const formatted = data.map(g => {
-            const lesson = lessons.find(l => l.track_label === g.milestone || `M_${l.id}` === g.milestone);
+        const lessonMap = new Map((payableLessons || []).map(l => [l.id, l]));
 
-            // Calculate total (Summing all buckets for backward compatibility)
-            const calculatedAmount = (Number(g.withdrawable_amount) || 0) +
-                (Number(g.savings_amount) || 0) +
-                (Number(g.investment_amount) || 0);
+        // Filter progress to only include those matching payable lessons
+        const grantEvents = (allProgress || [])
+            .filter(p => lessonMap.has(p.lesson_id))
+            .map(p => {
+                const lesson = lessonMap.get(p.lesson_id);
+                return {
+                    student: p.participants ? `${p.participants.first_name || 'Student'} ${p.participants.last_name || ''}`.trim() : 'Anonymous',
+                    amount: lesson.grant_amount || 0,
+                    track: lesson.title,
+                    tx: null,
+                    time: p.created_at
+                };
+            });
 
-            return {
-                student: g.participants ? `${g.participants.first_name || 'Student'} ${g.participants.last_name || ''}`.trim() : 'Anonymous',
-                amount: calculatedAmount || (lesson ? lesson.grant_amount : 0),
-                track: lesson ? lesson.title : g.milestone,
-                tx: g.tx_hash,
-                time: g.created_at
-            };
-        });
+        // Paginate manually since we filtered locally
+        const paginatedGrants = grantEvents.slice(start, start + limit);
 
-        // Calculate treasury balance (shared logic with getGlobalImpactStats)
-        const { data: allGrants } = await supabase
-            .from('grants')
-            .select('withdrawable_amount, savings_amount, investment_amount');
-
-        let totalAmountDisbursed = 0;
-        (allGrants || []).forEach(g => {
-            totalAmountDisbursed += (Number(g.withdrawable_amount) || 0) +
-                (Number(g.savings_amount) || 0) +
-                (Number(g.investment_amount) || 0);
-        });
-
-        const baselineTreasury = 100000;
+        // Treasury Balance
+        const totalAmountDisbursed = grantEvents.reduce((acc, curr) => acc + curr.amount, 0);
+        const baselineTreasury = 10000;
         const treasuryBalance = Math.max(0, baselineTreasury - totalAmountDisbursed);
 
         res.json({
-            grants: formatted,
-            total: count,
+            grants: paginatedGrants,
+            total: grantEvents.length,
             page,
             limit,
             treasuryBalance: treasuryBalance

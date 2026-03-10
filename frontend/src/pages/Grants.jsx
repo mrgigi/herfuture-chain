@@ -114,15 +114,22 @@ export default function Grants() {
                             </div>
 
                             <div className="col-span-3 text-right flex justify-end">
-                                <a
-                                    href={`https://sepolia.celoscan.io/tx/${grant.tx_hash}`}
-                                    target="_blank"
-                                    rel="noreferrer"
-                                    className="flex items-center gap-2 text-[10px] font-black px-4 py-2 rounded-xl bg-slate-50 dark:bg-slate-950 text-slate-500 dark:text-slate-300 hover:bg-brand-500 hover:text-white transition-all active:scale-95 border border-slate-200 dark:border-slate-800 hover:border-brand-500 uppercase tracking-widest"
-                                >
-                                    <span className="hidden sm:inline">Check Record</span>
-                                    <ExternalLink className="w-3 h-3" />
-                                </a>
+                                {grant.tx_hash ? (
+                                    <a
+                                        href={`https://sepolia.celoscan.io/tx/${grant.tx_hash}`}
+                                        target="_blank"
+                                        rel="noreferrer"
+                                        className="flex items-center gap-2 text-[10px] font-black px-4 py-2 rounded-xl bg-slate-50 dark:bg-slate-950 text-slate-500 dark:text-slate-300 hover:bg-brand-500 hover:text-white transition-all active:scale-95 border border-slate-200 dark:border-slate-800 hover:border-brand-500 uppercase tracking-widest"
+                                    >
+                                        <span className="hidden sm:inline">Check Record</span>
+                                        <ExternalLink className="w-3 h-3" />
+                                    </a>
+                                ) : (
+                                    <div className="flex items-center gap-2 text-[10px] font-black px-4 py-2 rounded-xl bg-slate-50/50 dark:bg-white/5 text-slate-400 dark:text-slate-600 border border-slate-100 dark:border-white/5 uppercase tracking-widest">
+                                        <span className="hidden sm:inline">System Verified</span>
+                                        <CheckCircle className="w-3 h-3" />
+                                    </div>
+                                )}
                             </div>
                         </div>
                     )) : (

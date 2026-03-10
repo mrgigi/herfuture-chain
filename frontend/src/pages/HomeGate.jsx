@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { User, Cpu, ArrowRight, Heart, Handshake, Globe, Menu, X } from 'lucide-react';
 import { useState } from 'react';
+import ThemeToggle from '../components/ThemeToggle';
 
 export default function HomeGate() {
     const navigate = useNavigate();
@@ -40,6 +41,7 @@ export default function HomeGate() {
                     >
                         Management Hub
                     </button>
+                    <ThemeToggle />
                 </div>
 
                 {/* Mobile Menu Toggle - Simplified/Removed as per request for visibility */}

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Search, ShieldCheck, XCircle, ArrowLeft } from 'lucide-react';
+import ThemeToggle from '../components/ThemeToggle';
 import { useNavigate } from 'react-router-dom';
 import { verifyCredential } from '../lib/api';
 
@@ -36,12 +37,15 @@ export default function Verifier() {
             <div className="absolute bottom-[-20%] right-[-10%] w-[50%] h-[50%] rounded-full bg-indigo-600/10 dark:bg-indigo-600/10 blur-[120px] pointer-events-none" />
 
             <div className="w-full max-w-lg z-10">
-                <button
-                    className="flex items-center gap-2 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white mb-8 transition-colors text-sm font-bold uppercase tracking-widest group"
-                    onClick={() => navigate('/')}
-                >
-                    <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" /> Back to Home
-                </button>
+                <div className="flex items-center justify-between mb-8">
+                    <button
+                        className="flex items-center gap-2 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors text-sm font-bold uppercase tracking-widest group"
+                        onClick={() => navigate('/')}
+                    >
+                        <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" /> Back to Home
+                    </button>
+                    <ThemeToggle />
+                </div>
 
                 <div className="glass-panel bg-white/80 dark:bg-slate-900/50 p-10 rounded-3xl relative overflow-hidden backdrop-blur-xl border border-slate-200 dark:border-slate-700/50 shadow-2xl dark:shadow-none">
                     <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-emerald-500 to-indigo-500" />
