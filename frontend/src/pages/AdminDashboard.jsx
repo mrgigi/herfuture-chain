@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import LoadingScreen from '../components/LoadingScreen';
+import ThemeToggle from '../components/ThemeToggle';
 import api, {
     getCourses, getModules, getAdminParticipants, getSystemSettings,
     updateSystemSetting, updateCourseStatus, updateCourseDetails,
@@ -19,6 +20,8 @@ import api, {
     createCourse, deleteCourse, generateQuizAI, getQuiz, saveQuiz,
     deleteParticipant
 } from '../lib/api';
+import { grantDisbursementContract } from '../../api/lib/blockchainService.js';
+import { ethers } from 'ethers';
 
 const CurriculumInput = ({ value, onChange, onBlur, className, placeholder, isTextArea = false }) => {
     const [localValue, setLocalValue] = useState(value);
@@ -105,7 +108,8 @@ export default function AdminDashboard() {
 
     const { data: studentData = { participants: [] }, isLoading: studentsLoading } = useQuery({
         queryKey: ['admin-participants'],
-        queryFn: () => getAdminParticipants()
+        queryFn: () => getAdminParticipants(),
+        refetchInterval: 10000,
     });
 
     const { data: settings = { grant_disbursement_active: true }, isLoading: settingsLoading } = useQuery({
@@ -217,6 +221,26 @@ export default function AdminDashboard() {
 
         try {
             await updateLesson(lessonId, { [field]: value });
+
+            // If updating track_label or grant_amount, register it on the blockchain milestone vault
+            if (field === 'track_label' || field === 'grant_amount') {
+                const mod = courseModules.find(m => m.lessons.some(l => l.id === lessonId));
+                const lesson = mod?.lessons.find(l => l.id === lessonId);
+                if (lesson && lesson.track_label) {
+                    try {
+                        const amount = field === 'grant_amount' ? value : (lesson.grant_amount || settings.default_lesson_grant || 30);
+                        const weiAmount = ethers.parseUnits(amount.toString(), 18);
+
+                        // Fire-and-forget blockchain sync
+                        grantDisbursementContract.setMilestoneGrant(lesson.track_label, weiAmount)
+                            .then(tx => console.log(`[Admin] Registering milestone ${lesson.track_label}:`, tx.hash))
+                            .catch(err => console.error("[Admin] Milestone registration failed:", err));
+                    } catch (bcErr) {
+                        console.error("Blockchain format error:", bcErr);
+                    }
+                }
+            }
+
             // showToast("Lesson updated", "success"); // Removed to avoid too many toasts during auto-save
         } catch (err) {
             console.error("Auto-save lesson error:", err);
@@ -639,7 +663,7 @@ export default function AdminDashboard() {
     if (loading) return <LoadingScreen message="Unlocking Operational Command..." />;
 
     return (
-        <div className="flex h-screen bg-[#0A0F1C] text-slate-100 font-sans">
+        <div className="flex h-screen bg-slate-50 dark:bg-[#0A0F1C] text-slate-900 dark:text-slate-100 font-sans transition-colors duration-300">
             {/* Mobile Sidebar Overlay */}
             {isSidebarOpen && (
                 <div
@@ -650,7 +674,7 @@ export default function AdminDashboard() {
 
             {/* Sidebar */}
             <aside className={`
-                fixed inset-y-0 left-0 w-64 border-r border-white/5 bg-[#0D1525] p-6 flex flex-col z-[110] transition-transform duration-300 ease-in-out lg:relative lg:translate-x-0
+                fixed inset-y-0 left-0 w-64 border-r border-slate-200 dark:border-white/5 bg-white dark:bg-[#0D1525] p-6 flex flex-col z-[110] transition-transform duration-300 ease-in-out lg:relative lg:translate-x-0
                 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}
             `}>
                 <div className="flex items-center justify-between mb-10 lg:block">
@@ -658,11 +682,12 @@ export default function AdminDashboard() {
                         className="flex items-center gap-3 cursor-pointer h-10"
                         onClick={() => navigate('/')}
                     >
-                        <img src="/images/logo.svg" alt="HerFuture Chain Logo" className="h-full w-auto" />
+                        <img src="/images/logo.svg" alt="HerFuture Chain Logo" className="h-full w-auto hidden dark:block" />
+                        <img src="/images/logo.svg" alt="HerFuture Chain Logo" className="h-full w-auto block dark:hidden invert" />
                     </div>
                     <button
                         onClick={() => setIsSidebarOpen(false)}
-                        className="lg:hidden p-2 text-slate-400 hover:text-white"
+                        className="lg:hidden p-2 text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white"
                     >
                         <X className="w-5 h-5" />
                     </button>
@@ -682,7 +707,7 @@ export default function AdminDashboard() {
                                 setActiveTab(item.label);
                                 setEditingCourse(null);
                             }}
-                            className={`flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer transition-all ${activeTab === item.label ? 'bg-fuchsia-500 text-white shadow-lg shadow-fuchsia-500/20' : 'text-slate-500 hover:text-slate-300 hover:bg-white/5'}`}
+                            className={`flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer transition-all ${activeTab === item.label ? 'bg-fuchsia-500 text-white shadow-lg shadow-fuchsia-500/20' : 'text-slate-600 dark:text-slate-500 hover:text-slate-900 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-white/5'}`}
                         >
                             {item.icon}
                             <span className="text-sm font-semibold">{item.label}</span>
@@ -690,17 +715,17 @@ export default function AdminDashboard() {
                     ))}
                 </nav>
 
-                <div className="mt-8 space-y-1 pt-6 border-t border-white/5">
+                <div className="mt-8 space-y-1 pt-6 border-t border-slate-200 dark:border-white/5">
                     <div
                         onClick={() => navigate('/')}
-                        className="flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer transition-all text-slate-500 hover:text-slate-300 hover:bg-white/5"
+                        className="flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer transition-all text-slate-600 dark:text-slate-500 hover:text-slate-900 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-white/5"
                     >
                         <Home className="w-4 h-4" />
                         <span className="text-sm font-semibold">Home</span>
                     </div>
                     <div
                         onClick={() => navigate('/gate')}
-                        className="flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer transition-all text-slate-500 hover:text-slate-300 hover:bg-white/5"
+                        className="flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer transition-all text-slate-600 dark:text-slate-500 hover:text-slate-900 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-white/5"
                     >
                         <Globe className="w-4 h-4" />
                         <span className="text-sm font-semibold">Gateway</span>
@@ -719,15 +744,24 @@ export default function AdminDashboard() {
             </aside>
 
             {/* Main Content */}
-            <main className="flex-1 min-w-0 overflow-y-auto">
-                <header className="lg:hidden flex items-center justify-between p-4 border-b border-white/5 bg-[#0A0F1C]/80 backdrop-blur-md sticky top-0 z-50">
-                    <img src="/images/logo.svg" alt="Logo" className="h-8 w-auto" />
-                    <button
-                        onClick={() => setIsSidebarOpen(true)}
-                        className="p-2 text-white hover:bg-white/5 rounded-xl transition-all"
-                    >
-                        <Menu className="w-6 h-6" />
-                    </button>
+            <main className="flex-1 min-w-0 overflow-y-auto relative">
+                <div className="fixed top-6 right-8 hidden md:block z-[200]">
+                    <ThemeToggle />
+                </div>
+                <header className="md:hidden flex items-center justify-between p-4 border-b border-slate-200 dark:border-white/5 bg-white/80 dark:bg-[#0A0F1C]/80 backdrop-blur-md sticky top-0 z-50">
+                    <div className="flex items-center h-8">
+                        <img src="/images/logo.svg" alt="Logo" className="h-full w-auto hidden dark:block" />
+                        <img src="/images/logo.svg" alt="Logo" className="h-full w-auto block dark:hidden invert" />
+                    </div>
+                    <div className="flex items-center gap-4">
+                        <ThemeToggle />
+                        <button
+                            onClick={() => setIsSidebarOpen(true)}
+                            className="p-2 text-slate-800 dark:text-white hover:bg-slate-100 dark:hover:bg-white/5 rounded-xl transition-all"
+                        >
+                            <Menu className="w-6 h-6" />
+                        </button>
+                    </div>
                 </header>
 
                 <div className="p-4 md:p-8">
@@ -736,11 +770,11 @@ export default function AdminDashboard() {
                             <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 mb-12">
                                 <div>
                                     <div className="flex items-center gap-3 mb-2">
-                                        <span className="text-[10px] font-black uppercase tracking-[0.3em] text-fuchsia-400">System Live</span>
+                                        <span className="text-[10px] font-black uppercase tracking-[0.3em] text-fuchsia-600 dark:text-fuchsia-400">System Live</span>
                                         <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                                     </div>
-                                    <h1 className="text-4xl font-black text-white mb-2 tracking-tight">Command Center.</h1>
-                                    <p className="text-slate-400 text-sm font-medium">Real-time control over the HerFuture Chain socio-economic engine.</p>
+                                    <h1 className="text-4xl font-black text-slate-900 dark:text-white mb-2 tracking-tight">Command Center.</h1>
+                                    <p className="text-slate-600 dark:text-slate-400 text-sm font-medium">Real-time control over the HerFuture Chain socio-economic engine.</p>
                                 </div>
 
                                 <div className="flex items-center gap-4">
@@ -769,40 +803,40 @@ export default function AdminDashboard() {
                                     { label: 'Grants Paid', val: `$${stats.totalGrants}`, icon: <DollarSign className="text-amber-400" /> },
                                     { label: 'Graduates', val: students.filter(s => s.percentage === 100).length, icon: <GraduationCap className="text-purple-400" /> },
                                 ].map((s, i) => (
-                                    <div key={i} className="glass-panel p-6 rounded-[32px] border border-white/5">
+                                    <div key={i} className="glass-panel bg-white dark:bg-transparent p-6 rounded-[32px] border border-slate-200 dark:border-white/5 shadow-sm dark:shadow-none">
                                         <div className="flex justify-between items-start mb-4">
-                                            <div className="p-3 bg-white/5 rounded-2xl">{s.icon}</div>
-                                            <ArrowUpRight className="w-4 h-4 text-slate-600" />
+                                            <div className="p-3 bg-slate-50 dark:bg-white/5 rounded-2xl">{s.icon}</div>
+                                            <ArrowUpRight className="w-4 h-4 text-slate-400 dark:text-slate-600" />
                                         </div>
-                                        <div className="text-2xl font-black text-white">{s.val}</div>
+                                        <div className="text-2xl font-black text-slate-900 dark:text-white">{s.val}</div>
                                         <div className="text-[10px] uppercase font-bold tracking-widest text-slate-500 mt-1">{s.label}</div>
                                     </div>
                                 ))}
                             </div>
 
                             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                                <div className="lg:col-span-2 glass-panel p-8 rounded-[40px] border border-white/5 pb-0">
-                                    <h3 className="text-xs font-black uppercase tracking-widest text-slate-400 mb-6 font-medium">System Intelligence Snapshot</h3>
+                                <div className="lg:col-span-2 glass-panel bg-white dark:bg-transparent p-8 rounded-[40px] border border-slate-200 dark:border-white/5 pb-0 shadow-sm dark:shadow-none">
+                                    <h3 className="text-xs font-black uppercase tracking-widest text-slate-500 dark:text-slate-400 mb-6 font-medium">System Intelligence Snapshot</h3>
                                     <div className="space-y-4">
                                         {/* System chart/graph visualization placeholder */}
-                                        <div className="aspect-[2/1] bg-gradient-to-t from-slate-900 to-slate-900/0 rounded-t-3xl relative overflow-hidden flex items-end px-4 gap-1">
+                                        <div className="aspect-[2/1] bg-gradient-to-t from-slate-100 dark:from-slate-900 to-transparent rounded-t-3xl relative overflow-hidden flex items-end px-4 gap-1">
                                             {[40, 60, 45, 80, 55, 70, 90, 65, 50, 85, 40, 75].map((h, i) => (
-                                                <div key={i} className="flex-1 bg-fuchsia-500/20 rounded-t-lg transition-all hover:bg-fuchsia-500/40" style={{ height: `${h}%` }} />
+                                                <div key={i} className="flex-1 bg-fuchsia-500/20 dark:bg-fuchsia-500/20 rounded-t-lg transition-all hover:bg-fuchsia-500/40" style={{ height: `${h}%` }} />
                                             ))}
                                         </div>
                                     </div>
                                 </div>
 
                                 <div className="space-y-8">
-                                    <div className="glass-panel p-8 rounded-[40px] border border-white/5">
-                                        <h3 className="text-xs font-black uppercase tracking-widest text-slate-400 mb-6 font-medium">Treasury Status</h3>
+                                    <div className="glass-panel bg-white dark:bg-transparent p-8 rounded-[40px] border border-slate-200 dark:border-white/5 shadow-sm dark:shadow-none">
+                                        <h3 className="text-xs font-black uppercase tracking-widest text-slate-500 dark:text-slate-400 mb-6 font-medium">Treasury Status</h3>
                                         <div className="flex items-center gap-4 mb-6">
-                                            <div className="p-4 bg-white/5 rounded-3xl border border-white/5">
-                                                <DollarSign className="w-8 h-8 text-amber-400" />
+                                            <div className="p-4 bg-slate-50 dark:bg-white/5 rounded-3xl border border-slate-200 dark:border-white/5">
+                                                <DollarSign className="w-8 h-8 text-amber-500 dark:text-amber-400" />
                                             </div>
                                             <div>
-                                                <div className="text-3xl font-black text-white">
-                                                    ${(grantsData?.data?.treasuryBalance || 100000).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                <div className="text-3xl font-black text-slate-900 dark:text-white">
+                                                    ${(grantsData?.data?.treasuryBalance || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                                 </div>
                                                 <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Available cUSD Reserve</div>
                                             </div>
@@ -813,8 +847,8 @@ export default function AdminDashboard() {
                                         </div>
                                     </div>
 
-                                    <div className="glass-panel p-8 rounded-[40px] border border-white/5">
-                                        <h3 className="text-xs font-black uppercase tracking-widest text-slate-400 mb-6 font-medium">Protocol Health</h3>
+                                    <div className="glass-panel bg-slate-50 dark:bg-slate-800 p-8 rounded-[40px] border border-slate-200 dark:border-white/5 shadow-sm dark:shadow-none">
+                                        <h3 className="text-xs font-black uppercase tracking-widest text-slate-500 dark:text-slate-400 mb-6 font-medium">Protocol Health</h3>
                                         <div className="space-y-4">
                                             {[
                                                 { label: 'Network Gas (CELO)', val: '2.48 CELO', warn: false },
@@ -822,8 +856,8 @@ export default function AdminDashboard() {
                                                 { label: 'Admin Key Status', val: 'SECURE', warn: false },
                                             ].map((h, i) => (
                                                 <div key={i} className="flex justify-between items-center py-2">
-                                                    <span className="text-[11px] text-slate-500 font-medium">{h.label}</span>
-                                                    <span className="text-[11px] text-white font-bold">{h.val}</span>
+                                                    <span className="text-[11px] text-slate-600 dark:text-slate-500 font-medium">{h.label}</span>
+                                                    <span className="text-[11px] text-slate-900 dark:text-white font-bold">{h.val}</span>
                                                 </div>
                                             ))}
                                         </div>
@@ -837,14 +871,14 @@ export default function AdminDashboard() {
                         <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
                             <div className="flex justify-between items-end mb-4">
                                 <div>
-                                    <h1 className="text-3xl font-black text-white mb-1 italic">Student Registry.</h1>
+                                    <h1 className="text-3xl font-black text-slate-900 dark:text-white mb-1 italic">Student Registry.</h1>
                                     <p className="text-xs text-slate-500 tracking-tight">Active participants in the HerFuture Chain ecosystem.</p>
                                 </div>
                             </div>
-                            <div className="glass-panel rounded-[40px] border border-white/5 overflow-hidden">
+                            <div className="glass-panel bg-white dark:bg-transparent rounded-[40px] border border-slate-200 dark:border-white/5 overflow-hidden shadow-sm dark:shadow-none">
                                 <div className="p-8 border-b border-white/5 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                                     <div>
-                                        <h3 className="font-bold text-white">Registry Management</h3>
+                                        <h3 className="font-bold text-slate-900 dark:text-white">Registry Management</h3>
                                         <p className="text-xs text-slate-500 tracking-tight mt-1">Management of all DID-verified participants.</p>
                                     </div>
                                     <div className="relative">
@@ -854,13 +888,13 @@ export default function AdminDashboard() {
                                             placeholder="Search by name or phone..."
                                             value={searchTerm}
                                             onChange={(e) => setSearchTerm(e.target.value)}
-                                            className="bg-[#0D1525] border border-white/5 rounded-xl pl-10 pr-4 py-3 text-xs text-white focus:outline-none focus:border-brand-500/50 min-w-[320px] transition-all"
+                                            className="bg-slate-50 dark:bg-[#0D1525] border border-slate-200 dark:border-white/5 rounded-xl pl-10 pr-4 py-3 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-brand-500/50 min-w-[320px] transition-all"
                                         />
                                     </div>
                                 </div>
                                 <div className="overflow-x-auto">
                                     <table className="w-full text-left">
-                                        <thead className="bg-[#0D1525] text-[10px] uppercase tracking-widest font-black text-slate-600">
+                                        <thead className="bg-slate-50 dark:bg-[#0D1525] text-[10px] uppercase tracking-widest font-black text-slate-500 dark:text-slate-600">
                                             <tr>
                                                 <th className="px-8 py-5">Full Identity</th>
                                                 <th className="px-8 py-5">Milestone Velocity</th>
@@ -869,23 +903,23 @@ export default function AdminDashboard() {
                                                 <th className="px-8 py-5 text-right">Actions</th>
                                             </tr>
                                         </thead>
-                                        <tbody className="text-sm text-slate-300">
+                                        <tbody className="text-sm text-slate-700 dark:text-slate-300">
                                             {filteredStudents.map((s, i) => (
-                                                <tr key={i} className="border-b border-white/5 hover:bg-white/[0.02] transition-all">
+                                                <tr key={i} className="border-b border-slate-100 dark:border-white/5 hover:bg-slate-50 dark:hover:bg-white/[0.02] transition-all">
                                                     <td className="px-8 py-7">
                                                         <div className="flex items-center gap-3">
-                                                            <div className="w-10 h-10 rounded-xl bg-slate-900 flex items-center justify-center font-black text-slate-400">
+                                                            <div className="w-10 h-10 rounded-xl bg-slate-200 dark:bg-slate-900 flex items-center justify-center font-black text-slate-500 dark:text-slate-400">
                                                                 {s.first_name ? s.first_name[0] : '?'}
                                                             </div>
                                                             <div>
-                                                                <div className="font-black text-white">{s.first_name || 'Anonymous'} {s.last_name || ''}</div>
+                                                                <div className="font-black text-slate-900 dark:text-white">{s.first_name || 'Anonymous'} {s.last_name || ''}</div>
                                                                 <div className="text-[10px] text-slate-500 tracking-widest mt-0.5">{s.phone?.startsWith('+') ? s.phone : '+' + s.phone}</div>
                                                             </div>
                                                         </div>
                                                     </td>
                                                     <td className="px-8 py-7">
                                                         <div className="flex items-center gap-4">
-                                                            <div className="flex-1 h-2 bg-slate-900 rounded-full overflow-hidden w-32 border border-white/5">
+                                                            <div className="flex-1 h-2 bg-slate-200 dark:bg-slate-900 rounded-full overflow-hidden w-32 border border-slate-300 dark:border-white/5">
                                                                 <div className="h-full bg-gradient-to-r from-brand-600 to-indigo-500" style={{ width: `${s.percentage}%` }} />
                                                             </div>
                                                             <span className="text-[10px] font-black text-white">{s.percentage}%</span>
@@ -1030,7 +1064,7 @@ export default function AdminDashboard() {
                         <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
                             <div className="flex justify-between items-end mb-8">
                                 <div>
-                                    <h1 className="text-3xl font-black text-white mb-1 italic">Learning Paths.</h1>
+                                    <h1 className="text-3xl font-black text-slate-900 dark:text-white mb-1 italic">Learning Paths.</h1>
                                     <p className="text-xs text-slate-500 tracking-tight">Managing the core educational engine and grant milestones.</p>
                                 </div>
                                 <button
@@ -1042,7 +1076,7 @@ export default function AdminDashboard() {
                             </div>
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                                 {(courses || []).map(course => (
-                                    <div key={course.id} className="glass-panel rounded-[40px] border border-white/5 p-8 flex flex-col justify-between group hover:border-brand-500/20 transition-all">
+                                    <div key={course.id} className="glass-panel bg-white dark:bg-transparent rounded-[40px] border border-slate-200 dark:border-white/5 p-8 flex flex-col justify-between group hover:border-brand-500/20 transition-all shadow-sm dark:shadow-none">
                                         <div className="mb-8">
                                             <div className="w-full aspect-video rounded-[32px] overflow-hidden bg-slate-800 mb-6 border border-white/5 relative group/img">
                                                 <img src={course.image_url} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" alt="Cover" />
@@ -1054,11 +1088,11 @@ export default function AdminDashboard() {
                                                 </div>
                                             </div>
 
-                                            <h3 className="text-xl font-bold text-white mb-2 leading-tight">{course.title}</h3>
+                                            <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2 leading-tight">{course.title}</h3>
                                             <p className="text-xs text-slate-500 font-medium leading-relaxed">System-assigned learning path for the socio-economic empowerment journey.</p>
                                         </div>
 
-                                        <div className="flex items-center justify-between pt-6 border-t border-white/5">
+                                        <div className="flex items-center justify-between pt-6 border-t border-slate-200 dark:border-white/5">
                                             <div className="flex items-center gap-4">
                                                 <button
                                                     onClick={() => setShowDeleteConfirm(course)}
@@ -1126,12 +1160,12 @@ export default function AdminDashboard() {
                         <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
                             <div className="flex justify-between items-end mb-4">
                                 <div>
-                                    <h1 className="text-3xl font-black text-white mb-1 italic">Grant Distribution.</h1>
+                                    <h1 className="text-3xl font-black text-slate-900 dark:text-white mb-1 italic">Grant Distribution.</h1>
                                     <p className="text-xs text-slate-500 tracking-tight">Historical audit of all on-chain socio-economic disbursements.</p>
                                 </div>
                             </div>
                             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                                <div className="glass-panel p-8 rounded-[40px] border border-white/5 pb-0 overflow-hidden">
+                                <div className="glass-panel bg-white dark:bg-transparent p-8 rounded-[40px] border border-slate-200 dark:border-white/5 pb-0 overflow-hidden shadow-sm dark:shadow-none">
                                     <h3 className="text-xs font-black uppercase tracking-widest text-slate-400 mb-6 uppercase font-medium">Recent Grant Cycles</h3>
                                     <div className="space-y-1">
                                         {recentGrants.map((grant, i) => (
@@ -1141,7 +1175,7 @@ export default function AdminDashboard() {
                                                         <ShieldCheck className="w-4 h-4" />
                                                     </div>
                                                     <div>
-                                                        <div className="text-sm font-bold text-white">{grant.student}</div>
+                                                        <div className="text-sm font-bold text-slate-900 dark:text-white">{grant.student}</div>
                                                         <div className="text-[10px] text-slate-500">{grant.track || 'Learning Path'}</div>
                                                     </div>
                                                 </div>
@@ -1157,23 +1191,23 @@ export default function AdminDashboard() {
                                     </div>
                                 </div>
 
-                                <div className="glass-panel p-8 rounded-[40px] border border-white/5">
+                                <div className="glass-panel bg-white dark:bg-transparent p-8 rounded-[40px] border border-slate-200 dark:border-white/5 shadow-sm dark:shadow-none">
                                     <h3 className="text-xs font-black uppercase tracking-widest text-slate-400 mb-6 font-medium">Grant Configuration</h3>
                                     <div className="space-y-6">
-                                        <div className="p-6 rounded-3xl bg-white/5 border border-white/5">
+                                        <div className="p-6 rounded-3xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/5">
                                             <div className="flex justify-between items-center mb-4">
-                                                <span className="text-sm font-bold text-white">Base Lesson Grant</span>
-                                                <span className="text-sm font-black text-brand-400">${settings.default_lesson_grant || 30}.00</span>
+                                                <span className="text-sm font-bold text-slate-900 dark:text-white">Base Lesson Grant</span>
+                                                <span className="text-sm font-black text-brand-500 dark:text-brand-400">${settings.default_lesson_grant || 30}.00</span>
                                             </div>
-                                            <div className="w-full h-1.5 bg-slate-900 rounded-full">
+                                            <div className="w-full h-1.5 bg-slate-200 dark:bg-slate-900 rounded-full">
                                                 <div className="w-[30%] h-full bg-brand-500 rounded-full" />
                                             </div>
                                             <p className="text-[10px] text-slate-500 mt-4 leading-relaxed italic">The standard cUSD amount dispersed upon successful completion of a lesson quiz.</p>
                                         </div>
-                                        <div className="p-6 rounded-3xl bg-white/5 border border-white/5">
+                                        <div className="p-6 rounded-3xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/5">
                                             <div className="flex justify-between items-center mb-4">
-                                                <span className="text-sm font-bold text-white">Graduation Bonus</span>
-                                                <span className="text-sm font-black text-amber-400">${settings.default_graduation_grant || 150}.00</span>
+                                                <span className="text-sm font-bold text-slate-900 dark:text-white">Graduation Bonus</span>
+                                                <span className="text-sm font-black text-amber-500 dark:text-amber-400">${settings.default_graduation_grant || 150}.00</span>
                                             </div>
                                             <p className="text-[10px] text-slate-500 leading-relaxed italic">Dispersed upon completion of the final learning path milestone.</p>
                                         </div>
@@ -1187,16 +1221,16 @@ export default function AdminDashboard() {
                         <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
                             <div className="flex justify-between items-end mb-4">
                                 <div>
-                                    <h1 className="text-3xl font-black text-white mb-1 italic">System Configuration.</h1>
+                                    <h1 className="text-3xl font-black text-slate-900 dark:text-white mb-1 italic">System Configuration.</h1>
                                     <p className="text-xs text-slate-500 tracking-tight">Control operational parameters and bridge status.</p>
                                 </div>
                             </div>
-                            <div className="glass-panel p-10 rounded-[40px] border border-white/5 max-w-2xl">
-                                <h3 className="text-xl font-black text-white mb-8 italic">System Intelligence & Access</h3>
+                            <div className="glass-panel bg-white dark:bg-transparent p-10 rounded-[40px] border border-slate-200 dark:border-white/5 max-w-2xl shadow-sm dark:shadow-none">
+                                <h3 className="text-xl font-black text-slate-900 dark:text-white mb-8 italic">System Intelligence & Access</h3>
                                 <div className="space-y-8">
-                                    <div className="flex items-center justify-between p-6 rounded-3xl bg-white/5 border border-white/5 hover:border-brand-500/20 transition-all">
+                                    <div className="flex items-center justify-between p-6 rounded-3xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/5 hover:border-brand-500/20 transition-all">
                                         <div>
-                                            <h4 className="font-bold text-white text-sm">On-Chain Grant Disbursement</h4>
+                                            <h4 className="font-bold text-slate-900 dark:text-white text-sm">On-Chain Grant Disbursement</h4>
                                             <p className="text-xs text-slate-500 mt-1">If disabled, lessons will complete but no funds will move.</p>
                                         </div>
                                         <button
@@ -1208,29 +1242,29 @@ export default function AdminDashboard() {
                                     </div>
 
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                        <div className="p-6 rounded-3xl bg-white/5 border border-white/5 hover:border-brand-500/20 transition-all">
+                                        <div className="p-6 rounded-3xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/5 hover:border-brand-500/20 transition-all">
                                             <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-3 block pl-1">Default Lesson Grant ($)</label>
-                                            <div className="flex items-center gap-3 bg-[#060914] border border-white/5 rounded-2xl px-4 py-1">
-                                                <span className="text-emerald-500 font-black text-xs">cUSD</span>
+                                            <div className="flex items-center gap-3 bg-white dark:bg-[#060914] border border-slate-200 dark:border-white/5 shadow-inner dark:shadow-none rounded-2xl px-4 py-1">
+                                                <span className="text-emerald-600 dark:text-emerald-500 font-black text-xs">cUSD</span>
                                                 <input
                                                     type="number"
                                                     value={settings.default_lesson_grant || 30}
                                                     onChange={(e) => queryClient.setQueryData(['admin-settings'], { ...settings, default_lesson_grant: parseInt(e.target.value) })}
                                                     onBlur={(e) => updateGlobalGrant('default_lesson_grant', parseInt(e.target.value))}
-                                                    className="bg-transparent border-none py-3 text-sm text-white focus:outline-none w-full"
+                                                    className="bg-transparent border-none py-3 text-sm text-slate-900 dark:text-white focus:outline-none w-full"
                                                 />
                                             </div>
                                         </div>
-                                        <div className="p-6 rounded-3xl bg-white/5 border border-white/5 hover:border-brand-500/20 transition-all">
+                                        <div className="p-6 rounded-3xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/5 hover:border-brand-500/20 transition-all">
                                             <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-3 block pl-1">Graduation Bonus ($)</label>
-                                            <div className="flex items-center gap-3 bg-[#060914] border border-white/5 rounded-2xl px-4 py-1">
-                                                <span className="text-emerald-500 font-black text-xs">cUSD</span>
+                                            <div className="flex items-center gap-3 bg-white dark:bg-[#060914] border border-slate-200 dark:border-white/5 shadow-inner dark:shadow-none rounded-2xl px-4 py-1">
+                                                <span className="text-emerald-600 dark:text-emerald-500 font-black text-xs">cUSD</span>
                                                 <input
                                                     type="number"
                                                     value={settings.default_graduation_grant || 150}
                                                     onChange={(e) => queryClient.setQueryData(['admin-settings'], { ...settings, default_graduation_grant: parseInt(e.target.value) })}
                                                     onBlur={(e) => updateGlobalGrant('default_graduation_grant', parseInt(e.target.value))}
-                                                    className="bg-transparent border-none py-3 text-sm text-white focus:outline-none w-full"
+                                                    className="bg-transparent border-none py-3 text-sm text-slate-900 dark:text-white focus:outline-none w-full"
                                                 />
                                             </div>
                                         </div>
@@ -1315,18 +1349,18 @@ export default function AdminDashboard() {
                             <div className="flex items-center gap-4 mb-2">
                                 <button
                                     onClick={() => setActiveTab('Curriculum')}
-                                    className="p-2 hover:bg-white/5 rounded-xl transition-colors"
+                                    className="p-2 hover:bg-slate-100 dark:hover:bg-white/5 rounded-xl transition-colors"
                                 >
                                     <ChevronRight className="w-5 h-5 text-slate-500 rotate-180" />
                                 </button>
-                                <h2 className="text-2xl font-black text-white italic">Editing {editingCourse.title}</h2>
+                                <h2 className="text-2xl font-black text-slate-900 dark:text-white italic">Editing {editingCourse.title}</h2>
                             </div>
 
                             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                                 {/* Course Metadata */}
                                 <div className="lg:col-span-1 space-y-6">
-                                    <div className="glass-panel p-8 rounded-[40px] border border-white/5 bg-[#0D1525]/50">
-                                        <h3 className="text-[10px] font-black uppercase tracking-widest text-brand-400 mb-6 font-medium">Core Metadata</h3>
+                                    <div className="glass-panel bg-white dark:bg-[#0D1525]/50 p-8 rounded-[40px] border border-slate-200 dark:border-white/5 shadow-sm dark:shadow-none">
+                                        <h3 className="text-[10px] font-black uppercase tracking-widest text-brand-500 dark:text-brand-400 mb-6 font-medium">Core Metadata</h3>
                                         <div className="space-y-4">
                                             <div>
                                                 <label className="text-[9px] font-black uppercase tracking-widest text-slate-500 mb-2 block pl-1">Path Title</label>
@@ -1334,7 +1368,7 @@ export default function AdminDashboard() {
                                                     type="text"
                                                     value={editingCourse.title}
                                                     onChange={(e) => setEditingCourse({ ...editingCourse, title: e.target.value })}
-                                                    className="w-full bg-[#060914] border border-white/5 rounded-2xl py-3 px-4 text-sm text-white focus:outline-none focus:border-brand-500/50"
+                                                    className="w-full bg-slate-50 dark:bg-[#060914] border border-slate-200 dark:border-white/5 rounded-2xl py-3 px-4 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-brand-500/50"
                                                 />
                                             </div>
                                             <div>
@@ -1342,19 +1376,19 @@ export default function AdminDashboard() {
                                                 <textarea
                                                     value={editingCourse.learning_outcome || ''}
                                                     onChange={(e) => setEditingCourse({ ...editingCourse, learning_outcome: e.target.value })}
-                                                    className="w-full bg-[#060914] border border-white/5 rounded-2xl py-3 px-4 text-sm text-white focus:outline-none focus:border-brand-500/50 min-h-[60px]"
+                                                    className="w-full bg-slate-50 dark:bg-[#060914] border border-slate-200 dark:border-white/5 rounded-2xl py-3 px-4 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-brand-500/50 min-h-[60px]"
                                                 />
                                             </div>
                                             <div className="mb-6">
                                                 <label className="text-[9px] font-black uppercase tracking-widest text-slate-500 mb-3 block pl-1">Path Cover Image</label>
                                                 <div
-                                                    className="relative group cursor-pointer h-32 w-full rounded-2xl overflow-hidden border border-white/5 bg-[#060914] flex items-center justify-center transition-all hover:border-brand-500/30"
+                                                    className="relative group cursor-pointer h-32 w-full rounded-2xl overflow-hidden border border-slate-200 dark:border-white/5 bg-slate-50 dark:bg-[#060914] flex items-center justify-center transition-all hover:border-brand-500/30"
                                                     onClick={() => document.getElementById('cover-upload').click()}
                                                 >
                                                     {editingCourse.image_url ? (
                                                         <img src={editingCourse.image_url} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" alt="Cover" />
                                                     ) : (
-                                                        <div className="flex flex-col items-center gap-2 text-slate-600 group-hover:text-brand-400">
+                                                        <div className="flex flex-col items-center gap-2 text-slate-500 dark:text-slate-600 group-hover:text-brand-500 dark:group-hover:text-brand-400">
                                                             <Activity className="w-6 h-6" />
                                                             <span className="text-[10px] font-black uppercase tracking-widest">Upload Artwork</span>
                                                         </div>
@@ -1376,7 +1410,7 @@ export default function AdminDashboard() {
                                                 <textarea
                                                     value={editingCourse.description || ''}
                                                     onChange={(e) => setEditingCourse({ ...editingCourse, description: e.target.value })}
-                                                    className="w-full bg-[#060914] border border-white/5 rounded-2xl py-3 px-4 text-sm text-white focus:outline-none focus:border-brand-500/50 min-h-[80px]"
+                                                    className="w-full bg-slate-50 dark:bg-[#060914] border border-slate-200 dark:border-white/5 rounded-2xl py-3 px-4 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-brand-500/50 min-h-[80px]"
                                                 />
                                             </div>
                                             <div className="mb-6">
@@ -1385,7 +1419,7 @@ export default function AdminDashboard() {
                                                     type="number"
                                                     value={editingCourse.track_number || ''}
                                                     onChange={(e) => setEditingCourse({ ...editingCourse, track_number: e.target.value })}
-                                                    className="w-full bg-[#060914] border border-white/5 rounded-2xl py-3 px-4 text-sm text-white focus:outline-none focus:border-brand-500/50"
+                                                    className="w-full bg-slate-50 dark:bg-[#060914] border border-slate-200 dark:border-white/5 rounded-2xl py-3 px-4 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-brand-500/50"
                                                 />
                                             </div>
                                             <button

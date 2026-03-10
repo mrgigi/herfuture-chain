@@ -109,6 +109,7 @@ export default function CourseDetail() {
         },
         staleTime: 0,         // Always consider stale so it refetches on return
         refetchOnMount: true, // Refetch every time the student comes back
+        refetchInterval: 5000,
     });
 
     useEffect(() => {

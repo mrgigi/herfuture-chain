@@ -19,6 +19,7 @@ export default function Dashboard() {
         enabled: !!phone,
         staleTime: 30_000,
         refetchOnMount: true,
+        refetchInterval: 5000,
     });
 
     const { data: progress = { percentage: 0, completedCount: 0, totalLessons: 16 }, isLoading: progressLoading } = useQuery({
@@ -27,6 +28,7 @@ export default function Dashboard() {
         enabled: !!participant?.id,
         staleTime: 15_000,
         refetchOnMount: true,
+        refetchInterval: 5000,
     });
 
     const { data: coursesData = [], isLoading: coursesLoading } = useQuery({
@@ -64,7 +66,7 @@ export default function Dashboard() {
         <div className="p-4 md:p-8 pb-32">
             <div className="max-w-7xl mx-auto space-y-8">
                 {error && (
-                    <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-2xl text-red-400 text-xs font-bold uppercase tracking-wider text-center">
+                    <div className="p-4 bg-red-100 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20 rounded-2xl text-red-600 dark:text-red-400 text-xs font-bold uppercase tracking-wider text-center">
                         {error}
                     </div>
                 )}
@@ -89,9 +91,9 @@ export default function Dashboard() {
                             badgeColor: 'bg-brand-500/10 text-brand-400 border-brand-500/20'
                         }
                     ].map((stat, i) => (
-                        <div key={i} className="bg-slate-900/40 backdrop-blur-xl border border-white/5 p-6 rounded-[32px] hover:border-white/10 transition-all group">
+                        <div key={i} className="bg-white/80 dark:bg-slate-900/40 backdrop-blur-xl border border-slate-200 dark:border-white/5 p-6 rounded-[32px] hover:border-slate-300 dark:hover:border-white/10 transition-all group shadow-xl dark:shadow-none">
                             <div className="flex items-center justify-between mb-3">
-                                <div className="p-2.5 rounded-xl bg-white/5 border border-white/5 group-hover:scale-110 transition-transform">
+                                <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-100 dark:border-white/5 group-hover:scale-110 transition-transform">
                                     {stat.icon}
                                 </div>
                                 <span className={`text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded-lg border ${stat.badgeColor}`}>
@@ -100,8 +102,8 @@ export default function Dashboard() {
                             </div>
                             <div className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 mb-1">{stat.label}</div>
                             <div className="flex items-baseline gap-2">
-                                <div className="text-3xl font-black text-white tracking-tight">{stat.value}</div>
-                                <div className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">{stat.secondary}</div>
+                                <div className="text-3xl font-black text-slate-900 dark:text-white tracking-tight">{stat.value}</div>
+                                <div className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">{stat.secondary}</div>
                             </div>
                         </div>
                     ))}
@@ -109,13 +111,13 @@ export default function Dashboard() {
 
                 <div className="space-y-8">
                     {/* Active Module Hero */}
-                    <div className="relative group overflow-hidden rounded-[40px] p-1 bg-gradient-to-tr from-fuchsia-500/20 to-magenta-500/20 border border-white/5">
-                        <div className="bg-[#0D121F]/90 backdrop-blur-3xl rounded-[38px] p-8 md:p-12 flex flex-col md:flex-row items-center gap-10 relative overflow-hidden">
+                    <div className="relative group overflow-hidden rounded-[40px] p-1 bg-gradient-to-tr from-fuchsia-100/50 to-magenta-100/50 dark:from-fuchsia-500/20 dark:to-magenta-500/20 border border-slate-200 dark:border-white/5 shadow-lg dark:shadow-none">
+                        <div className="bg-white/90 dark:bg-[#0D121F]/90 backdrop-blur-3xl rounded-[38px] p-8 md:p-12 flex flex-col md:flex-row items-center gap-10 relative overflow-hidden shadow-inner dark:shadow-none">
                             <div className="absolute top-0 right-0 w-96 h-96 bg-fuchsia-500/5 blur-[100px] rounded-full -translate-y-1/2 translate-x-1/2 group-hover:bg-fuchsia-500/10 transition-colors pointer-events-none" />
 
                             {/* Progress Circle */}
                             <div className="relative flex-shrink-0">
-                                <div className="absolute -inset-10 flex items-center justify-center text-[160px] font-black text-white/5 pointer-events-none select-none">
+                                <div className="absolute -inset-10 flex items-center justify-center text-[160px] font-black text-slate-900/5 dark:text-white/5 pointer-events-none select-none">
                                     {progress.percentage}%
                                 </div>
                                 <div className="w-32 h-32 rounded-[36px] bg-gradient-to-br from-fuchsia-500 to-magenta-600 flex items-center justify-center text-4xl font-black text-white shadow-2xl shadow-fuchsia-500/40 relative z-10 -rotate-3 group-hover:rotate-0 transition-all duration-500">
@@ -133,13 +135,13 @@ export default function Dashboard() {
                                         {progress.completedCount} / {progress.totalModules} Lessons Finished
                                     </span>
                                 </div>
-                                <h2 className="text-4xl md:text-5xl font-black text-white mb-6 tracking-tighter leading-none">
+                                <h2 className="text-4xl md:text-5xl font-black text-slate-900 dark:text-white mb-6 tracking-tighter leading-none">
                                     {progress.completedCount === 0
-                                        ? (<>Start your <br /> <span className="text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-magenta-400 italic">first lesson.</span></>)
-                                        : (<>Keep <br /> <span className="text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-magenta-400 italic">growing. 🔥</span></>)
+                                        ? (<>Start your <br /> <span className="text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-500 to-magenta-500 dark:from-fuchsia-400 dark:to-magenta-400 italic">first lesson.</span></>)
+                                        : (<>Keep <br /> <span className="text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-500 to-magenta-500 dark:from-fuchsia-400 dark:to-magenta-400 italic">growing. 🔥</span></>)
                                     }
                                 </h2>
-                                <p className="text-slate-400 text-base max-w-xl mb-10 leading-relaxed font-medium">
+                                <p className="text-slate-600 dark:text-slate-400 text-base max-w-xl mb-10 leading-relaxed font-medium">
                                     Complete lessons and quizzes to earn digital awards and unlock direct-to-wallet rewards.
                                 </p>
                                 <button
@@ -167,27 +169,27 @@ export default function Dashboard() {
                                     key={course.id}
                                     onClick={() => navigate(`/courses/${course.id}`)}
                                     className={`group p-8 rounded-[40px] border transition-all duration-500 relative overflow-hidden cursor-pointer hover:-translate-y-1 ${isActive
-                                        ? 'bg-fuchsia-500/[0.04] border-fuchsia-500/30 shadow-2xl shadow-fuchsia-500/10 ring-1 ring-fuchsia-500/20 scale-[1.02] active:scale-100'
+                                        ? 'bg-fuchsia-50 dark:bg-fuchsia-500/[0.04] border-fuchsia-200 dark:border-fuchsia-500/30 shadow-2xl shadow-fuchsia-500/10 ring-1 ring-fuchsia-500/20 scale-[1.02] active:scale-100'
                                         : isDone
-                                            ? 'bg-slate-900/60 border-white/5 opacity-80 active:scale-[0.98]'
-                                            : 'bg-black/20 border-white/[0.04] opacity-60 hover:opacity-80'
+                                            ? 'bg-slate-50 dark:bg-slate-900/60 border-slate-200 dark:border-white/5 opacity-80 active:scale-[0.98]'
+                                            : 'bg-white dark:bg-black/20 border-slate-200 dark:border-white/[0.04] opacity-80 dark:opacity-60 hover:opacity-100 dark:hover:opacity-80 shadow-sm dark:shadow-none'
                                         }`}
                                 >
                                     <div className="flex flex-col gap-6 relative z-10">
-                                        <div className={`w-14 h-14 rounded-2xl flex items-center justify-center font-black text-xl transition-all duration-500 group-hover:scale-110 ${isActive ? 'bg-gradient-to-br from-fuchsia-500 to-magenta-600 text-white shadow-xl shadow-fuchsia-500/40' : isDone ? 'bg-emerald-500/20 text-emerald-400' : 'bg-slate-800 text-slate-500'
+                                        <div className={`w-14 h-14 rounded-2xl flex items-center justify-center font-black text-xl transition-all duration-500 group-hover:scale-110 ${isActive ? 'bg-gradient-to-br from-fuchsia-500 to-magenta-600 text-white shadow-xl shadow-fuchsia-500/40' : isDone ? 'bg-emerald-100 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400' : 'bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500'
                                             }`}>
                                             {isDone ? <CheckCircle className="w-6 h-6" /> : (isActive ? `${percentage}%` : (idx + 1))}
                                         </div>
                                         <div>
                                             <div className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1.5">Level {course.track_number || (idx + 1)}</div>
-                                            <h4 className={`text-lg font-black uppercase tracking-tight leading-tight ${isActive ? 'text-white' : 'text-slate-400'}`}>{course.title}</h4>
+                                            <h4 className={`text-lg font-black uppercase tracking-tight leading-tight ${isActive ? 'text-slate-900 dark:text-white' : 'text-slate-700 dark:text-slate-400'}`}>{course.title}</h4>
                                         </div>
-                                        <div className="pt-6 border-t border-white/5 flex items-center justify-between">
-                                            <span className={`text-[10px] font-black uppercase tracking-widest ${isActive ? 'text-fuchsia-400 animate-pulse' : isDone ? 'text-emerald-400' : 'text-slate-600'}`}>
+                                        <div className="pt-6 border-t border-slate-200 dark:border-white/5 flex items-center justify-between">
+                                            <span className={`text-[10px] font-black uppercase tracking-widest ${isActive ? 'text-fuchsia-500 dark:text-fuchsia-400 animate-pulse' : isDone ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-500 dark:text-slate-600'}`}>
                                                 {isActive ? 'In Progress' : isDone ? 'Completed' : 'View Level'}
                                             </span>
-                                            <div className={`w-8 h-8 rounded-full flex items-center justify-center ${isActive ? 'bg-fuchsia-500/10' : 'bg-white/5'}`}>
-                                                <ArrowRight className={`w-4 h-4 ${isActive ? 'text-fuchsia-400' : 'text-slate-500 group-hover:text-white transition-colors'}`} />
+                                            <div className={`w-8 h-8 rounded-full flex items-center justify-center ${isActive ? 'bg-fuchsia-100 dark:bg-fuchsia-500/10' : 'bg-slate-100 dark:bg-white/5'}`}>
+                                                <ArrowRight className={`w-4 h-4 ${isActive ? 'text-fuchsia-600 dark:text-fuchsia-400' : 'text-slate-400 dark:text-slate-500 group-hover:text-slate-700 dark:group-hover:text-white transition-colors'}`} />
                                             </div>
                                         </div>
                                     </div>

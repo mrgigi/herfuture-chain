@@ -345,9 +345,115 @@ app.post('/api/complete-lesson', async (req, res) => {
                 }
             }
         }
+        // --- MASTERY / SCHOOL GRADUATION LOGIC ---
+        let masterCredentialIssued = false;
+        let graduationBonusTxHash = null;
+
+        // 1. Get total count of all lessons in the system
+        const { count: totalLessons, error: countErr } = await supabase
+            .from('lessons')
+            .select('*', { count: 'exact', head: true });
+
+        // 2. Get total count of all completed lessons by this student
+        const { count: completedLessons, error: compErr } = await supabase
+            .from('student_progress')
+            .select('*', { count: 'exact', head: true })
+            .eq('participant_id', participantId)
+            .eq('status', 'completed');
+
+        if (!countErr && !compErr && totalLessons > 0 && completedLessons === totalLessons) {
+            const masterCertTitle = "HerFuture Chain Master Graduate";
+
+            // Check if they already hold this master certificate
+            const { data: existingMasterCert } = await supabase
+                .from('credentials')
+                .select('credential_id')
+                .eq('participant_id', participantId)
+                .eq('skill', masterCertTitle)
+                .maybeSingle();
+
+            if (!existingMasterCert) {
+                const { data: p } = await supabase.from('participants').select('wallet_address').eq('id', participantId).single();
+
+                if (p?.wallet_address) {
+                    console.log(`[Vercel API] 100% SCHOOL COMPLETION DETECTED! Issuing Master Diploma!`);
+
+                    // --- 1. Mint Master Diploma ---
+                    const masterIpfsHash = "QmMasterGraduate";
+                    try {
+                        const txMasterCert = await credentialRegistryContract.issueCredential(
+                            p.wallet_address,
+                            masterCertTitle,
+                            masterIpfsHash
+                        );
+                        const masterReceipt = await txMasterCert.wait();
+
+                        await supabase.from('credentials').insert([{
+                            participant_id: participantId,
+                            skill: masterCertTitle,
+                            ipfs_hash: masterIpfsHash,
+                            tx_hash: masterReceipt.hash
+                        }]);
+                        console.log(`[Vercel API] Master Certificate minted on-chain!`);
+                        masterCredentialIssued = true;
+                    } catch (certError) {
+                        console.error("[Vercel API] Master Certificate minting failed:", certError.message);
+                    }
+
+                    // --- 2. Pay Graduation Bonus ---
+                    const { data: bData } = await supabase.from('system_settings').select('value').eq('key', 'default_graduation_grant').single();
+                    const bonusAmount = bData ? parseInt(bData.value) : 150;
+                    const bonusMilestone = "Graduation_Bonus";
+
+                    // Save bonus to DB unconditionally first
+                    let bonusGrantId = null;
+                    const { data: newBonus } = await supabase.from('grants').insert([{
+                        participant_id: participantId,
+                        milestone: bonusMilestone,
+                        withdrawable_amount: bonusAmount,
+                        savings_amount: 0,
+                        investment_amount: 0,
+                        status: 'pending' // Initialize as pending tx
+                    }]).select('id').single();
+
+                    if (newBonus) bonusGrantId = newBonus.id;
+
+                    try {
+                        // Check if active before touching blockchain
+                        const { data: sData } = await supabase.from('system_settings').select('value').eq('key', 'grant_disbursement_active').single();
+                        const payoutActive = sData ? sData.value : true;
+
+                        if (payoutActive) {
+                            const weiBonus = ethers.parseUnits(bonusAmount.toString(), 18);
+
+                            // Temporarily authorize this one-time Master milestone on the contract
+                            const txAuth = await grantDisbursementContract.setMilestoneGrant(bonusMilestone, weiBonus);
+                            await txAuth.wait();
+
+                            const txComplete = await grantDisbursementContract.completeMilestone(p.wallet_address, bonusMilestone);
+                            await txComplete.wait();
+
+                            const txRelease = await grantDisbursementContract.releaseGrant(p.wallet_address);
+                            const recRelease = await txRelease.wait();
+
+                            graduationBonusTxHash = recRelease.hash;
+
+                            if (bonusGrantId) {
+                                await supabase.from('grants')
+                                    .update({ tx_hash: recRelease.hash, status: 'disbursed' })
+                                    .eq('id', bonusGrantId);
+                            }
+                            console.log(`[Vercel API] Graduation Bonus disbursed successfully!`);
+                        }
+                    } catch (bonusErr) {
+                        console.error("[Vercel API] Graduation Bonus payout failed:", bonusErr.message);
+                    }
+                }
+            }
+        }
         // ---------------------------------
 
-        res.json({ success: true, grantStatus, txHash, credentialIssued });
+        res.json({ success: true, grantStatus, txHash, credentialIssued, masterCredentialIssued, graduationBonusTxHash });
     } catch (err) {
         console.error("[Vercel API] Error:", err.message);
         res.status(500).json({ error: err.message });

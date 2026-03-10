@@ -20,7 +20,7 @@ export default function StudentLayout() {
     const active = getActiveFromPath(location.pathname);
 
     return (
-        <div className="min-h-screen bg-[#060912] font-sans text-slate-200 flex flex-col">
+        <div className="min-h-screen bg-slate-50 dark:bg-[#060912] font-sans text-slate-800 dark:text-slate-200 flex flex-col transition-colors duration-300">
             {/* Persistent Sidebar — mounts once, never re-renders on navigation */}
             <Sidebar
                 active={active}

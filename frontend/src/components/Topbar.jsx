@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../lib/api';
 import { Bell, Copy, Check, CalendarDays, Menu } from 'lucide-react';
+import ThemeToggle from './ThemeToggle';
 
 export default function Topbar({ userName, modulesCompleted, totalModules, sidebarCollapsed, onOpenMobileMenu }) {
     const navigate = useNavigate();
@@ -56,42 +57,44 @@ export default function Topbar({ userName, modulesCompleted, totalModules, sideb
     const total = totalModules ?? 16;
 
     return (
-        <div className={`${sidebarCollapsed ? 'md:ml-[72px]' : 'md:ml-64'} bg-slate-900/80 backdrop-blur-md border-b border-slate-800 sticky top-0 z-30 px-8 py-4 flex items-center justify-between transition-all duration-300`}>
+        <div className={`${sidebarCollapsed ? 'md:ml-[72px]' : 'md:ml-64'} bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 sticky top-0 z-30 px-8 py-4 flex items-center justify-between transition-all duration-300`}>
             {/* Left: Welcome greeting + subtitle */}
             <div className="flex items-center gap-4">
                 <button
                     onClick={onOpenMobileMenu}
-                    className="md:hidden p-2 -ml-2 text-slate-400 hover:text-white transition-colors"
+                    className="md:hidden p-2 -ml-2 text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white transition-colors"
                 >
                     <Menu className="w-6 h-6" />
                 </button>
-                <h1 className="text-base md:text-lg font-bold text-white leading-tight truncate max-w-[180px] xs:max-w-[240px] sm:max-w-md">
-                    Welcome{displayName ? ',' : ''} <span className="text-brand-400">{displayName || (phone ? '...' : 'Learner')}</span> 👋
+                <h1 className="text-base md:text-lg font-bold text-slate-900 dark:text-white leading-tight truncate max-w-[180px] xs:max-w-[240px] sm:max-w-md">
+                    Welcome{displayName ? ',' : ''} <span className="text-brand-500 dark:text-brand-400">{displayName || (phone ? '...' : 'Learner')}</span> 👋
                 </h1>
             </div>
 
             <div className="flex items-center gap-6">
+                <ThemeToggle />
+
                 {/* Notification Bell */}
                 <div className="relative">
                     <button
                         onClick={() => setShowNotifications(!showNotifications)}
-                        className="relative p-2 text-slate-400 hover:text-white transition-colors"
+                        className="relative p-2 text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white transition-colors"
                     >
                         <Bell className="w-5 h-5" />
                         {notifications.length > 0 && (
-                            <span className="absolute top-1.5 right-1.5 w-3 h-3 bg-brand-500 border-2 border-slate-900 rounded-full"></span>
+                            <span className="absolute top-1.5 right-1.5 w-3 h-3 bg-brand-500 border-2 border-white dark:border-slate-900 rounded-full"></span>
                         )}
                     </button>
 
                     {showNotifications && (
-                        <div className="absolute right-0 mt-3 w-80 glass-panel border border-white/5 shadow-2xl rounded-2xl p-4 animate-in fade-in slide-in-from-top-2">
+                        <div className="absolute right-0 mt-3 w-80 bg-white dark:bg-[#060914] glass-panel border border-slate-200 dark:border-white/5 shadow-2xl rounded-2xl p-4 animate-in fade-in slide-in-from-top-2">
                             <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-4 px-2">Notifications</h4>
                             <div className="space-y-2">
                                 {notifications.length > 0 ? notifications.map(n => (
-                                    <div key={n.id} className="p-3 rounded-xl bg-white/5 border border-white/5 hover:bg-white/10 transition-colors cursor-pointer">
-                                        <div className="text-xs font-bold text-white mb-1">{n.title}</div>
-                                        <div className="text-[10px] text-slate-400 line-clamp-2 mb-1">{n.body}</div>
-                                        <div className="text-[9px] font-medium text-brand-400">{n.time}</div>
+                                    <div key={n.id} className="p-3 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-100 dark:border-white/5 hover:bg-slate-100 dark:hover:bg-white/10 transition-colors cursor-pointer">
+                                        <div className="text-xs font-bold text-slate-900 dark:text-white mb-1">{n.title}</div>
+                                        <div className="text-[10px] text-slate-500 dark:text-slate-400 line-clamp-2 mb-1">{n.body}</div>
+                                        <div className="text-[9px] font-medium text-brand-600 dark:text-brand-400">{n.time}</div>
                                     </div>
                                 )) : (
                                     <div className="py-8 text-center text-[10px] text-slate-500 italic">No new notifications</div>
@@ -101,66 +104,65 @@ export default function Topbar({ userName, modulesCompleted, totalModules, sideb
                     )}
                 </div>
 
-                {/* Profile avatar + dropdown */}
                 <div className="relative">
                     <div
                         onClick={() => {
                             setShowProfile(!showProfile);
                             setShowNotifications(false);
                         }}
-                        className="h-10 w-10 rounded-full bg-slate-800 flex items-center justify-center shadow-lg border-2 border-slate-800 cursor-pointer hover:scale-105 transition-transform overflow-hidden"
+                        className="h-10 w-10 rounded-full bg-slate-200 dark:bg-slate-800 flex items-center justify-center shadow-lg border-2 border-slate-200 dark:border-slate-800 cursor-pointer hover:scale-105 transition-transform overflow-hidden"
                     >
                         {localStorage.getItem('userAvatar') ? (
                             <img src={localStorage.getItem('userAvatar')} alt="Profile" className="w-full h-full object-cover" />
                         ) : user?.avatar_url ? (
                             <img src={user.avatar_url} alt="Profile" className="w-full h-full object-cover" />
                         ) : (
-                            <span className="font-semibold text-white">{initials}</span>
+                            <span className="font-semibold text-slate-700 dark:text-white">{initials}</span>
                         )}
                     </div>
 
                     {showProfile && (
-                        <div className="absolute right-0 mt-3 w-72 glass-panel bg-slate-900 border border-white/5 shadow-2xl rounded-2xl p-5 animate-in fade-in slide-in-from-top-2">
+                        <div className="absolute right-0 mt-3 w-72 glass-panel bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/5 shadow-2xl rounded-2xl p-5 animate-in fade-in slide-in-from-top-2">
                             <div className="flex flex-col items-center mb-6">
-                                <div className="h-16 w-16 mb-3 rounded-full bg-slate-800 flex items-center justify-center shadow-lg border-2 border-slate-800 overflow-hidden">
+                                <div className="h-16 w-16 mb-3 rounded-full bg-slate-200 dark:bg-slate-800 flex items-center justify-center shadow-lg border-2 border-slate-200 dark:border-slate-800 overflow-hidden">
                                     {localStorage.getItem('userAvatar') ? (
                                         <img src={localStorage.getItem('userAvatar')} alt="Profile" className="w-full h-full object-cover" />
                                     ) : user?.avatar_url ? (
                                         <img src={user.avatar_url} alt="Profile" className="w-full h-full object-cover" />
                                     ) : (
-                                        <span className="text-xl font-semibold text-white">{initials}</span>
+                                        <span className="text-xl font-semibold text-slate-700 dark:text-white">{initials}</span>
                                     )}
                                 </div>
-                                <h3 className="text-lg font-bold text-white tracking-tight">{user?.first_name} {user?.last_name}</h3>
-                                <p className="text-xs text-slate-400 font-medium">{user?.phone}</p>
+                                <h3 className="text-lg font-bold text-slate-900 dark:text-white tracking-tight">{user?.first_name} {user?.last_name}</h3>
+                                <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">{user?.phone}</p>
                             </div>
 
                             <div className="space-y-3">
                                 {/* Wallet Address */}
-                                <div className="p-3 rounded-xl bg-slate-950/50 border border-white/5 relative group">
+                                <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-950/50 border border-slate-100 dark:border-white/5 relative group">
                                     <div className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-2">Wallet Address</div>
                                     <div className="flex items-center gap-2">
-                                        <div className="flex-1 text-xs font-mono text-slate-300 truncate">
+                                        <div className="flex-1 text-xs font-mono text-slate-700 dark:text-slate-300 truncate">
                                             {user?.wallet_address || 'Loading...'}
                                         </div>
                                         <button
                                             onClick={handleCopyAddress}
-                                            className="p-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white transition-colors shrink-0"
+                                            className="p-1.5 rounded-lg bg-slate-200 dark:bg-white/5 hover:bg-slate-300 dark:hover:bg-white/10 text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white transition-colors shrink-0"
                                             title="Copy Address"
                                         >
-                                            {copied ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
+                                            {copied ? <Check className="w-4 h-4 text-emerald-500 dark:text-emerald-400" /> : <Copy className="w-4 h-4" />}
                                         </button>
                                     </div>
                                 </div>
 
                                 {/* Registration Date */}
                                 {registeredOn && (
-                                    <div className="p-3 rounded-xl bg-slate-950/50 border border-white/5">
+                                    <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-950/50 border border-slate-100 dark:border-white/5">
                                         <div className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-1.5 flex items-center gap-1.5">
                                             <CalendarDays className="w-3 h-3" />
                                             Registered On
                                         </div>
-                                        <div className="text-xs font-medium text-slate-300">{registeredOn}</div>
+                                        <div className="text-xs font-medium text-slate-700 dark:text-slate-300">{registeredOn}</div>
                                     </div>
                                 )}
 
