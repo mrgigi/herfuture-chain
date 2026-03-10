@@ -27,28 +27,14 @@ export default function ImpactDashboard() {
                     api.get('/impact/stats'),
                     api.get(`/impact/recent-grants?page=${isLoadMore ? page + 1 : 1}&limit=10`)
                 ]);
-                setStats({
-                    totalImpact: statsRes.data.totalImpact || 84500,
-                    grantsDistributed: statsRes.data.grantsDistributed || 1250,
-                    graduates: statsRes.data.graduates || 450,
-                    treasuryBalance: statsRes.data.treasuryBalance || 1200000,
-                    countries: statsRes.data.countries || 12
-                });
-                const mockGrants = [
-                    { student: 'Amina Y.', track: 'Digital Literacy', amount: 30, tx_hash: '0x35e02a4e7148d30a36f122f78887da848d55c108d0084bd5cdd1cfdf3af671ef', created_at: new Date().toISOString() },
-                    { student: 'Fatima B.', track: 'Google Workspace', amount: 20, tx_hash: '0x89937065867c8c73c53948bafbe9a30f2994192b2e4b45cb049daa4592744dfb', created_at: new Date(Date.now() - 3600000).toISOString() },
-                    { student: 'Zainab M.', track: 'Intro to AI', amount: 30, tx_hash: '0xe72527c081eb3923957b0e2b744c254d370bebffef87cc3110e45ad3fcedb6aa', created_at: new Date(Date.now() - 7200000).toISOString() },
-                    { student: 'Mary O.', track: 'Digital Literacy', amount: 30, tx_hash: '0x251484fcc7759ead3f08e9b6384c5379a5739145cc9f3f6f8f6f9732d3e599b5', created_at: new Date(Date.now() - 86400000).toISOString() },
-                    { student: 'Joy A.', track: 'Business Idea', amount: 50, tx_hash: '0x9d7b3ed5851905baf779dec9a6f7521007154bf37b266263f5db937134b86477', created_at: new Date(Date.now() - 172800000).toISOString() }
-                ];
-                
-                const grantsToUse = (grantsRes.data.grants && grantsRes.data.grants.length > 0) ? grantsRes.data.grants : mockGrants;
+
+                setStats(statsRes.data);
 
                 if (isLoadMore) {
-                    setRecentGrants(prev => [...prev, ...grantsToUse]);
+                    setRecentGrants(prev => [...prev, ...grantsRes.data.grants]);
                     setPage(prev => prev + 1);
                 } else {
-                    setRecentGrants(grantsToUse);
+                    setRecentGrants(grantsRes.data.grants);
                     setPage(1);
                 }
 

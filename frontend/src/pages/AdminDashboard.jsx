@@ -122,11 +122,8 @@ export default function AdminDashboard() {
     });
 
     const students = studentData?.participants || [];
-    const recentGrants = (grantsData?.data?.grants && grantsData.data.grants.length > 0) ? grantsData.data.grants : [
-        { student: 'Amina Y.', track: 'Digital Literacy', amount: 30, tx: '0x35e02a4e7148d30a3' },
-        { student: 'Fatima B.', track: 'Google Workspace', amount: 20, tx: '0x89937065867c8c73c' },
-        { student: 'Zainab M.', track: 'Intro to AI', amount: 30, tx: '0xe72527c081eb39239' }
-    ];    const isLoading = coursesLoading || studentsLoading || settingsLoading || grantsLoading;
+    const recentGrants = grantsData?.data?.grants || [];
+    const isLoading = coursesLoading || studentsLoading || settingsLoading || grantsLoading;
 
     useEffect(() => {
         const isAdmin = sessionStorage.getItem('is_admin') === 'true';
@@ -664,9 +661,9 @@ export default function AdminDashboard() {
     };
 
     const stats = {
-        totalStudents: students.length || 342,
-        avgProgress: students.length ? Math.round(students.reduce((acc, s) => acc + (s?.percentage || 0), 0) / students.length) : 78,
-        totalGrants: studentData?.totalGrantsValue || 84500
+        totalStudents: students.length,
+        avgProgress: students.length ? Math.round(students.reduce((acc, s) => acc + (s?.percentage || 0), 0) / students.length) : 0,
+        totalGrants: studentData?.totalGrantsValue || 0
     };
 
     if (!authorized) return null;
@@ -811,7 +808,7 @@ export default function AdminDashboard() {
                                     { label: 'Total Students', val: stats.totalStudents, icon: <Users className="text-blue-600 dark:text-blue-400" /> },
                                     { label: 'Avg Progress', val: `${stats.avgProgress}%`, icon: <Activity className="text-emerald-600 dark:text-emerald-400" /> },
                                     { label: 'Grants Paid', val: `$${stats.totalGrants}`, icon: <DollarSign className="text-amber-600 dark:text-amber-400" /> },
-                                    { label: 'Graduates', val: students.filter(s => s?.percentage === 100).length || 140, icon: <GraduationCap className="text-purple-600 dark:text-purple-400" /> },
+                                    { label: 'Graduates', val: students.filter(s => s?.percentage === 100).length, icon: <GraduationCap className="text-purple-600 dark:text-purple-400" /> },
                                 ].map((s, i) => (
                                     <div key={i} className="glass-panel bg-slate-50 dark:bg-[#0D1525] p-6 rounded-[32px] border border-slate-200 dark:border-white/5 shadow-sm dark:shadow-none transition-all">
                                         <div className="flex justify-between items-start mb-4">
@@ -846,7 +843,7 @@ export default function AdminDashboard() {
                                             </div>
                                             <div>
                                                 <div className="text-3xl font-black text-slate-900 dark:text-white">
-                                                    ${(grantsData?.data?.treasuryBalance || 1200000).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                    ${(grantsData?.data?.treasuryBalance || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                                 </div>
                                                 <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Available cUSD Reserve</div>
                                             </div>
