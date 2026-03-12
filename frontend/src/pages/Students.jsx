@@ -179,9 +179,9 @@ export default function Students() {
                     <img
                         src="/images/hero.png"
                         alt="HerFuture Hub"
-                        className="w-full h-full object-cover opacity-10 dark:opacity-30 transform scale-105"
+                        className="w-full h-full object-cover opacity-20 dark:opacity-30 transform scale-105"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-b from-slate-50 via-slate-50/60 to-slate-50 dark:from-[#060914] dark:via-[#060914]/60 dark:to-[#060914] z-10" />
+                    <div className="absolute inset-0 bg-gradient-to-b from-slate-50/20 via-slate-50/10 to-slate-50 dark:from-[#060914] dark:via-[#060914]/60 dark:to-[#060914] z-10" />
                 </div>
                 <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[1000px] bg-brand-600/10 rounded-full blur-[120px] pointer-events-none z-20" />
 
